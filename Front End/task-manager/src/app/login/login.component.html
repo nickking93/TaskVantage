@@ -1,20 +1,25 @@
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <form action="/submit_form" method="POST">
-        <div>
-            <label for="email">Email Address:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div>
-            <button type="submit">Submit</button>
-        </div>
-    </form>
-</body>
+<div class="row">
+    <div class="column">
+        <p>Left</p>
+    </div>
+    <div class="column">
+        <div class="login-form">
+            <form>
+                <mat-form-field>
+                    <mat-label>Enter your email</mat-label>
+                    <input
+                    matInput
+                    placeholder="pat@example.com"
+                    />
+                </mat-form-field>
+                    <br>
+                    <mat-form-field>
+                        <mat-label>Enter your password</mat-label>
+                        <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
+                        <mat-icon matSuffix (click)="hide = !hide"></mat-icon>
+                    </mat-form-field>
+            </form>
+    </div>
+    <div class="column">
+    </div>
+</div> 
