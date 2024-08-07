@@ -1,25 +1,26 @@
-<div class="row">
-    <div class="column">
-        <p>Left</p>
+<div class="column">
+    <br>
+</div>
+<div class="column">
+    <img src=".\assets\Images\logo.png" alt="image" style="padding-top: 15px; padding-bottom: 100px;">
+    <h1 style="padding-bottom: 20px; "><b>Log in</b></h1>
+    <div class="login-form">
+        <mat-form-field>
+            <mat-label>Enter your email</mat-label>
+            <input
+            matInput
+            placeholder="pat@example.com"
+            />
+        </mat-form-field>
+        <br>
     </div>
-    <div class="column">
-        <div class="login-form">
-            <form>
-                <mat-form-field>
-                    <mat-label>Enter your email</mat-label>
-                    <input
-                    matInput
-                    placeholder="pat@example.com"
-                    />
-                </mat-form-field>
-                    <br>
-                    <mat-form-field>
-                        <mat-label>Enter your password</mat-label>
-                        <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
-                        <mat-icon matSuffix (click)="hide = !hide"></mat-icon>
-                    </mat-form-field>
-            </form>
-    </div>
-    <div class="column">
-    </div>
-</div> 
+    <mat-form-field>
+        <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
+        <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+    </mat-form-field>
+</div>
+<div class="column">
+    <img src=".\assets\Images\Image_clipboard.png" alt="image" style="padding-top: 33.33%;">
+</div>
+<div class="column">
+</div>
