@@ -4,7 +4,7 @@
   
   .column {
     float: left;
-    width: 33.33%;
+    width: 25%;
   }
   
   /* Clear floats after the columns */
@@ -12,4 +12,8 @@
     content: "";
     display: table;
     clear: both;
+  }
+
+  mat-form-field {
+    width: 75%;
   }

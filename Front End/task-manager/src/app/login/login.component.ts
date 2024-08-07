@@ -7,8 +7,12 @@ import { FormGroup } from '@angular/forms';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+clickEvent($event: MouseEvent) {
+throw new Error('Method not implemented.');
+}
 hide: any;
 signin: FormGroup<any> | undefined;
+passwordInput: any;
 
   constructor() { }
 
