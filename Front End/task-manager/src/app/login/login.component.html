@@ -1,17 +1,18 @@
 <div class="row">
-    <div class="column">
-      <br>
-    </div>
-    <div class="column">
-      <img src="./assets/Images/logo.png" alt="image" class="logo-img">
-      <div class="g-signin2" data-onsuccess="onSignIn" data-width="360" data-height="40" data-longtitle="true"></div>
-      <div class="fb-login-button" data-width="360" data-size="large" data-button-type="login_with" data-layout="" data-auto-logout-link="false" data-use-continue-as="true"></div>
-      <div id="appleid-signin" class="appleid-signin" data-color="black" data-border="true" data-type="sign in"></div>
-      <h1 class="login-heading"><b>Log in</b></h1>
+  <div class="column">
+    <br>
+  </div>
+  <div class="column">
+    <img src="./assets/Images/logo.png" alt="image" class="logo-img">
+    <div class="g-signin2" id="google-signin-button" data-onsuccess="onSignIn" data-width="360" data-height="40" data-longtitle="true"></div>
+    <div class="fb-login-button" data-width="360" data-size="large" data-button-type="login_with" data-layout="" data-auto-logout-link="false" data-use-continue-as="true"></div>
+    <div id="appleid-signin" class="appleid-signin" data-color="black" data-border="true" data-type="sign in"></div>
+    <h1 class="login-heading"><b>Log in</b></h1>
+    <form [formGroup]="signin">
       <div class="login-form">
         <mat-form-field>
           <mat-label>Enter your email</mat-label>
-          <input matInput placeholder="pat@example.com" />
+          <input matInput placeholder="pat@example.com" formControlName="email" />
         </mat-form-field>
         <br>
       </div>
@@ -19,12 +20,13 @@
         <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
         <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
       </mat-form-field>
-    </div>
-    <div class="column">
-      <img src="./assets/Images/Image_clipboard.png" alt="image" class="clipboard-img">
-      <a class="designed-by" href="http://www.freepik.com">Designed by rawpixel.com / Freepik</a>
-    </div>
-    <div class="column">
-    </div>
+    </form>
+    <a [routerLink]="['/privacy-policy']">Privacy Policy</a> <!-- Add this link -->
   </div>
-  
+  <div class="column">
+    <img src="./assets/Images/Image_clipboard.png" alt="image" class="clipboard-img">
+    <a class="designed-by" href="http://www.freepik.com">Designed by rawpixel.com / Freepik</a>
+  </div>
+  <div class="column">
+  </div>
+</div>
