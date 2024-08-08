@@ -1,28 +1,30 @@
-<div class="column">
-    <br>
-</div>
-<div class="column">
-    <img src=".\assets\Images\logo.png" alt="image" style="padding-top: 15px; padding-bottom: 100px;">
-    <div class="g-signin2" data-onsuccess="onSignIn" data-width="360" data-height="40" data-longtitle="true"></div>
-    <div class="fb-login-button" style="padding-top: 15px;" data-width="360" data-size="large" data-button-type="continue_with" data-layout="" data-auto-logout-link="false" data-use-continue-as="true"></div>
-    <h1 style="padding-top: 20px; padding-bottom: 20px; "><b>Log in</b></h1>
-    <div class="login-form">
+<div class="row">
+    <div class="column">
+      <br>
+    </div>
+    <div class="column">
+      <img src="./assets/Images/logo.png" alt="image" style="padding-top: 15px; padding-bottom: 100px;">
+      <div class="g-signin2" data-onsuccess="onSignIn" data-width="360" data-height="40" data-longtitle="true"></div>
+      <div class="fb-login-button" style="padding-top: 15px;" data-width="360" data-size="large" data-button-type="login_with" data-layout="" data-auto-logout-link="false" data-use-continue-as="true"></div>
+      <div id="appleid-signin" class="appleid-signin" data-color="black" data-border="true" data-type="sign in"></div>
+      <h1 style="padding-top: 20px; padding-bottom: 20px; color: #2365B2;"><b>Log in</b></h1>
+      <div class="login-form">
         <mat-form-field>
-            <mat-label>Enter your email</mat-label>
-            <input
-            matInput
-            placeholder="pat@example.com"
-            />
+          <mat-label>Enter your email</mat-label>
+          <input matInput placeholder="pat@example.com" />
         </mat-form-field>
         <br>
-    </div>
-    <mat-form-field>
+      </div>
+      <mat-form-field>
         <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
         <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-    </mat-form-field>
-</div>
-<div class="column">
-    <img src=".\assets\Images\Image_clipboard.png" alt="image" style="padding-top: 33.33%;">
-</div>
-<div class="column">
-</div>
+      </mat-form-field>
+    </div>
+    <div class="column">
+      <img src="./assets/Images/Image_clipboard.png" alt="image" style="padding-top: 33.33%;">
+      <a style="padding-left: 27%;" href="http://www.freepik.com">Designed by rawpixel.com / Freepik</a>
+    </div>
+    <div class="column">
+    </div>
+  </div>
+  
