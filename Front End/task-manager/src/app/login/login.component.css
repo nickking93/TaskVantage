@@ -49,3 +49,31 @@ img {
 .designed-by {
   padding-left: 27%;
 }
+
+.google-signin-button {
+  width: 360px;
+  height: 40px;
+  background-color: white;
+  color: #757575;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: 1px solid #dcdcdc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.google-signin-button:hover {
+  background-color: #f7f7f7;
+}
