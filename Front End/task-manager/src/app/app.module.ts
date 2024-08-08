@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; // Import BrowserAnimationsModule
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -8,6 +9,8 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { TaskListComponent } from './task-list/task-list.component';
 import { TaskDetailsComponent } from './task-details/task-details.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,15 +21,17 @@ import { MatIconModule } from '@angular/material/icon';
     LoginComponent,
     RegisterComponent,
     TaskListComponent,
-    TaskDetailsComponent
+    TaskDetailsComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    BrowserAnimationsModule, // Add BrowserAnimationsModule to imports
+    BrowserAnimationsModule,
     ReactiveFormsModule,
     MatInputModule,
-    MatIconModule
+    MatIconModule,
+    RouterModule,
+    PrivacyPolicyComponent // Import the standalone component here
   ],
   providers: [],
   bootstrap: [AppComponent]
