@@ -26,3 +26,26 @@ img {
   height: 40px;
   padding-top: 10px;
 }
+
+.logo-img {
+  padding-top: 15px;
+  padding-bottom: 100px;
+}
+
+.fb-login-button {
+  padding-top: 15px;
+}
+
+.login-heading {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: #2365B2;
+}
+
+.clipboard-img {
+  padding-top: 33.33%;
+}
+
+.designed-by {
+  padding-left: 27%;
+}
