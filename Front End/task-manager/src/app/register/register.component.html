@@ -1,27 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Form</title>
-</head>
-<body>
-    <form action="/submit_form" method="POST">
-        <div>
-            <label for="email">Email Address:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div>
-            <label for="confirm_password">Confirm Password:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-        </div>
-        <div>
-            <button type="submit">Submit</button>
-        </div>
-    </form>
-</body>
-</html>
+<div class="row">
+    <div class="column">
+      <br>
+    </div>
+    <div class="column">
+      <img src="./assets/Images/logo.png" alt="TaskVantage logo" class="logo-img">
+      <div id="google-signin-button" class="google-signin-button">
+        <img src="./assets/Images/google-icon.png" alt="Google logo" class="google-icon">
+        Continue with Google
+      </div>
+      <div id="facebook-signin-button" class="facebook-signin-button">
+        <img src="./assets/Images/facebook-icon.png" alt="Facebook logo" class="facebook-icon">
+        Continue with Facebook
+      </div>
+      <div id="appleid-signin" class="appleid-signin"></div>
+      <h1 class="register-heading"><b>Register</b></h1>
+      <div fxLayout="column" fxLayoutAlign="start stretch">
+        <mat-form-field fxFlex>
+          <mat-label>First Name</mat-label>
+          <input matInput placeholder="First Name">
+        </mat-form-field>
+        <mat-form-field fxFlex>
+          <mat-label>Last Name</mat-label>
+          <input matInput placeholder="Last Name">
+        </mat-form-field>
+        <mat-form-field fxFlex>
+          <mat-label>Email</mat-label>
+          <input matInput placeholder="Email">
+        </mat-form-field>
+        <mat-form-field fxFlex>
+          <mat-label>Password</mat-label>
+          <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'">
+          <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'">
+            <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+      <button mat-raised-button class="register-button">Register</button>
+      <br>
+      <a [routerLink]="['/login']" class="back-to-login-link">Back to Login</a>
+    </div>
+    <div class="column">
+      <img src="./assets/Images/Image_clipboard.png" alt="clipboard image" class="clipboard-img">
+      <a href="http://www.freepik.com" class="designed-by">Designed by rawpixel.com / Freepik</a>
+    </div>
+    <div class="column"></div>
+  </div>

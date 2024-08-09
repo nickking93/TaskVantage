@@ -14,7 +14,8 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: 'data-deletion', component: DataDeletionComponent },
-  { path: 'auth/callback', component: AuthCallbackComponent },
+  { path: 'auth-callback', component: AuthCallbackComponent },
+  { path: 'register', component: RegisterComponent },
   { path: '**', redirectTo: '/login' } // Wildcard route for a 404 page
 ];
 
