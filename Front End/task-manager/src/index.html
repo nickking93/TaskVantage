@@ -11,7 +11,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
-  <script async defer src="https://apis.google.com/js/platform.js"></script>
+  <!-- Load the new Google Identity Services script -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <meta name="google-signin-client_id" content="455717879419-er79jss8v4n2msdq2ihtnr2h3b81jqo5.apps.googleusercontent.com">
   <div id="fb-root"></div>
   <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=863689325633198" nonce="uwot4eS7"></script>
@@ -23,7 +24,7 @@
       AppleID.auth.init({
         clientId: 'com.taskvantage.bundle.backend',
         scope: 'name email',
-        redirectURI: 'https://9057-104-0-14-39.ngrok-free.app/auth/callback',
+        redirectURI: 'https://9057-104-0-14-39.ngrok-free.app/auth-callback',
         state: '[STATE]',
         usePopup: true
       });

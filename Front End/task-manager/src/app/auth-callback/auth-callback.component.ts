@@ -3,32 +3,44 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth-callback',
-  standalone: true,
-  templateUrl: './auth-callback.component.html',
-  styleUrls: ['./auth-callback.component.css']
+  templateUrl: './auth-callback.component.html'
 })
 export class AuthCallbackComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute, private router: Router) { }
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit(): void {
-    // Example logic to handle Google OAuth response
+    // Handle the query params for other OAuth logins (e.g., Google, Facebook)
     this.route.queryParams.subscribe(params => {
+      console.log('Query Params:', params); // Log all query parameters
       const googleAuthCode = params['code'];
+      const facebookAuthCode = params['code'];
       if (googleAuthCode) {
-        // Handle Google OAuth code, typically by sending it to your backend
         console.log('Google Auth Code:', googleAuthCode);
-        // Redirect to home or another page after processing
-        this.router.navigate(['/privacy-policy']);
       }
-
-      const appleAuthCode = params['id_token'];
-      if (appleAuthCode) {
-        // Handle Apple Sign-In token, typically by sending it to your backend
-        console.log('Apple ID Token:', appleAuthCode);
-        // Redirect to home or another page after processing
-        this.router.navigate(['/privacy-policy']);
+      if (facebookAuthCode) {
+        console.log('Facebook Auth Code:', facebookAuthCode);
       }
     });
+
+    // Handle the fragment if using response_mode=fragment for Apple
+    this.route.fragment.subscribe(fragment => {
+      console.log('Fragment:', fragment); // Log the entire fragment
+
+      if (fragment) {
+        const params = new URLSearchParams(fragment);
+        params.forEach((value, key) => {
+          console.log(`${key}: ${value}`); // Log each key-value pair
+        });
+
+        const appleAuthCode = params.get('code');  // Get the Apple authorization code
+        if (appleAuthCode) {
+          console.log('Apple Auth Code:', appleAuthCode);
+        }
+      }
+    });
+
+    // Redirect to a different page if needed after handling the auth code
+    this.router.navigate(['/some-other-route']);
   }
 }

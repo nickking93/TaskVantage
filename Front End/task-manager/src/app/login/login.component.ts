@@ -11,17 +11,6 @@ declare const gapi: any;
 })
 export class LoginComponent implements OnInit {
 
-  // Override Google Sign-In button click behavior
-  overrideGoogleSignInButton() {
-    const googleSignInButton = document.getElementById('google-signin-button');
-    if (googleSignInButton) {
-      googleSignInButton.addEventListener('click', (event) => {
-        event.preventDefault(); // Prevent the default Google Sign-In behavior
-        this.loginWithGoogle();  // Call the custom Google Sign-In function
-      });
-    }
-  }
-
   hide = true;
   signin: FormGroup;
 
@@ -35,6 +24,8 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.overrideGoogleSignInButton();
+    this.overrideFacebookSignInButton();
+    this.overrideAppleSignInButton();
 
     // Dynamically load the Google API script and initialize Google Sign-In
     this.loadGoogleApi();
@@ -80,8 +71,72 @@ export class LoginComponent implements OnInit {
     console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
   }
 
-    // Method to trigger Google OAuth login using a redirect
-    loginWithGoogle() {
-      window.location.href = 'https://accounts.google.com/o/oauth2/auth?client_id=455717879419-er79jss8v4n2msdq2ihtnr2h3b81jqo5.apps.googleusercontent.com&redirect_uri=https://9057-104-0-14-39.ngrok-free.app/auth/callback&response_type=code&scope=profile email';
+  // Override Google Sign-In button click behavior
+  overrideGoogleSignInButton() {
+    const googleSignInButton = document.getElementById('google-signin-button');
+    if (googleSignInButton) {
+      googleSignInButton.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the default Google Sign-In behavior
+        this.loginWithGoogle();  // Call the custom Google Sign-In function
+      });
     }
+  }
+
+  // Override Facebook Sign-In button click behavior
+  overrideFacebookSignInButton() {
+    const facebookSignInButton = document.getElementById('facebook-signin-button');
+    if (facebookSignInButton) {
+      facebookSignInButton.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the default Facebook Sign-In behavior
+        this.facebookLogin();  // Call the custom Facebook Sign-In function
+      });
+    }
+  }
+
+  // Override Apple Sign-In button click behavior
+  overrideAppleSignInButton() {
+    const appleSignInButton = document.getElementById('appleid-signin');
+    if (appleSignInButton) {
+      appleSignInButton.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the default pop-up or post behavior
+        this.redirectToApple();  // Call the custom redirect function
+      });
+    }
+  }
+  
+  // Redirect-based Apple Sign-In function with fragment response mode
+  redirectToApple() {
+    const clientId = 'com.taskvantage.bundle.backend'; // Your actual client ID
+    const redirectURI = 'https://9057-104-0-14-39.ngrok-free.app/auth-callback';
+    const state = '[STATE]'; // Optional: Replace with your state if needed
+    const scope = 'name email'; // Adjust the scope as necessary
+  
+    // Construct the URL for redirect-based sign-in with fragment response mode
+    const appleAuthURL = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectURI)}&response_type=code&scope=${scope}&response_mode=fragment`;
+  
+    console.log('Redirecting to:', appleAuthURL); // Log the URL for debugging
+  
+    // Redirect to Apple's authentication page
+    window.location.href = appleAuthURL;
+  }
+
+  // Method to trigger Google OAuth login using a redirect
+  loginWithGoogle() {
+    window.location.href = 'https://accounts.google.com/o/oauth2/auth?client_id=455717879419-er79jss8v4n2msdq2ihtnr2h3b81jqo5.apps.googleusercontent.com&redirect_uri=https://9057-104-0-14-39.ngrok-free.app/auth/callback&response_type=code&scope=profile email';
+  }
+
+  // Method to trigger Facebook OAuth login using a redirect
+  facebookLogin() {
+    window.location.href = 'https://www.facebook.com/v10.0/dialog/oauth?client_id=863689325633198&redirect_uri=https://9057-104-0-14-39.ngrok-free.app/auth/callback&response_type=code&scope=email,public_profile';
+  }
+
+  // Handle form submission
+  onSubmit() {
+    if (this.signin.valid) {
+      const email = this.signin.get('email')?.value;
+      const password = this.signin.get('password')?.value;
+      console.log('Email:', email);
+      console.log('Password:', password);
+    }
+  }
 }
