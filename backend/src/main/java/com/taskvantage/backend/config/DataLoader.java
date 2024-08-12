@@ -14,12 +14,12 @@ public class DataLoader {
     public CommandLineRunner loadData(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             // Check if the test user already exists
-            if (userRepository.findByUsername("testuser") == null) {
+            if (userRepository.findByUsername("pat@example.com") == null) {
                 User user = new User();
                 user.setUsername("pat@example.com");
                 user.setPassword(passwordEncoder.encode("password"));
                 userRepository.save(user);
-                System.out.println("Test user created: username=testuser, password=password");
+                System.out.println("Test user created: username=pat@example.com, password=password");
             } else {
                 System.out.println("Test user already exists.");
             }
