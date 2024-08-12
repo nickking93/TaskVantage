@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { User } from '../models/user.model';
 
 @Injectable({
@@ -9,6 +9,7 @@ import { User } from '../models/user.model';
 })
 export class AuthService {
   private loginUrl = 'http://localhost:8080/api/login';  // Backend endpoint for manual login
+  private registerUrl = 'http://localhost:8080/api/register';  // Backend endpoint for registration
   private socialLoginUrl = 'http://localhost:8080/api/social-login';  // Backend endpoint for social login
   private userDetails: any = null;
 
@@ -28,11 +29,26 @@ export class AuthService {
         }
         return response;
       }),
-      catchError(error => {
-        console.error('Login error', error);
-        return of(null);
-      })
+      catchError(this.handleError)
     );
+  }
+
+  // Registration method
+  register(credentials: { username: string; password: string }): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(this.registerUrl, credentials, { headers }).pipe(
+      map(response => {
+        console.log('Registration successful', response);
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // Handle error response
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    console.error('Registration error:', error.message);
+    return throwError(() => new Error('Registration error: ' + error.message));
   }
 
   // Social login method
@@ -49,10 +65,7 @@ export class AuthService {
         }
         return response;
       }),
-      catchError(error => {
-        console.error('Social login error', error);
-        return of(null);
-      })
+      catchError(this.handleError)
     );
   }
 
@@ -66,7 +79,7 @@ export class AuthService {
     if (!this.userDetails) {
       this.userDetails = JSON.parse(localStorage.getItem('user') || '{}');
     }
-    return of(this.userDetails as User);
+    return new Observable((observer) => observer.next(this.userDetails as User));
   }
 
   // Set user details manually (useful after social login)
@@ -80,7 +93,6 @@ export class AuthService {
     this.userDetails = null;
     localStorage.removeItem('user');
     localStorage.removeItem('authToken');  // Optionally remove the token
-    // You can also call a backend logout endpoint if necessary
-    return of(true);
+    return new Observable((observer) => observer.next(true));
   }
 }
