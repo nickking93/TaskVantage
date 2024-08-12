@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { User } from '../models/user.model';
@@ -16,11 +16,16 @@ export class AuthService {
 
   // Manual login method
   login(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post(this.loginUrl, credentials).pipe(
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(this.loginUrl, credentials, { headers }).pipe(
       map(response => {
         this.userDetails = response;
         // Store user details in local storage
         localStorage.setItem('user', JSON.stringify(this.userDetails));
+        // Optionally, store a token if returned by the backend
+        if (response && (response as any).token) {
+          localStorage.setItem('authToken', (response as any).token);
+        }
         return response;
       }),
       catchError(error => {
@@ -32,11 +37,16 @@ export class AuthService {
 
   // Social login method
   verifySocialLogin(authCode: string, provider: string): Observable<any> {
-    return this.http.post(this.socialLoginUrl, { authCode, provider }).pipe(
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(this.socialLoginUrl, { authCode, provider }, { headers }).pipe(
       map(response => {
         this.userDetails = response;
         // Store user details in local storage
         localStorage.setItem('user', JSON.stringify(this.userDetails));
+        // Optionally, store a token if returned by the backend
+        if (response && (response as any).token) {
+          localStorage.setItem('authToken', (response as any).token);
+        }
         return response;
       }),
       catchError(error => {
@@ -69,6 +79,7 @@ export class AuthService {
   logout(): Observable<any> {
     this.userDetails = null;
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken');  // Optionally remove the token
     // You can also call a backend logout endpoint if necessary
     return of(true);
   }
