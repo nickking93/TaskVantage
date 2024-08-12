@@ -7,23 +7,24 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
-import { TaskListComponent } from './task-list/task-list.component';
-import { TaskDetailsComponent } from './task-details/task-details.component';
-import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { HttpClientModule } from '@angular/common/http';
-
-
+import { MatDialogModule } from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+
+// Import the SuccessDialogComponent
+import { SuccessDialogComponent } from './success-dialog/success-dialog.component';
+
+// Import the standalone PrivacyPolicyComponent
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RegisterComponent,
-    TaskListComponent,
-    TaskDetailsComponent,
+    SuccessDialogComponent  // Declare the SuccessDialogComponent here
   ],
   imports: [
     BrowserModule,
@@ -33,8 +34,9 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatIconModule,
     RouterModule,
-    PrivacyPolicyComponent, // Import the standalone component here
-    HttpClientModule
+    HttpClientModule,
+    MatDialogModule,  // Import MatDialogModule for dialogs
+    PrivacyPolicyComponent  // Import the standalone component here
   ],
   bootstrap: [AppComponent]
 })
