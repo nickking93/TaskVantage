@@ -10,8 +10,6 @@ import { RegisterComponent } from './register/register.component';
 import { TaskListComponent } from './task-list/task-list.component';
 import { TaskDetailsComponent } from './task-details/task-details.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
-import { TaskComponent } from './task/task.component'; // Import the TaskComponent
-import { TaskService } from './task.service'; // Import the TaskService
 import { HttpClientModule } from '@angular/common/http';
 
 
@@ -26,7 +24,6 @@ import { MatIconModule } from '@angular/material/icon';
     RegisterComponent,
     TaskListComponent,
     TaskDetailsComponent,
-    TaskComponent,
   ],
   imports: [
     BrowserModule,
@@ -39,7 +36,6 @@ import { MatIconModule } from '@angular/material/icon';
     PrivacyPolicyComponent, // Import the standalone component here
     HttpClientModule
   ],
-  providers: [TaskService], // Provide the TaskService
   bootstrap: [AppComponent]
 })
 export class AppModule { }
