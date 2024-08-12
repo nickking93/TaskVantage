@@ -1,5 +1,7 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 // Declare the gapi object to use Google API functions
 declare const gapi: any;
@@ -14,7 +16,12 @@ export class LoginComponent implements OnInit {
   hide = true;
   signin: FormGroup;
 
-  constructor(private fb: FormBuilder, private renderer: Renderer2) {
+  constructor(
+    private fb: FormBuilder,
+    private renderer: Renderer2,
+    private authService: AuthService,  // Inject AuthService
+    private router: Router  // Inject Router
+  ) {
     // Initialize the FormGroup using FormBuilder
     this.signin = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -135,8 +142,18 @@ export class LoginComponent implements OnInit {
     if (this.signin.valid) {
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
-      console.log('Email:', email);
-      console.log('Password:', password);
+
+      // Call AuthService to handle login
+      this.authService.login({ username: email, password }).subscribe(
+        response => {
+          // Handle successful login, redirect to home page
+          this.router.navigate(['/home']);
+        },
+        error => {
+          // Handle login error
+          console.error('Login failed', error);
+        }
+      );
     }
   }
 }

@@ -16,6 +16,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = true) // Optional field
+    private String token = "";
+
     // Getter for username
     public String getUsername() {
         return username;
@@ -34,5 +37,13 @@ public class User {
     // Setter for password
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

@@ -16,7 +16,7 @@ public class DataLoader {
             // Check if the test user already exists
             if (userRepository.findByUsername("testuser") == null) {
                 User user = new User();
-                user.setUsername("testuser");
+                user.setUsername("pat@example.com");
                 user.setPassword(passwordEncoder.encode("password"));
                 userRepository.save(user);
                 System.out.println("Test user created: username=testuser, password=password");
