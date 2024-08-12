@@ -7,6 +7,8 @@ import { TaskDetailsComponent } from './task-details/task-details.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { DataDeletionComponent } from './data-deletion/data-deletion.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
+import { HomeComponent } from './home/home.component';
+import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -16,6 +18,7 @@ const routes: Routes = [
   { path: 'data-deletion', component: DataDeletionComponent },
   { path: 'auth-callback', component: AuthCallbackComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '/login' } // Wildcard route for a 404 page
 ];
 
