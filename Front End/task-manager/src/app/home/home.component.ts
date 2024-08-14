@@ -1,41 +1,93 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { User } from '../models/user.model';
+import { TaskService } from '../services/task.service';
+import { Task } from '../models/task.model';
+import { FormsModule } from '@angular/forms'; 
+import { RouterModule } from '@angular/router'; 
+import { CommonModule } from '@angular/common'; 
+
+// Import Angular Material Modules
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
+  standalone: true,
+  imports: [
+    FormsModule, 
+    RouterModule, 
+    CommonModule,
+    MatFormFieldModule, // Add MatFormFieldModule
+    MatInputModule, // Add MatInputModule
+    MatDatepickerModule, // Add MatDatepickerModule
+    MatNativeDateModule, // Add MatNativeDateModule
+    MatSelectModule, // Add MatSelectModule
+    MatCheckboxModule, // Add MatCheckboxModule
+    MatButtonModule // Add MatButtonModule
+  ]
 })
 export class HomeComponent implements OnInit {
   username: string = '';
   userId: string = '';
+  isAddTaskModalOpen: boolean = false;
+  newTask: Task = {
+    title: '',
+    description: '',
+    dueDate: '',
+    priority: 'Medium',
+    recurring: false,
+  };
 
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
+    private taskService: TaskService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    // Retrieve userId from the route parameters
     this.route.paramMap.subscribe(params => {
       this.userId = params.get('userId') || '';
-
-      // Fetch user details and ensure the userId matches
       this.authService.getUserDetails().subscribe(user => {
-        if (user && user.id && user.id.toString() === this.userId) {  // Ensure user and user.id are defined
+        if (user.id.toString() === this.userId) {
           this.username = user.username;
         } else {
-          // If userId doesn't match, log out the user and redirect to login
           this.logout();
         }
       }, err => {
-        // Handle errors or redirect to login if not authenticated
+        console.error('Error fetching user details:', err);
         this.router.navigate(['/login']);
       });
     });
+  }
+
+  openAddTaskModal(event: Event): void {
+    event.preventDefault();
+    this.isAddTaskModalOpen = true;
+  }
+
+  closeAddTaskModal(): void {
+    this.isAddTaskModalOpen = false;
+  }
+
+  createTask(): void {
+    this.newTask.userId = this.userId;
+    this.taskService.createTask(this.newTask).subscribe(
+      () => {
+        this.closeAddTaskModal();
+      },
+      error => {
+        console.error('Failed to create task:', error);
+      }
+    );
   }
 
   logout(): void {
