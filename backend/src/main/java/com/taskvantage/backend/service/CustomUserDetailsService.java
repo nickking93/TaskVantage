@@ -32,6 +32,15 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    // Method to find a user by their username and return the User entity
+    public User findUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return user;
+    }
+
     // Method to register a new user
     public String registerUser(AuthRequest authRequest) {
         // Check if the username (email) is already taken

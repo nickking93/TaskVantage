@@ -17,7 +17,17 @@ public class User {
     private String password;
 
     @Column(nullable = true) // Optional field
-    private String token = "";
+    private String token;
+
+    // Getter for id
+    public Long getId() {
+        return id;
+    }
+
+    // Setter for id
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     // Getter for username
     public String getUsername() {
@@ -39,10 +49,12 @@ public class User {
         this.password = password;
     }
 
+    // Getter for token
     public String getToken() {
         return token;
     }
 
+    // Setter for token
     public void setToken(String token) {
         this.token = token;
     }
