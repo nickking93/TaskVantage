@@ -23,12 +23,34 @@
 }
 
 .sidebar .menu-item {
-  padding: 10px 0;
+  padding: 15px 20px;
   cursor: pointer;
+  border-radius: 8px;
+  color: #888;
+  font-weight: 500;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar .menu-item:hover {
+  background-color: #f4f6fc;
+}
+
+.sidebar .menu-item a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .sidebar .menu-item.active {
-  color: #4a90e2;
+  background-color: #2365B2;
+  color: #fff; /* Ensure text color is white for the active item */
+  box-shadow: 0px 4px 15px rgba(35, 101, 178, 0.3);
+}
+
+.sidebar .menu-item.active a {
+  color: #fff !important; /* Force the text color to white */
 }
 
 .content-area {
@@ -108,19 +130,19 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000; /* Ensure it appears above other content */
+  z-index: 1000;
 }
 
 .modal-content {
   background-color: #fff;
-  padding: 30px; /* Increase padding for better spacing */
+  padding: 30px;
   border-radius: 8px;
-  width: 100%; /* Ensure the modal content takes the full available width */
-  max-width: 600px; /* Set maximum width for modal */
+  width: 100%;
+  max-width: 600px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
 }
@@ -134,22 +156,67 @@
 }
 
 .form-field {
-  width: 100%; /* Ensure input fields take up the full width */
+  width: 100%;
 }
 
 .mat-checkbox {
-  margin-top: 20px; /* Space between the checkbox and preceding input */
+  margin-top: 20px;
 }
 
 .button-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Align button and checkbox to the left */
+  justify-content: flex-start;
   margin-top: 20px;
 }
 
 button[type="submit"] {
-  margin-left: 10px; /* Space between checkbox and button */
-  width: auto; /* Set the button width to auto */
+  margin-left: 10px;
+  width: auto;
 }
 
+/* Media Queries for Mobile Devices */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    box-shadow: none;
+    margin-bottom: 20px;
+  }
+
+  .content-area {
+    padding: 20px;
+  }
+
+  .charts {
+    flex-direction: column;
+  }
+
+  .chart {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .info-section {
+    flex-direction: column;
+  }
+
+  .info-item {
+    margin-bottom: 20px;
+  }
+
+  .divider-vertical {
+    display: none;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .sidebar .menu-item {
+    padding: 10px;
+  }
+}
