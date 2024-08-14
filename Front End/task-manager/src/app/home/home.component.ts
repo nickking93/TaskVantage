@@ -25,13 +25,13 @@ import { MatButtonModule } from '@angular/material/button';
     FormsModule, 
     RouterModule, 
     CommonModule,
-    MatFormFieldModule, // Add MatFormFieldModule
-    MatInputModule, // Add MatInputModule
-    MatDatepickerModule, // Add MatDatepickerModule
-    MatNativeDateModule, // Add MatNativeDateModule
-    MatSelectModule, // Add MatSelectModule
-    MatCheckboxModule, // Add MatCheckboxModule
-    MatButtonModule // Add MatButtonModule
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatButtonModule
   ]
 })
 export class HomeComponent implements OnInit {
@@ -94,5 +94,10 @@ export class HomeComponent implements OnInit {
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
+  }
+
+  // Method to determine the active state
+  isActive(route: string): boolean {
+    return this.router.url === route;
   }
 }
