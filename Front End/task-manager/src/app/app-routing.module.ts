@@ -2,24 +2,20 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
-import { TaskListComponent } from './task-list/task-list.component';
-import { TaskDetailsComponent } from './task-details/task-details.component';
-import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
-import { DataDeletionComponent } from './data-deletion/data-deletion.component';
-import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { HomeComponent } from './home/home.component';
 import { AuthGuard } from './guards/auth.guard';
+import { TasksComponent } from './tasks/tasks.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'privacy-policy', component: PrivacyPolicyComponent },
-  { path: 'data-deletion', component: DataDeletionComponent },
-  { path: 'auth-callback', component: AuthCallbackComponent },
-  { path: 'register', component: RegisterComponent },
   { path: 'home/:userId', component: HomeComponent, canActivate: [AuthGuard] },
-  { path: '**', redirectTo: '/login' } // Wildcard route for a 404 page
+  { path: 'privacy-policy', loadChildren: () => import('./privacy-policy/privacy-policy.module').then(m => m.PrivacyPolicyModule) },
+  { path: 'help-page', loadChildren: () => import('./help-page/help-page.module').then(m => m.HelpPageModule) },
+  { path: 'settings/:userId', loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule) },
+  { path: 'tasks/:userId', component: TasksComponent },
+  { path: '**', redirectTo: '/login' }
 ];
 
 @NgModule({
