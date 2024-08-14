@@ -146,8 +146,9 @@ export class LoginComponent implements OnInit {
       // Call AuthService to handle login
       this.authService.login({ username: email, password }).subscribe(
         response => {
-          // Handle successful login, redirect to home page
-          this.router.navigate(['/home']);
+          // Extract userId from response and navigate to user's home page
+          const userId = response.id;
+          this.router.navigate([`/home/${userId}`]);
         },
         error => {
           // Handle login error

@@ -18,7 +18,7 @@ const routes: Routes = [
   { path: 'data-deletion', component: DataDeletionComponent },
   { path: 'auth-callback', component: AuthCallbackComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'home/:userId', component: HomeComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '/login' } // Wildcard route for a 404 page
 ];
 
