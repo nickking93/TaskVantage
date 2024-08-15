@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';  // Import BrowserAnimationsModule
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatFormFieldModule } from '@angular/material/form-field';  // Import MatFormFieldModule
+import { MatInputModule } from '@angular/material/input';            // Import MatInputModule
+import { MatIconModule } from '@angular/material/icon';              // Import MatIconModule
+import { MatButtonModule } from '@angular/material/button';          // Import MatButtonModule
 import { RegisterComponent } from './register.component';
 
 describe('RegisterComponent', () => {
@@ -13,9 +17,13 @@ describe('RegisterComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        BrowserAnimationsModule  // Add BrowserAnimationsModule here
+        BrowserAnimationsModule,
+        MatFormFieldModule,  // Add Angular Material modules here
+        MatInputModule,
+        MatIconModule,
+        MatButtonModule
       ],
-      declarations: [RegisterComponent]  // Declare RegisterComponent
+      declarations: [RegisterComponent]
     })
     .compileComponents();
 
