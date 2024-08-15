@@ -12,6 +12,8 @@ public interface TaskService {
 
     List<Task> getAllTasks();
 
+    List<Task> getTasksByUserId(Long userId); // New method to get tasks by userId
+
     Task updateTask(Task task);
 
     void deleteTask(Long id);

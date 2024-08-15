@@ -3,12 +3,14 @@ package com.taskvantage.backend.controller;
 import com.taskvantage.backend.model.AuthRequest;
 import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.service.CustomUserDetailsService;
+import com.taskvantage.backend.Security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,9 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody AuthRequest authRequest) {
         try {
@@ -35,13 +40,21 @@ public class AuthController {
             );
 
             // Retrieve user details from the database
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(authRequest.getUsername());
+
+            // Generate JWT token
+            String token = jwtUtil.generateToken(userDetails);
+            System.out.println("Generated Token: " + token);  // Log the generated token
+
+            // Retrieve the actual User entity using the username
             User user = customUserDetailsService.findUserByUsername(authRequest.getUsername());
 
             // Create a response map to return as JSON
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login successful");
             response.put("username", user.getUsername());
-            response.put("userId", user.getId()); // Include the userId in the response
+            response.put("userId", user.getId()); // Retrieve the userId from the User entity
+            response.put("token", token); // Include the JWT token in the response
 
             return ResponseEntity.ok(response);
         } catch (AuthenticationException e) {
@@ -51,6 +64,7 @@ public class AuthController {
             return ResponseEntity.status(401).body(errorResponse);
         }
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {

@@ -25,7 +25,7 @@ public class Task {
     private String priority;
 
     @Column(nullable = false)
-    private String status;
+    private String status = "Pending";  // Default value for status
 
     @Column(name = "due_date")
     private LocalDateTime dueDate;
@@ -61,6 +61,13 @@ public class Task {
 
     @Column(name = "is_recurring", nullable = false)
     private boolean recurring;
+
+    // Constructor
+    public Task() {
+        this.status = "Pending";  // Set default status if not provided
+        this.creationDate = LocalDateTime.now();  // Set creation date
+    }
+
 
     // Getters and Setters
     public Long getId() {
