@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -40,6 +43,38 @@ public class TaskController {
     public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId) {
         List<Task> tasks = taskService.getTasksByUserId(userId);
         return ResponseEntity.ok(tasks);
+    }
+
+    // Get task summary for a specific user
+    @GetMapping("/summary/{userId}")
+    public ResponseEntity<Map<String, Object>> getTaskSummary(@PathVariable Long userId) {
+        List<Task> tasks = taskService.getTasksByUserId(userId);
+
+        long totalTasks = tasks.size();
+        long totalSubtasks = tasks.stream().mapToLong(task -> task.getSubtasks().size()).sum();
+        long pastDeadlineTasks = tasks.stream()
+                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDateTime.now()))
+                .count();
+        long completedTasksThisMonth = tasks.stream()
+                .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
+                        task.getDueDate() != null &&
+                        task.getDueDate().getMonth() == LocalDateTime.now().getMonth() &&
+                        task.getDueDate().getYear() == LocalDateTime.now().getYear())
+                .count();
+        long totalTasksThisMonth = tasks.stream()
+                .filter(task -> task.getDueDate() != null &&
+                        task.getDueDate().getMonth() == LocalDateTime.now().getMonth() &&
+                        task.getDueDate().getYear() == LocalDateTime.now().getYear())
+                .count();
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("totalTasks", totalTasks);
+        summary.put("totalSubtasks", totalSubtasks);
+        summary.put("pastDeadlineTasks", pastDeadlineTasks);
+        summary.put("completedTasksThisMonth", completedTasksThisMonth);
+        summary.put("totalTasksThisMonth", totalTasksThisMonth);
+
+        return ResponseEntity.ok(summary);
     }
 
     // Update an existing task

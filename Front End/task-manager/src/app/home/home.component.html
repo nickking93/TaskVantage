@@ -38,22 +38,22 @@
       <div class="info-section">
         <div class="info-item">
           <span class="info-label">Tasks</span>
-          <span class="info-value">3</span>
+          <span class="info-value">{{ totalTasks }}</span>
         </div>
         <div class="divider-vertical"></div>
         <div class="info-item">
           <span class="info-label">Subtasks</span>
-          <span class="info-value">3456</span>
+          <span class="info-value">{{ totalSubtasks }}</span>
         </div>
         <div class="divider-vertical"></div>
         <div class="info-item">
           <span class="info-label">Past Deadline</span>
-          <span class="info-value">3</span>
+          <span class="info-value">{{ pastDeadlineTasks }}</span>
         </div>
         <div class="divider-vertical"></div>
         <div class="info-item">
           <span class="info-label">Monthly Tasks</span>
-          <span class="info-value">128/500 GB</span>
+          <span class="info-value">{{ completedTasksThisMonth }}/{{ totalTasksThisMonth }}</span>
         </div>
       </div>
   
