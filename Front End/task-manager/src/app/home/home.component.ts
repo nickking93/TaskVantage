@@ -15,6 +15,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';  // Import SuccessDialogComponent
 
 @Component({
   selector: 'app-home',
@@ -31,7 +33,8 @@ import { MatButtonModule } from '@angular/material/button';
     MatNativeDateModule,
     MatSelectModule,
     MatCheckboxModule,
-    MatButtonModule
+    MatButtonModule,
+    MatDialogModule  // Add MatDialogModule to imports
   ]
 })
 export class HomeComponent implements OnInit {
@@ -50,7 +53,8 @@ export class HomeComponent implements OnInit {
     private authService: AuthService,
     private taskService: TaskService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private dialog: MatDialog  // Inject MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -83,11 +87,19 @@ export class HomeComponent implements OnInit {
     this.taskService.createTask(this.newTask).subscribe(
       () => {
         this.closeAddTaskModal();
+        this.openSuccessDialog();  // Open success dialog on successful task creation
       },
       error => {
         console.error('Failed to create task:', error);
       }
     );
+  }
+
+  openSuccessDialog(): void {
+    this.dialog.open(SuccessDialogComponent, {
+      width: '300px',
+      data: { message: 'Task created successfully!' }
+    });
   }
 
   logout(): void {
