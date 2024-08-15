@@ -29,7 +29,20 @@ export class TaskService {
       catchError(this.handleError)
     );
   }
-  
+
+  // Method to fetch task summary for a specific user
+  getTaskSummary(userId: string): Observable<any> {
+    const headers = this.authService.getAuthHeaders();  // Get headers with the JWT token
+    const url = `${this.tasksUrl}/summary/${userId}`;
+    
+    return this.http.get<any>(url, { headers }).pipe(
+      map(response => {
+        console.log('Task summary fetched successfully:', response);
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+  }
 
   // Handle error response
   private handleError(error: HttpErrorResponse): Observable<never> {

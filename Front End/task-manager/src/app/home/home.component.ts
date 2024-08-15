@@ -49,6 +49,13 @@ export class HomeComponent implements OnInit {
     recurring: false,
   };
 
+  // Variables to hold the summary data
+  totalTasks: number = 0;
+  totalSubtasks: number = 0;
+  pastDeadlineTasks: number = 0;
+  completedTasksThisMonth: number = 0;
+  totalTasksThisMonth: number = 0;
+
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
@@ -63,6 +70,7 @@ export class HomeComponent implements OnInit {
       this.authService.getUserDetails().subscribe(user => {
         if (user.id.toString() === this.userId) {
           this.username = user.username;
+          this.fetchTaskSummary();  // Fetch task summary data
         } else {
           this.logout();
         }
@@ -88,6 +96,7 @@ export class HomeComponent implements OnInit {
       () => {
         this.closeAddTaskModal();
         this.openSuccessDialog();  // Open success dialog on successful task creation
+        this.fetchTaskSummary();  // Refresh task summary after task creation
       },
       error => {
         console.error('Failed to create task:', error);
@@ -99,6 +108,18 @@ export class HomeComponent implements OnInit {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
       data: { message: 'Task created successfully!' }
+    });
+  }
+
+  fetchTaskSummary(): void {
+    this.taskService.getTaskSummary(this.userId).subscribe(summary => {
+      this.totalTasks = summary.totalTasks;
+      this.totalSubtasks = summary.totalSubtasks;
+      this.pastDeadlineTasks = summary.pastDeadlineTasks;
+      this.completedTasksThisMonth = summary.completedTasksThisMonth;
+      this.totalTasksThisMonth = summary.totalTasksThisMonth;
+    }, error => {
+      console.error('Failed to fetch task summary:', error);
     });
   }
 
