@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';  // Import RouterTestingModule
+import { RouterTestingModule } from '@angular/router/testing';
 import { PrivacyPolicyComponent } from './privacy-policy.component';
 
 describe('PrivacyPolicyComponent', () => {
@@ -8,8 +8,7 @@ describe('PrivacyPolicyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],         // Import RouterTestingModule
-      declarations: [PrivacyPolicyComponent]  // Declare the component here
+      imports: [RouterTestingModule, PrivacyPolicyComponent]  // Import the standalone component
     })
     .compileComponents();
 

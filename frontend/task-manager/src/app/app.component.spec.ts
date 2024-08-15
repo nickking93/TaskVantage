@@ -8,7 +8,7 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         RouterTestingModule,
-        HttpClientTestingModule,  // Add HttpClientTestingModule if your component uses HttpClient
+        HttpClientTestingModule,  
       ],
       declarations: [
         AppComponent
@@ -22,16 +22,11 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'task-manager'`, () => {
+  it(`should have as title 'TaskVantage'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('task-manager');
+    expect(app.title).toEqual('TaskVantage');
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('task-manager app is running!');
-  });
+  // Removed the 'should render title' test since there is no title rendered in the HTML
 });

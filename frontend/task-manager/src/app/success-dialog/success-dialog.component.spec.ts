@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SuccessDialogComponent } from './success-dialog.component';
 
 describe('SuccessDialogComponent', () => {
@@ -7,7 +8,11 @@ describe('SuccessDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SuccessDialogComponent]  // Declare the component here
+      declarations: [SuccessDialogComponent],  // Declare the component
+      providers: [
+        { provide: MatDialogRef, useValue: {} },  // Provide MatDialogRef
+        { provide: MAT_DIALOG_DATA, useValue: {} }  // Provide MAT_DIALOG_DATA
+      ]
     })
     .compileComponents();
 

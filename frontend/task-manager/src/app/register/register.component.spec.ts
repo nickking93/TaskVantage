@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';  // Import HttpClientTestingModule
-import { RouterTestingModule } from '@angular/router/testing';           // Import RouterTestingModule if routing is involved
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ReactiveFormsModule } from '@angular/forms';  // Import ReactiveFormsModule
+import { MatFormFieldModule } from '@angular/material/form-field';  // Import Angular Material modules
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { RegisterComponent } from './register.component';
 
 describe('RegisterComponent', () => {
@@ -9,8 +13,15 @@ describe('RegisterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],  // Add necessary modules
-      declarations: [RegisterComponent]                        // Declare RegisterComponent
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        ReactiveFormsModule,  // Include ReactiveFormsModule
+        MatFormFieldModule,   // Include necessary Angular Material modules
+        MatInputModule,
+        MatIconModule
+      ],
+      declarations: [RegisterComponent]
     })
     .compileComponents();
 
