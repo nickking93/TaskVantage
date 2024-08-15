@@ -40,7 +40,13 @@ export class AuthCallbackComponent implements OnInit {
       next: (response) => {
         // Assuming response contains user information and authentication token
         this.authService.setUserDetails(response);
-        this.router.navigate(['/home']);  // Navigate to home on successful login
+        const userId = response.userId;  // Assuming the response contains a userId
+        if (userId) {
+          this.router.navigate(['/home', userId]);  // Navigate to personalized home page
+        } else {
+          console.error('User ID not found in the response.');
+          this.router.navigate(['/home']);  // Navigate to generic home on success
+        }
       },
       error: (error) => {
         console.error('Authentication failed:', error);

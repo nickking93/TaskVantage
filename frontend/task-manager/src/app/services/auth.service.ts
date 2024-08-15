@@ -8,33 +8,45 @@ import { User } from '../models/user.model';
   providedIn: 'root'
 })
 export class AuthService {
+
+  private socialLoginUrl = 'http://localhost:8080/api/social-login';  // Backend endpoint for social login verification
   private loginUrl = 'http://localhost:8080/api/login';  // Backend endpoint for manual login
   private registerUrl = 'http://localhost:8080/api/register';  // Backend endpoint for registration
   private userDetails: User | null = null;
 
   constructor(private http: HttpClient) {}
 
+  // Social login verification method
+  verifySocialLogin(authCode: string, provider: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const body = { authCode, provider };
+    return this.http.post<any>(this.socialLoginUrl, body, { headers }).pipe(
+      map(response => {
+        console.log('Social login successful', response);
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+  }
+
   // Manual login method
   login(credentials: { username: string; password: string }): Observable<User> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
       map((response: any) => {
-        // Ensure the response contains userId, username, and token
         const userId = response.userId;
         const username = response.username;
         const token = response.token;
 
-        // Construct the user object
         this.userDetails = {
           id: userId,
           username: username,
-          password: '', // Password isn't needed here, set it as empty
-          token: token // Include the JWT token
+          password: '',
+          token: token
         };
 
-        // Store user details and token in local storage
         localStorage.setItem('user', JSON.stringify(this.userDetails));
-        localStorage.setItem('jwtToken', token); // Corrected the key for consistency
+        localStorage.setItem('jwtToken', token);
 
         return this.userDetails;
       }),
@@ -56,7 +68,7 @@ export class AuthService {
 
   // Method to get the JWT token from localStorage
   private getToken(): string | null {
-    return localStorage.getItem('jwtToken');  // Ensure consistency with the login method
+    return localStorage.getItem('jwtToken');
   }
 
   // Include the token in the headers for authenticated requests
@@ -106,7 +118,7 @@ export class AuthService {
   logout(): Observable<any> {
     this.userDetails = null;
     localStorage.removeItem('user');
-    localStorage.removeItem('jwtToken');  // Ensure consistency with the login method
+    localStorage.removeItem('jwtToken');
     return new Observable((observer) => observer.next(true));
   }
 
