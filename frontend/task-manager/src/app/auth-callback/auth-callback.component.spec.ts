@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';  // Import HttpClientTestingModule
+import { RouterTestingModule } from '@angular/router/testing';           // Import RouterTestingModule
 import { AuthCallbackComponent } from './auth-callback.component';
 
 describe('AuthCallbackComponent', () => {
@@ -8,7 +9,8 @@ describe('AuthCallbackComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AuthCallbackComponent]
+      imports: [HttpClientTestingModule, RouterTestingModule],  // Import necessary modules
+      declarations: [AuthCallbackComponent]                     // Declare the component here
     })
     .compileComponents();
 

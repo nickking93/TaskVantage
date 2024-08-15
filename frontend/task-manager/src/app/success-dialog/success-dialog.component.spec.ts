@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { SuccessDialogComponent } from './success-dialog.component';
 
 describe('SuccessDialogComponent', () => {
@@ -8,7 +7,7 @@ describe('SuccessDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SuccessDialogComponent]
+      declarations: [SuccessDialogComponent]  // Declare the component here
     })
     .compileComponents();
 
