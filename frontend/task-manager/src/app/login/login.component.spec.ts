@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ReactiveFormsModule } from '@angular/forms';  // Import ReactiveFormsModule
-import { MatFormFieldModule } from '@angular/material/form-field';  // Import Angular Material modules
+import { ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';  // Import BrowserAnimationsModule
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { LoginComponent } from './login.component';
@@ -16,8 +17,9 @@ describe('LoginComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        ReactiveFormsModule,  // Include ReactiveFormsModule
-        MatFormFieldModule,   // Include necessary Angular Material modules
+        ReactiveFormsModule,
+        BrowserAnimationsModule,  // Include BrowserAnimationsModule
+        MatFormFieldModule,
         MatInputModule,
         MatIconModule
       ],
