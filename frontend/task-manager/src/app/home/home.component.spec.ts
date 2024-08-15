@@ -13,9 +13,9 @@ describe('HomeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
-        RouterTestingModule // Add RouterTestingModule
+        RouterTestingModule,
+        HomeComponent // Import HomeComponent as a standalone component
       ],
-      declarations: [HomeComponent], // Declare the component
       providers: [
         {
           provide: ActivatedRoute,
