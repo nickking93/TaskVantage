@@ -110,19 +110,19 @@ export class LoginComponent implements OnInit {
       });
     }
   }
-  
+
   // Redirect-based Apple Sign-In function with fragment response mode
   redirectToApple() {
     const clientId = 'com.taskvantage.bundle.backend'; // Your actual client ID
     const redirectURI = 'https://9057-104-0-14-39.ngrok-free.app/auth-callback';
     const state = '[STATE]'; // Optional: Replace with your state if needed
     const scope = 'name email'; // Adjust the scope as necessary
-  
+
     // Construct the URL for redirect-based sign-in with fragment response mode
     const appleAuthURL = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectURI)}&response_type=code&scope=${scope}&response_mode=fragment`;
-  
+
     console.log('Redirecting to:', appleAuthURL); // Log the URL for debugging
-  
+
     // Redirect to Apple's authentication page
     window.location.href = appleAuthURL;
   }
@@ -143,9 +143,14 @@ export class LoginComponent implements OnInit {
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
 
+      console.log('Login attempt with email:', email); // Debugging log
+
       // Call AuthService to handle login
       this.authService.login({ username: email, password }).subscribe(
         response => {
+          // Store the JWT token in localStorage
+          localStorage.setItem('token', response.token);
+
           // Extract userId from response and navigate to user's home page
           const userId = response.id;
           this.router.navigate([`/home/${userId}`]);
@@ -153,8 +158,11 @@ export class LoginComponent implements OnInit {
         error => {
           // Handle login error
           console.error('Login failed', error);
+          alert('Login failed. Please check your credentials and try again.');
         }
       );
+    } else {
+      alert('Please fill out the form correctly.');
     }
   }
 }

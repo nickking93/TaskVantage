@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Task } from '../models/task.model';
+import { AuthService } from './auth.service';  // Import AuthService
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +11,16 @@ import { Task } from '../models/task.model';
 export class TaskService {
   private tasksUrl = 'http://localhost:8080/api/tasks';  // URL to the backend API for tasks
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}  // Inject AuthService
 
   // Method to create a new task
   createTask(task: Task): Observable<Task> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = this.authService.getAuthHeaders();  // Get headers with the JWT token
+    const token = headers.get('Authorization');
+  
+    // Log the token for debugging
+    console.log('JWT Token being sent:', token);
+  
     return this.http.post<Task>(this.tasksUrl, task, { headers }).pipe(
       map(response => {
         console.log('Task created successfully:', response);
@@ -23,6 +29,7 @@ export class TaskService {
       catchError(this.handleError)
     );
   }
+  
 
   // Handle error response
   private handleError(error: HttpErrorResponse): Observable<never> {

@@ -10,7 +10,6 @@ import { User } from '../models/user.model';
 export class AuthService {
   private loginUrl = 'http://localhost:8080/api/login';  // Backend endpoint for manual login
   private registerUrl = 'http://localhost:8080/api/register';  // Backend endpoint for registration
-  private socialLoginUrl = 'http://localhost:8080/api/social-login';  // Backend endpoint for social login
   private userDetails: User | null = null;
 
   constructor(private http: HttpClient) {}
@@ -19,38 +18,54 @@ export class AuthService {
   login(credentials: { username: string; password: string }): Observable<User> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
-      map((response: any) => { // Ensure the response type is any to access properties directly
-        // Extract userId and username from the response
+      map((response: any) => {
+        // Ensure the response contains userId, username, and token
         const userId = response.userId;
         const username = response.username;
+        const token = response.token;
 
         // Construct the user object
         this.userDetails = {
           id: userId,
           username: username,
           password: '', // Password isn't needed here, set it as empty
-          token: response.token || '' // Include token if available
+          token: token // Include the JWT token
         };
 
-        // Store user details in local storage
+        // Store user details and token in local storage
         localStorage.setItem('user', JSON.stringify(this.userDetails));
+        localStorage.setItem('jwtToken', token); // Corrected the key for consistency
+
         return this.userDetails;
       }),
       catchError(this.handleError)
     );
   }
 
-
   // Registration method
   register(credentials: { username: string; password: string }): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(this.registerUrl, credentials, { headers }).pipe(
-      map(response => {
+      map((response: any) => {
         console.log('Registration successful', response);
         return response;
       }),
       catchError(this.handleError)
     );
+  }
+
+  // Method to get the JWT token from localStorage
+  private getToken(): string | null {
+    return localStorage.getItem('jwtToken');  // Ensure consistency with the login method
+  }
+
+  // Include the token in the headers for authenticated requests
+  public getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
   }
 
   // Handle error response
@@ -61,7 +76,7 @@ export class AuthService {
 
   // Check if the user is authenticated
   isAuthenticated(): boolean {
-    return localStorage.getItem('user') !== null;
+    return this.getToken() !== null;
   }
 
   // Get user details
@@ -81,7 +96,7 @@ export class AuthService {
     });
   }
 
-  // Set user details manually (useful after social login)
+  // Set user details manually (if needed)
   setUserDetails(user: User): void {
     this.userDetails = user;
     localStorage.setItem('user', JSON.stringify(this.userDetails));
@@ -91,31 +106,14 @@ export class AuthService {
   logout(): Observable<any> {
     this.userDetails = null;
     localStorage.removeItem('user');
+    localStorage.removeItem('jwtToken');  // Ensure consistency with the login method
     return new Observable((observer) => observer.next(true));
   }
 
-  // Updated social login method
-  verifySocialLogin(authCode: string, provider: string): Observable<any> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post(this.socialLoginUrl, { authCode, provider }, { headers }).pipe(
-      map(response => {
-        // Assuming the response contains userId and username
-        const userId = (response as any).userId;
-        const username = (response as any).username;
-
-        // Construct the user object
-        this.userDetails = {
-          id: userId,
-          username: username,
-          password: '', // Password might not be available in this context
-          token: (response as any).token || '' // Include token if available
-        };
-
-        // Store user details in local storage
-        localStorage.setItem('user', JSON.stringify(this.userDetails));
-
-        return response;
-      }),
+  // Method for authenticated requests (example: fetching tasks)
+  getTasks(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get('http://localhost:8080/api/tasks', { headers }).pipe(
       catchError(this.handleError)
     );
   }

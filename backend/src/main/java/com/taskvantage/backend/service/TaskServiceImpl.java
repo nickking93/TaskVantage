@@ -37,6 +37,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public List<Task> getTasksByUserId(Long userId) {
+        return taskRepository.findByUserId(userId);
+    }
+
+    @Override
     public Task updateTask(Task updatedTask) {
         Optional<Task> existingTaskOptional = taskRepository.findById(updatedTask.getId());
 
