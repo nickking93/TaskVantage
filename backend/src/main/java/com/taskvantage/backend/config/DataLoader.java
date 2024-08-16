@@ -47,6 +47,7 @@ public class DataLoader {
                 task.setComments(List.of());  // Add any comments if needed
                 task.setReminders(List.of(LocalDateTime.now().plusDays(1)));  // Add any reminders if needed
                 task.setRecurring(false);  // Set to true if the task is recurring
+                task.setUserId(user.getId());  // Set the userId to the test user's ID
 
                 taskRepository.save(task);
                 System.out.println("Test task created: title=Test Task, status=Pending");
