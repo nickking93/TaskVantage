@@ -3,15 +3,17 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { User } from '../models/user.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private socialLoginUrl = 'http://localhost:8080/api/social-login';  // Backend endpoint for social login verification
-  private loginUrl = 'http://localhost:8080/api/login';  // Backend endpoint for manual login
-  private registerUrl = 'http://localhost:8080/api/register';  // Backend endpoint for registration
+  private apiUrl = environment.apiUrl;  // Use the environment variable for the API URL
+  private socialLoginUrl = `${this.apiUrl}/social-login`;  // Backend endpoint for social login verification
+  private loginUrl = `${this.apiUrl}/login`;  // Backend endpoint for manual login
+  private registerUrl = `${this.apiUrl}/register`;  // Backend endpoint for registration
   private userDetails: User | null = null;
 
   constructor(private http: HttpClient) {}
@@ -125,7 +127,7 @@ export class AuthService {
   // Method for authenticated requests (example: fetching tasks)
   getTasks(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.get('http://localhost:8080/api/tasks', { headers }).pipe(
+    return this.http.get(`${this.apiUrl}/tasks`, { headers }).pipe(
       catchError(this.handleError)
     );
   }

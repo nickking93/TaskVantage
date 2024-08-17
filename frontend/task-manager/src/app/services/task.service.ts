@@ -3,19 +3,20 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Task } from '../models/task.model';
-import { AuthService } from './auth.service';  // Import AuthService
+import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';  // Import environment settings
 
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
-  private tasksUrl = 'http://localhost:8080/api/tasks';  // URL to the backend API for tasks
+  private tasksUrl = `${environment.apiUrl}/api/tasks`;  // URL to the backend API for tasks
 
-  constructor(private http: HttpClient, private authService: AuthService) {}  // Inject AuthService
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   // Method to create a new task
   createTask(task: Task): Observable<Task> {
-    const headers = this.authService.getAuthHeaders();  // Get headers with the JWT token
+    const headers = this.authService.getAuthHeaders();
     const token = headers.get('Authorization');
   
     // Log the token for debugging
@@ -32,7 +33,7 @@ export class TaskService {
 
   // Method to fetch task summary for a specific user
   getTaskSummary(userId: string): Observable<any> {
-    const headers = this.authService.getAuthHeaders();  // Get headers with the JWT token
+    const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/summary/${userId}`;
     
     return this.http.get<any>(url, { headers }).pipe(
