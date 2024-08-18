@@ -40,7 +40,6 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
-            System.out.println("Authentication successful for user: " + authRequest.getUsername());
 
             // Retrieve user details from the database
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(authRequest.getUsername());
@@ -69,25 +68,6 @@ public class AuthController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", "Login failed: " + e.getMessage());
             return ResponseEntity.status(401).body(errorResponse);
-        }
-    }
-
-
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {
-        System.out.println("Register request received for user: " + authRequest.getUsername()); // Log request received
-
-        String result = customUserDetailsService.registerUser(authRequest);
-
-        Map<String, Object> response = new HashMap<>();
-        if (result.equals("User registered successfully.")) {
-            System.out.println("Registration successful for user: " + authRequest.getUsername()); // Log success
-            response.put("message", result);
-            return ResponseEntity.ok(response);
-        } else {
-            System.out.println("Registration failed for user: " + authRequest.getUsername() + ". Reason: " + result); // Log failure
-            response.put("message", result);
-            return ResponseEntity.status(400).body(response);
         }
     }
 }
