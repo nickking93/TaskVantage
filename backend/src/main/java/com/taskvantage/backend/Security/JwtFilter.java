@@ -46,6 +46,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
                 return; // Stop the filter chain here
             }
+        } else {
+            System.out.println("Authorization header is missing or does not start with Bearer ");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -70,5 +72,4 @@ public class JwtFilter extends OncePerRequestFilter {
         System.out.println("Proceeding with filter chain");
         chain.doFilter(request, response);
     }
-
 }
