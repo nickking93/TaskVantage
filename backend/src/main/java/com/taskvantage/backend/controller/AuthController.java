@@ -40,6 +40,7 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
+            System.out.println("Authentication successful for user: " + authRequest.getUsername());
 
             // Retrieve user details from the database
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(authRequest.getUsername());
@@ -70,6 +71,7 @@ public class AuthController {
             return ResponseEntity.status(401).body(errorResponse);
         }
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {
