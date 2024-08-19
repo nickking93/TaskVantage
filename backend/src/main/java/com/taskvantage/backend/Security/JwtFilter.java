@@ -28,6 +28,13 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         System.out.println("JwtFilter is being executed for request: " + request.getRequestURI());
 
+        // Skip JWT filter for login and register endpoints
+        String requestPath = request.getRequestURI();
+        if (requestPath.equals("/api/login") || requestPath.equals("/api/register")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         final String authorizationHeader = request.getHeader("Authorization");
 
         // Log the Authorization header
