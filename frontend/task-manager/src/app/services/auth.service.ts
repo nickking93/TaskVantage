@@ -33,6 +33,7 @@ export class AuthService {
 
   // Manual login method
   login(credentials: { username: string; password: string }): Observable<User> {
+    console.log('Login method called with credentials:', credentials); // Log the credentials
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
       map((response: any) => {
