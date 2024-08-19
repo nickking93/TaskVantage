@@ -40,19 +40,19 @@ export class AuthService {
         const userId = response.userId;
         const username = response.username;
         const token = response.token;
-  
+
         this.userDetails = {
           id: userId,
           username: username,
           password: '',
           token: token
         };
-  
+
         localStorage.setItem('user', JSON.stringify(this.userDetails));
         localStorage.setItem('jwtToken', token);
-  
+
         console.log('Stored JWT Token:', token);  // Log the stored token
-  
+
         return this.userDetails;
       }),
       catchError(this.handleError)
@@ -76,21 +76,22 @@ export class AuthService {
     return localStorage.getItem('jwtToken');
   }
 
-    // Check token retrieval
+  // Check token retrieval
   private debugToken(): void {
     const token = this.getToken();
     console.log('JWT Token from localStorage:', token);
   }
 
-
   // Include the token in the headers for authenticated requests
   public getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
     console.log('Retrieved JWT Token:', token);
-    return new HttpHeaders({
+    const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
+    console.log('Auth Headers:', headers);
+    return headers;
   }
 
   // Handle error response
