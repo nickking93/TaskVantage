@@ -20,7 +20,14 @@ public class JwtUtil {
 
     private final Key SECRET_KEY;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret) {
+    public JwtUtil() {
+        // Fetch the JWT_SECRET from the system environment variables
+        String secret = System.getenv("JWT_SECRET");
+
+        if (secret == null) {
+            throw new IllegalArgumentException("JWT_SECRET environment variable is not set.");
+        }
+
         // Decode the Base64 encoded key if it's stored that way
         byte[] decodedKey = Base64.getDecoder().decode(secret);
         this.SECRET_KEY = Keys.hmacShaKeyFor(decodedKey);
