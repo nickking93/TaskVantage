@@ -60,12 +60,20 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("https://localhost:4200");
-        config.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
-        config.addAllowedMethod("*");
-        config.addAllowedHeader("*");
-        config.setAllowCredentials(true);
+
+        // Temporarily allow all origins
+        config.addAllowedOriginPattern("*");  // Allow all origins temporarily
+
+        // Keep existing origins as comments for reference
+        // config.addAllowedOrigin("https://localhost:4200");
+        // config.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
+
+        config.addAllowedMethod("*");  // Allow all HTTP methods (GET, POST, etc.)
+        config.addAllowedHeader("*");  // Allow all headers
+        config.setAllowCredentials(false);  // Set to false when using "*"
+
         source.registerCorsConfiguration("/api/**", config);
         return new CorsFilter(source);
     }
+
 }
