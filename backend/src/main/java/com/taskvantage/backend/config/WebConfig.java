@@ -12,6 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${TASKVANTAGE_FRONTEND}")
     private String frontendUrl;
 
+    @Value("${I_P}")
+    private String localUrl;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -19,7 +22,8 @@ public class WebConfig implements WebMvcConfigurer {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
                         .allowedOrigins(
-                                "http://localhost:4200",
+                                "https://localhost:4200",
+                                localUrl,
                                 frontendUrl
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
