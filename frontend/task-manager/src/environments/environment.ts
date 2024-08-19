@@ -3,9 +3,15 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api' // Base URL for the Spring Boot backend
+  production: false,  // Change to true in environment.prod.ts
+  apiUrl: 'https://localhost:8080/api',
+  googleClientId: 'YOUR_GOOGLE_CLIENT_ID',
+  appleClientId: 'YOUR_APPLE_CLIENT_ID',
+  appleRedirectURI: 'YOUR_APPLE_REDIRECT_URI',
+  googleRedirectURI: 'YOUR_GOOGLE_REDIRECT_URI',
+  facebookRedirectURI: 'YOUR_FACEBOOK_REDIRECT_URI'
 };
+
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.

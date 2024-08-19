@@ -2,6 +2,7 @@ import { Component, OnInit, Renderer2 } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 // Declare the gapi object to use Google API functions
 declare const gapi: any;
@@ -52,7 +53,7 @@ export class LoginComponent implements OnInit {
   initializeGoogleSignIn() {
     gapi.load('auth2', () => {
       gapi.auth2.init({
-        client_id: process.env['TV_GOOGLEID'] 
+        client_id: environment.googleClientId // Updated to use environment variable
       }).then(() => {
         // Attach the Google Sign-In to the button element
         this.attachSignIn(document.getElementById('google-signin-button'));
@@ -113,8 +114,8 @@ export class LoginComponent implements OnInit {
 
   // Redirect-based Apple Sign-In function with fragment response mode
   redirectToApple() {
-    const clientId = 'com.taskvantage.bundle.backend'; // Your actual client ID
-    const redirectURI = '';
+    const clientId = environment.appleClientId; // Updated to use environment variable
+    const redirectURI = environment.appleRedirectURI; // Use environment for redirect URI
     const state = '[STATE]'; // Optional: Replace with your state if needed
     const scope = 'name email'; // Adjust the scope as necessary
 
@@ -129,12 +130,12 @@ export class LoginComponent implements OnInit {
 
   // Method to trigger Google OAuth login using a redirect
   loginWithGoogle() {
-    window.location.href = '';
+    window.location.href = environment.googleRedirectURI; // Updated to use environment variable
   }
 
   // Method to trigger Facebook OAuth login using a redirect
   facebookLogin() {
-    window.location.href = '';
+    window.location.href = environment.facebookRedirectURI; // Updated to use environment variable
   }
 
   // Handle form submission
