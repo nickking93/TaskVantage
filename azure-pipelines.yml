@@ -1,0 +1,112 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: 'Self-Hosted Agents'
+
+variables:
+  SYSTEM_DEBUG: true  # Enable detailed logging for diagnostics
+  azureSubscription: 'taskvantage'
+  frontendAppService: 'taskvantage-frontend'
+  backendAppService: 'taskvantage-backend'
+  backendPath: 'C:\agents\_work\1\s\backend'
+  backendJar: '$(backendPath)\target\*.jar'
+  dbUrl: $(DB_URL)
+  dbUsername: $(DB_USERNAME)
+  dbPassword: $(DB_PASSWORD)
+
+stages:
+  - stage: Build_And_Deploy_Frontend
+    jobs:
+      - job: Build_And_Deploy_Frontend
+        displayName: 'Build and Deploy Angular Frontend'
+        steps:
+          - checkout: self
+            clean: false
+            fetchDepth: 1
+            displayName: 'Checkout Latest Commit'
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x' 
+            displayName: 'Install Node.js 20.x'
+
+          - script: |
+              echo "Step 1: Verifying Node.js and npm versions..."
+              node --version
+              npm --version
+            displayName: 'Verify Node.js and npm versions'
+
+          - script: |
+              echo "Step 2: Navigating to frontend directory..."
+              cd /d C:\agents\_work\1\s\frontend\task-manager
+              
+              echo "Step 3: Listing contents of frontend directory to confirm..."
+              dir
+              
+              echo "Step 4: Installing npm dependencies..."
+              npm install || exit /b 1
+            displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
+
+          - script: |
+              echo "Step 5: Building Angular app..."
+              cd /d C:\agents\_work\1\s\frontend\task-manager
+              npm run build --prod > build_output.txt 2>&1 || (echo "Build failed, output:" && type build_output.txt && exit /b 1)
+            displayName: 'Build Angular app'
+
+          - script: |
+              echo "Step 6: Checking for output files..."
+              dir C:\agents\_work\1\s\frontend\task-manager\dist\task-manager || exit /b 1
+              dir C:\agents\_work\1\s\frontend\task-manager\dist\task-manager\browser || exit /b 1
+            displayName: 'Check Angular Build Output Files'
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(frontendAppService)'
+              package: 'C:\agents\_work\1\s\frontend\task-manager\dist\task-manager\browser'
+              appType: 'webApp'
+            displayName: 'Deploy Angular app to Azure App Service'
+
+  - stage: Build_And_Deploy_Backend
+    dependsOn: Build_And_Deploy_Frontend
+    jobs:
+      - job: Build_Backend
+        displayName: 'Build and Deploy Spring Boot Backend'
+        steps:
+          - checkout: self
+            clean: false
+            fetchDepth: 1
+            displayName: 'Checkout Latest Commit'
+
+          - task: Maven@4
+            inputs:
+              mavenPomFile: '$(backendPath)\pom.xml'
+              mavenOptions: '-Xmx3072m'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '17'
+              jdkArchitectureOption: 'x64'
+              goals: 'clean package'
+            displayName: 'Build Spring Boot app'
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(backendAppService)'
+              package: '$(backendJar)'
+              appType: 'webApp' 
+
+          - task: AzureAppServiceSettings@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              resourceGroupName: 'TaskVantage'
+              appName: '$(backendAppService)'
+              appSettings: |
+                {
+                  "spring.datasource.url": "$(dbUrl)",
+                  "spring.datasource.username": "$(dbUsername)",
+                  "spring.datasource.password": "$(dbPassword)"
+                }
+            displayName: 'Deploy Spring Boot app to Azure App Service'

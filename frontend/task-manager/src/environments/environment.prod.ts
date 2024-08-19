@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: process.env['TASKVANTAGE_ BACKEND']
+  apiUrl: 'taskvantage-backend-hvfsayf4bbajhzh8.eastus-01.azurewebsites.net'
 };
