@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,  // Change to true in environment.prod.ts
-  apiUrl: 'https://localhost:8080/api',
+  apiUrl: 'http://localhost:8080/api',
   googleClientId: 'YOUR_GOOGLE_CLIENT_ID',
   appleClientId: 'YOUR_APPLE_CLIENT_ID',
   appleRedirectURI: 'YOUR_APPLE_REDIRECT_URI',
