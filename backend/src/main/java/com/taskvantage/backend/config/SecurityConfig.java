@@ -13,8 +13,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.Arrays;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -30,14 +30,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("Configuring SecurityFilterChain");
-
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
-                    corsConfig.setAllowedOrigins(Arrays.asList(
-                            "http://localhost:4200",  // Local testing
-                            "https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net"  // Production frontend URL
-                    ));
+                    corsConfig.addAllowedOrigin("https://localhost:4200");
+                    corsConfig.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
                     corsConfig.addAllowedMethod("*");
                     corsConfig.addAllowedHeader("*");
                     corsConfig.setAllowCredentials(true);
@@ -58,5 +55,18 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("https://localhost:4200");
+        config.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
+        source.registerCorsConfiguration("/api/**", config);
+        return new CorsFilter(source);
     }
 }
