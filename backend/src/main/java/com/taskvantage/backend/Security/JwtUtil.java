@@ -31,6 +31,9 @@ public class JwtUtil {
         // Decode the Base64 encoded key if it's stored that way
         byte[] decodedKey = Base64.getDecoder().decode(secret);
         this.SECRET_KEY = Keys.hmacShaKeyFor(decodedKey);
+
+        // Log part of the SECRET_KEY for debugging purposes
+        System.out.println("Loaded SECRET_KEY: " + Base64.getEncoder().encodeToString(decodedKey).substring(0, 10) + "...");
     }
 
     // Extract username from the JWT token
@@ -64,7 +67,22 @@ public class JwtUtil {
     // Validate the token
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        boolean isValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+
+        // Log validation results
+        if (!isValid) {
+            System.out.println("Token validation failed for user: " + username);
+            if (!username.equals(userDetails.getUsername())) {
+                System.out.println("Username in token does not match. Expected: " + userDetails.getUsername() + ", Found: " + username);
+            }
+            if (isTokenExpired(token)) {
+                System.out.println("Token is expired.");
+            }
+        } else {
+            System.out.println("Token is valid for user: " + username);
+        }
+
+        return isValid;
     }
 
     // Generate a token for a user
