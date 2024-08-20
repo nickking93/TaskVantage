@@ -11,9 +11,9 @@ import { environment } from '../../environments/environment';
 export class AuthService {
 
   private apiUrl = environment.apiUrl;  // Use the environment variable for the API URL
-  private socialLoginUrl = `${this.apiUrl}/social-login`;  // Backend endpoint for social login verification
-  private loginUrl = `${this.apiUrl}/login`;  // Backend endpoint for manual login
-  private registerUrl = `${this.apiUrl}/register`;  // Backend endpoint for registration
+  private socialLoginUrl = `${this.apiUrl}/api/social-login`;  // Backend endpoint for social login verification
+  private loginUrl = `${this.apiUrl}/api/login`;  // Backend endpoint for manual login
+  private registerUrl = `${this.apiUrl}/api/register`;  // Backend endpoint for registration
   private userDetails: User | null = null;
 
   constructor(private http: HttpClient) {}

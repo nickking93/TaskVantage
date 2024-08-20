@@ -33,10 +33,12 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
-                    corsConfig.addAllowedOriginPattern("*"); // Allow all origins temporarily
+                    // corsConfig.addAllowedOriginPattern("*"); // Allow all origins temporarily
+                    corsConfig.addAllowedOrigin("http://localhost:4200");
+                    corsConfig.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
                     corsConfig.addAllowedMethod("*");
                     corsConfig.addAllowedHeader("*");
-                    corsConfig.setAllowCredentials(false); // Must set to false when using "*"
+                    corsConfig.setAllowCredentials(true); // Must set to false when using "*"
                     System.out.println("CORS Configuration: " + corsConfig.toString()); // Log CORS configuration
                     return corsConfig;
                 }))
@@ -62,15 +64,15 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Temporarily allow all origins
-        config.addAllowedOriginPattern("*");  // Allow all origins temporarily
+        // config.addAllowedOriginPattern("*");  // Allow all origins temporarily
 
         // Keep existing origins as comments for reference
-        // config.addAllowedOrigin("https://localhost:4200");
-        // config.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
+        config.addAllowedOrigin("http://localhost:4200");
+        config.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
 
         config.addAllowedMethod("*");  // Allow all HTTP methods (GET, POST, etc.)
         config.addAllowedHeader("*");  // Allow all headers
-        config.setAllowCredentials(false);  // Set to false when using "*"
+        config.setAllowCredentials(true);  // Set to false when using "*"
 
         source.registerCorsConfiguration("/api/**", config);
         return new CorsFilter(source);
