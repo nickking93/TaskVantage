@@ -1,0 +1,43 @@
+<div class="row">
+  <div class="column">
+    <br>
+  </div>
+  <div class="column">
+    <img src="./assets/Images/logo.png" alt="image" class="logo-img">
+    <div id="google-signin-button" class="google-signin-button">
+      <img src="./assets/Images/google-icon.png" alt="Google logo" class="google-icon">
+      Continue with Google
+    </div>
+    <div id="facebook-signin-button" class="facebook-signin-button">
+      <img src="./assets/Images/facebook-icon.png" alt="Facebook logo" class="facebook-icon">
+      Continue with Facebook
+    </div>
+    <div id="appleid-signin" class="appleid-signin"></div>
+    <h1 class="login-heading"><b>Log in</b></h1>
+    <form [formGroup]="signin" (ngSubmit)="onSubmit()">
+      <div class="login-form">
+        <mat-form-field>
+          <mat-label>Enter your email</mat-label>
+          <input matInput placeholder="pat@example.com" formControlName="email" />
+        </mat-form-field>
+        <br>
+        <mat-form-field>
+          <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
+          <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </mat-form-field>
+        <br>
+        <button mat-raised-button class="login-button" type="submit">Login</button>
+      </div>
+    </form>
+    <div class="link-container">
+      <a [routerLink]="['/register']" class="register-link">Don't have an account? Register here.</a>
+      <a [routerLink]="['/privacy-policy']" class="privacy-link">Privacy Policy</a>
+    </div>     
+  </div>
+  <div class="column">
+    <img src="./assets/Images/Image_clipboard.png" alt="image" class="clipboard-img">
+    <a class="designed-by" href="http://www.freepik.com">Designed by rawpixel.com / Freepik</a>
+  </div>
+  <div class="column">
+  </div>
+</div>

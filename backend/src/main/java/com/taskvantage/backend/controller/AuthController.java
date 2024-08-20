@@ -34,6 +34,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody AuthRequest authRequest) {
+        System.out.println("Login request received for user: " + authRequest.getUsername()); // Log request received
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
@@ -56,15 +58,18 @@ public class AuthController {
             response.put("userId", user.getId()); // Retrieve the userId from the User entity
             response.put("token", token); // Include the JWT token in the response
 
+            System.out.println("Login successful for user: " + user.getUsername()); // Log success
+
             return ResponseEntity.ok(response);
         } catch (AuthenticationException e) {
+            System.out.println("Login failed for user: " + authRequest.getUsername() + ". Error: " + e.getMessage()); // Log failure
+
             // Create a response map for the error
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", "Login failed: " + e.getMessage());
             return ResponseEntity.status(401).body(errorResponse);
         }
     }
-
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {

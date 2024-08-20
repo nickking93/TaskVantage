@@ -1,0 +1,143 @@
+.login-form mat-form-field + mat-form-field {
+  margin-left: 8px;
+}
+
+.column {
+  flex: 1;
+  padding: 10px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+mat-form-field {
+  width: 75%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.appleid-signin {
+  width: 360px;
+  height: 40px;
+  padding-top: 10px;
+}
+
+.logo-img {
+  padding-top: 15px;
+  padding-bottom: 100px;
+}
+
+.fb-login-button {
+  padding-top: 15px;
+}
+
+.login-heading {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: #2365B2;
+}
+
+.clipboard-img {
+  padding-top: 33.33%;
+}
+
+.designed-by {
+  padding-left: 27%;
+}
+
+.google-signin-button,
+.facebook-signin-button {
+  width: 360px;
+  height: 40px;
+  background-color: white;
+  color: black;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: 1px solid #dcdcdc; /* Thin grey border */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.google-signin-button {
+  margin-bottom: 15px; /* Add space below Google button */
+}
+
+.google-icon,
+.facebook-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.google-signin-button:hover,
+.facebook-signin-button:hover {
+  background-color: #f7f7f7;
+}
+
+.login-button {
+  width: 75%;
+  height: 40px;
+  background-color: #2365B2; /* Same color as the "Log in" text */
+  color: white;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: none;
+  display: block;
+  margin: 15px 0;
+}
+
+.login-button:hover {
+  background-color: #1f5599; /* Slightly darker on hover */
+}
+
+.appleid-signin {
+  width: 360px;
+  height: 40px;
+  background-color: black;
+  color: black;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: 1px solid #dcdcdc; /* Thin grey border */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  margin-top: 15px; /* Add space below Facebook button */
+}
+
+.appleid-signin:hover {
+  background-color: black;
+}
+
+.link-container {
+  text-align: center;
+  width: 75%;
+}
+
+.register-link {
+  display: block;
+}
+
+.privacy-link {
+  display: inline-block;
+  margin-top: 10px;
+}

@@ -28,8 +28,17 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         System.out.println("JwtFilter is being executed for request: " + request.getRequestURI());
 
+        // Skip JWT filter for login and register endpoints
+        String requestPath = request.getRequestURI();
+        if (requestPath.equals("/api/login") || requestPath.equals("/api/register")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         final String authorizationHeader = request.getHeader("Authorization");
+
+        // Log the Authorization header
+        System.out.println("Authorization Header: " + authorizationHeader);
 
         String username = null;
         String jwt = null;
@@ -46,6 +55,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
                 return; // Stop the filter chain here
             }
+        } else {
+            // Log if the Authorization header is missing or doesn't start with "Bearer "
+            System.out.println("Authorization header missing or does not start with Bearer ");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -56,6 +68,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                System.out.println("JWT token validated and user authenticated: " + username);
             } else {
                 // If token validation fails, log and return unauthorized
                 System.out.println("JWT token validation failed for user: " + username);
