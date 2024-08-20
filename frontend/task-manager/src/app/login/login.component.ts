@@ -144,8 +144,6 @@ export class LoginComponent implements OnInit {
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
 
-      console.log('Login attempt with email:', email); // Debugging log
-
       // Call AuthService to handle login
       this.authService.login({ username: email, password }).subscribe(
         response => {

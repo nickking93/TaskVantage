@@ -33,7 +33,6 @@ export class AuthService {
 
   // Manual login method
   login(credentials: { username: string; password: string }): Observable<User> {
-    console.log('Login method called with credentials:', credentials); // Log the credentials
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
       map((response: any) => {
@@ -50,8 +49,6 @@ export class AuthService {
 
         localStorage.setItem('user', JSON.stringify(this.userDetails));
         localStorage.setItem('jwtToken', token);
-
-        console.log('Stored JWT Token:', token);  // Log the stored token
 
         return this.userDetails;
       }),
@@ -85,12 +82,10 @@ export class AuthService {
   // Include the token in the headers for authenticated requests
   public getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
-    console.log('Retrieved JWT Token:', token);
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
-    console.log('Auth Headers:', headers);
     return headers;
   }
 

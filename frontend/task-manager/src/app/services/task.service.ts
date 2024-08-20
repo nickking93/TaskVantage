@@ -38,7 +38,6 @@ export class TaskService {
     
     return this.http.get<any>(url, { headers }).pipe(
       map(response => {
-        console.log('Task summary fetched successfully:', response);
         return response;
       }),
       catchError(this.handleError)

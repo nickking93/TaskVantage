@@ -15774,3 +15774,64 @@ org.springframework.security.web.firewall.RequestRejectedException: The request 
 2024-08-20 11:51:42 [http-nio-8080-exec-8] DEBUG o.s.web.servlet.DispatcherServlet - Completed 200 OK
 2024-08-20 11:51:44 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
 2024-08-20 11:51:44 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:52:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:52:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:52:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:52:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:53:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:53:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:53:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:53:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:54:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:54:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:54:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:54:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:55:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:55:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:55:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:55:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:56:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:56:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:56:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:56:45 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:57:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:57:15 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Fill pool skipped, pool has sufficient level or currently being filled.
+2024-08-20 11:57:30 [SIGINT handler] DEBUG java.lang.Runtime - Runtime.exit() called with status: 130
+java.lang.Throwable: Runtime.exit(130)
+	at java.base/java.lang.Shutdown.logRuntimeExit(Shutdown.java:179)
+	at java.base/java.lang.Shutdown.exit(Shutdown.java:160)
+	at java.base/java.lang.Terminator$1.handle(Terminator.java:51)
+	at java.base/jdk.internal.misc.Signal$1.run(Signal.java:218)
+	at java.base/java.lang.Thread.run(Thread.java:1570)
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.b.a.ApplicationAvailabilityBean - Application availability state ReadinessState changed from ACCEPTING_TRAFFIC to REFUSING_TRAFFIC
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Closing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@47466700, started on Tue Aug 20 11:48:44 CDT 2024
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Stopping beans in phase 2147483647
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Bean 'applicationTaskExecutor' completed its stop procedure
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Stopping beans in phase 2147482623
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Bean 'webServerGracefulShutdown' completed its stop procedure
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Stopping beans in phase 2147481599
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Bean 'webServerStartStop' completed its stop procedure
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Stopping beans in phase -2147483647
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.c.s.DefaultLifecycleProcessor - Bean 'springBootLoggingLifecycle' completed its stop procedure
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.j.e.a.AnnotationMBeanExporter - Unregistering JMX-exposed beans on shutdown
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.j.e.a.AnnotationMBeanExporter - Unregistering JMX-exposed beans
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.s.s.c.ThreadPoolTaskExecutor - Shutting down ExecutorService 'applicationTaskExecutor'
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.h.internal.SessionFactoryImpl - HHH000031: Closing
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.h.type.spi.TypeConfiguration$Scope - Un-scoping TypeConfiguration [org.hibernate.type.spi.TypeConfiguration$Scope@18de4371] from SessionFactory [org.hibernate.internal.SessionFactoryImpl@5ffc57c8]
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.h.s.i.AbstractServiceRegistryImpl - Implicitly destroying ServiceRegistry on de-registration of all child ServiceRegistries
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG o.h.b.r.i.BootstrapServiceRegistryImpl - Implicitly destroying Boot-strap registry on de-registration of all child ServiceRegistries
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Before shutdown stats (total=10, active=0, idle=10, waiting=0)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@37d7fac8: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@53352e55: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@1208246e: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@23505149: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@7227db21: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@66d98dd5: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@766945b7: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@9b002d0: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@540a1ba3: (connection evicted)
+2024-08-20 11:57:30 [HikariPool-2 connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase - HikariPool-2 - Closing connection com.mysql.cj.jdbc.ConnectionImpl@126585e0: (connection evicted)
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] DEBUG com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - After shutdown stats (total=0, active=0, idle=0, waiting=0)
+2024-08-20 11:57:30 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
