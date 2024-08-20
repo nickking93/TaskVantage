@@ -70,4 +70,18 @@ public class AuthController {
             return ResponseEntity.status(401).body(errorResponse);
         }
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {
+        String result = customUserDetailsService.registerUser(authRequest);
+
+        Map<String, Object> response = new HashMap<>();
+        if (result.equals("User registered successfully.")) {
+            response.put("message", result);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", result);
+            return ResponseEntity.status(400).body(response);
+        }
+    }
 }
