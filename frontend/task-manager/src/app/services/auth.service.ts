@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { environment } from '../../environments/environment';
+import { JwtHelperService } from '@auth0/angular-jwt'; // Import JwtHelperService
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class AuthService {
   private loginUrl = `${this.apiUrl}/api/login`;  // Backend endpoint for manual login
   private registerUrl = `${this.apiUrl}/api/register`;  // Backend endpoint for registration
   private userDetails: User | null = null;
+  private jwtHelper = new JwtHelperService();  // Instance of JwtHelperService
 
   constructor(private http: HttpClient) {}
 
@@ -97,7 +99,15 @@ export class AuthService {
 
   // Check if the user is authenticated
   isAuthenticated(): boolean {
-    return this.getToken() !== null;
+    const token = this.getToken();
+    
+    // Check if there is a token and if it is not expired
+    if (token && !this.jwtHelper.isTokenExpired(token)) {
+      return true;
+    } else {
+      this.logout();  // Automatically logout the user if the token is expired or invalid
+      return false;
+    }
   }
 
   // Get user details

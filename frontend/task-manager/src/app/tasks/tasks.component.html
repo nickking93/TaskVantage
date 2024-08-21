@@ -1,1 +1,21 @@
-<p>tasks works!</p>
+<div class="tasks-container">
+    <h2>Tasks</h2>
+    
+    <!-- Display the list of tasks -->
+    <div *ngIf="tasks.length > 0; else noTasks">
+      <ul class="task-list">
+        <li *ngFor="let task of tasks">
+          <h3>{{ task.title }}</h3>
+          <p>{{ task.description }}</p>
+          <p><strong>Due Date:</strong> {{ task.dueDate | date }}</p>
+          <p><strong>Priority:</strong> {{ task.priority }}</p>
+        </li>
+      </ul>
+    </div>
+  
+    <!-- Fallback when no tasks are available -->
+    <ng-template #noTasks>
+      <p>No tasks available.</p>
+    </ng-template>
+  </div>
+  

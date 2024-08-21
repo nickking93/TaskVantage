@@ -10,11 +10,20 @@ const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'home/:userId', component: HomeComponent, canActivate: [AuthGuard] },
+  {
+    path: 'home/:userId',
+    component: HomeComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: 'tasks',
+        component: TasksComponent,
+      },
+    ],
+  },
   { path: 'privacy-policy', loadChildren: () => import('./privacy-policy/privacy-policy.module').then(m => m.PrivacyPolicyModule) },
   { path: 'help-page', loadChildren: () => import('./help-page/help-page.module').then(m => m.HelpPageModule) },
   { path: 'settings/:userId', loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule) },
-  { path: 'tasks/:userId', component: TasksComponent },
   { path: '**', redirectTo: '/login' }
 ];
 

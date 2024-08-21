@@ -6,6 +6,7 @@ import { Task } from '../models/task.model';
 import { FormsModule } from '@angular/forms'; 
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common'; 
+import { TasksComponent } from '../tasks/tasks.component'; 
 
 // Import Angular Material Modules
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,7 +17,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';  // Import SuccessDialogComponent
+import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';  
 
 @Component({
   selector: 'app-home',
@@ -34,7 +35,8 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
     MatSelectModule,
     MatCheckboxModule,
     MatButtonModule,
-    MatDialogModule  // Add MatDialogModule to imports
+    MatDialogModule,
+    TasksComponent
   ]
 })
 export class HomeComponent implements OnInit {
@@ -59,9 +61,9 @@ export class HomeComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog  // Inject MatDialog
+    private dialog: MatDialog  
   ) {}
 
   ngOnInit(): void {
@@ -70,7 +72,7 @@ export class HomeComponent implements OnInit {
       this.authService.getUserDetails().subscribe(user => {
         if (user.id.toString() === this.userId) {
           this.username = user.username;
-          this.fetchTaskSummary();  // Fetch task summary data
+          this.fetchTaskSummary();  
         } else {
           this.logout();
         }
@@ -79,6 +81,10 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/login']);
       });
     });
+  }
+
+  isTasksRoute(): boolean {
+    return this.router.url === `/home/${this.userId}/tasks`;
   }
 
   openAddTaskModal(event: Event): void {
@@ -95,8 +101,8 @@ export class HomeComponent implements OnInit {
     this.taskService.createTask(this.newTask).subscribe(
       () => {
         this.closeAddTaskModal();
-        this.openSuccessDialog();  // Open success dialog on successful task creation
-        this.fetchTaskSummary();  // Refresh task summary after task creation
+        this.openSuccessDialog();  
+        this.fetchTaskSummary();  
       },
       error => {
         console.error('Failed to create task:', error);
@@ -132,5 +138,10 @@ export class HomeComponent implements OnInit {
   // Method to determine the active state
   isActive(route: string): boolean {
     return this.router.url === route;
+  }
+
+  // Getter method to access the current route URL in the template
+  get currentUrl(): string {
+    return this.router.url;
   }
 }

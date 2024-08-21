@@ -4,13 +4,12 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Task } from '../models/task.model';
 import { AuthService } from './auth.service';
-import { environment } from '../../environments/environment';  // Import environment settings
-
+import { environment } from '../../environments/environment';  
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
-  private tasksUrl = `${environment.apiUrl}/api/tasks`;  // URL to the backend API for tasks
+  private tasksUrl = `${environment.apiUrl}/api/tasks`;  
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -18,9 +17,6 @@ export class TaskService {
   createTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
     const token = headers.get('Authorization');
-  
-    // Log the token for debugging
-    console.log('JWT Token being sent:', token);
   
     return this.http.post<Task>(this.tasksUrl, task, { headers }).pipe(
       map(response => {
@@ -38,6 +34,20 @@ export class TaskService {
     
     return this.http.get<any>(url, { headers }).pipe(
       map(response => {
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // Method to fetch tasks for a specific user
+  getTasks(userId: string): Observable<Task[]> {
+    const headers = this.authService.getAuthHeaders();
+    const url = `${this.tasksUrl}/user/${userId}`;
+    
+    return this.http.get<Task[]>(url, { headers }).pipe(
+      map(response => {
+        console.log('Fetched tasks:', response);
         return response;
       }),
       catchError(this.handleError)
