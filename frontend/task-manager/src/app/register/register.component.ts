@@ -1,10 +1,50 @@
 import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
+// Strong Password Validator
+export function strongPasswordValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const password = control.value;
+    if (!password) {
+      return null;
+    }
+
+    const errors: ValidationErrors = {};
+
+    const hasUpperCase = /[A-Z]/.test(password);
+    if (!hasUpperCase) {
+      errors['uppercase'] = true;
+    }
+
+    const hasLowerCase = /[a-z]/.test(password);
+    if (!hasLowerCase) {
+      errors['lowercase'] = true;
+    }
+
+    const hasNumeric = /[0-9]/.test(password);
+    if (!hasNumeric) {
+      errors['numeric'] = true;
+    }
+
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    if (!hasSpecialChar) {
+      errors['specialChar'] = true;
+    }
+
+    const hasMinLength = password.length >= 8;
+    if (!hasMinLength) {
+      errors['minLength'] = true;
+    }
+
+    return Object.keys(errors).length ? errors : null;
+  };
+}
+
+// Password Match Validator
 export function passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
   const password = control.get('password');
   const confirmPassword = control.get('confirmPassword');
@@ -32,7 +72,7 @@ export class RegisterComponent implements OnInit {
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      password: ['', [Validators.required, strongPasswordValidator()]],
       confirmPassword: ['', Validators.required]
     }, { validators: passwordMatchValidator });
   }
