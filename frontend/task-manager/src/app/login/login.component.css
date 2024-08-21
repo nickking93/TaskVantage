@@ -7,6 +7,17 @@
   padding: 10px;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-h1{
+  font-size: 250%;
+  color: #2365B2;
+  font-weight: bold;
+}
+
 .row {
   display: flex;
   flex-wrap: wrap;
@@ -30,6 +41,7 @@ img {
 .logo-img {
   padding-top: 15px;
   padding-bottom: 100px;
+  width: 120px;
 }
 
 .fb-login-button {
@@ -62,7 +74,7 @@ img {
   border-radius: 5px;
   font-family: Arial, sans-serif;
   font-size: 14px;
-  border: 1px solid #dcdcdc; /* Thin grey border */
+  border: 1px solid #dcdcdc; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +82,7 @@ img {
 }
 
 .google-signin-button {
-  margin-bottom: 15px; /* Add space below Google button */
+  margin-bottom: 15px; 
 }
 
 .google-icon,
@@ -88,8 +100,7 @@ img {
 .login-button {
   width: 75%;
   height: 40px;
-  background-color: #2365B2; /* Same color as the "Log in" text */
-  color: white;
+  background-color: #2365B2; 
   text-align: center;
   line-height: 40px;
   cursor: pointer;
@@ -99,10 +110,11 @@ img {
   border: none;
   display: block;
   margin: 15px 0;
+  color: #ffff;
 }
 
 .login-button:hover {
-  background-color: #1f5599; /* Slightly darker on hover */
+  background-color: #1f5599; 
 }
 
 .appleid-signin {
@@ -116,12 +128,12 @@ img {
   border-radius: 5px;
   font-family: Arial, sans-serif;
   font-size: 14px;
-  border: 1px solid #dcdcdc; /* Thin grey border */
+  border: 1px solid #dcdcdc; 
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 10px;
-  margin-top: 15px; /* Add space below Facebook button */
+  margin-top: 15px; 
 }
 
 .appleid-signin:hover {

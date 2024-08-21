@@ -7,6 +7,17 @@
   padding: 10px;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-h1{
+  font-size: 250%;
+  color: #2365B2;
+  font-weight: bold;
+}
+
 .row {
   display: flex;
   flex-wrap: wrap;
@@ -46,6 +57,7 @@ img {
 .logo-img {
   padding-top: 15px;
   padding-bottom: 100px;
+  width: 120px;
 }
 
 .fb-login-button {
