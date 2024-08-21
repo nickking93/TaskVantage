@@ -4,13 +4,20 @@ import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.repository.TaskRepository;
 import com.taskvantage.backend.repository.UserRepository;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.FileReader;
+import java.io.Reader;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -31,28 +38,39 @@ public class DataLoader {
                 System.out.println("Test user already exists.");
             }
 
-            // Check if the test task already exists for the user
+            // Load tasks from CSV file
             if (taskRepository.findAll().isEmpty()) {
-                Task task = new Task();
-                task.setTitle("Test Task");
-                task.setDescription("This is a test task description.");
-                task.setPriority("High");
-                task.setStatus("Pending");
-                task.setDueDate(LocalDateTime.now().plusDays(7));
-                task.setCreationDate(LocalDateTime.now());
-                task.setLastModifiedDate(LocalDateTime.now());
-                task.setTags(Arrays.asList("test", "sample"));
-                task.setSubtasks(List.of());  // Add any subtasks if needed
-                task.setAttachments(List.of());  // Add any attachments if needed
-                task.setComments(List.of());  // Add any comments if needed
-                task.setReminders(List.of(LocalDateTime.now().plusDays(1)));  // Add any reminders if needed
-                task.setRecurring(false);  // Set to true if the task is recurring
-                task.setUserId(user.getId());  // Set the userId to the test user's ID
+                String csvFilePath = "./src/main/java/com/taskvantage/backend/data/task_test_data.csv";
+                try (
+                        Reader reader = new FileReader(Paths.get(csvFilePath).toFile());
+                        CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
+                ) {
+                    List<Task> tasks = new ArrayList<>();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-                taskRepository.save(task);
-                System.out.println("Test task created: title=Test Task, status=Pending");
+                    for (CSVRecord record : csvParser) {
+                        Task task = new Task();
+                        task.setTitle(record.get("title"));
+                        task.setDescription(record.get("description"));
+                        task.setPriority(record.get("priority"));
+                        task.setStatus(record.get("status"));
+                        task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter));
+                        task.setCreationDate(LocalDateTime.parse(record.get("creation_date"), formatter));
+                        task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter));
+                        task.setRecurring(Boolean.parseBoolean(record.get("recurring")));
+                        task.setUserId(user.getId());  // Associate task with the created user
+
+                        tasks.add(task);
+                    }
+
+                    taskRepository.saveAll(tasks);
+                    System.out.println("Tasks imported from CSV and saved to database.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Error loading tasks from CSV file.");
+                }
             } else {
-                System.out.println("Test task already exists.");
+                System.out.println("Tasks already exist.");
             }
         };
     }

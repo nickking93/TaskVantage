@@ -36,25 +36,25 @@ public class Task {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)  // Set to LAZY
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "tag")
     private List<String> tags;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private List<Subtask> subtasks;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)  // Set to LAZY
     @CollectionTable(name = "task_attachments", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "attachment")
     private List<String> attachments;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private List<Comment> comments;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)  // Set to LAZY
     @CollectionTable(name = "task_reminders", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "reminder")
     private List<LocalDateTime> reminders;
@@ -67,7 +67,6 @@ public class Task {
         this.status = "Pending";  // Set default status if not provided
         this.creationDate = LocalDateTime.now();  // Set creation date
     }
-
 
     // Getters and Setters
     public Long getId() {

@@ -2,6 +2,7 @@ package com.taskvantage.backend.service;
 
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ public interface TaskService {
 
     List<Task> getAllTasks();
 
-    List<Task> getTasksByUserId(Long userId);
+    List<TaskSummary> getTasksByUserId(Long userId);  // Updated return type
 
     Task updateTask(Task task);
 
