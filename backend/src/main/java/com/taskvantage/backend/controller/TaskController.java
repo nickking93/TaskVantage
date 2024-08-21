@@ -1,5 +1,6 @@
 package com.taskvantage.backend.controller;
 
+import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,33 +41,42 @@ public class TaskController {
 
     // Get all tasks for a specific user by userId
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId) {
-        List<Task> tasks = taskService.getTasksByUserId(userId);
+    public ResponseEntity<List<TaskSummary>> getTasksByUserId(@PathVariable Long userId) {
+        List<TaskSummary> tasks = taskService.getTasksByUserId(userId);
         return ResponseEntity.ok(tasks);
     }
 
     // Get task summary for a specific user
     @GetMapping("/summary/{userId}")
     public ResponseEntity<Map<String, Object>> getTaskSummary(@PathVariable Long userId) {
-        List<Task> tasks = taskService.getTasksByUserId(userId);
+        List<TaskSummary> allTasks = taskService.getTasksByUserId(userId);
 
-        long totalTasks = tasks.size();
-        long totalSubtasks = tasks.stream().mapToLong(task -> task.getSubtasks().size()).sum();
-        long pastDeadlineTasks = tasks.stream()
+        // Filter out completed tasks
+        List<TaskSummary> nonCompletedTasks = allTasks.stream()
+                .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
+                .toList();
+
+        // Calculations excluding completed tasks
+        long totalTasks = nonCompletedTasks.size();
+        long totalSubtasks = nonCompletedTasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
+        long pastDeadlineTasks = nonCompletedTasks.stream()
                 .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDateTime.now()))
                 .count();
-        long completedTasksThisMonth = tasks.stream()
+
+        // Monthly tasks calculations including completed tasks
+        long completedTasksThisMonth = allTasks.stream()
                 .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
                         task.getDueDate() != null &&
                         task.getDueDate().getMonth() == LocalDateTime.now().getMonth() &&
                         task.getDueDate().getYear() == LocalDateTime.now().getYear())
                 .count();
-        long totalTasksThisMonth = tasks.stream()
+        long totalTasksThisMonth = allTasks.stream()
                 .filter(task -> task.getDueDate() != null &&
                         task.getDueDate().getMonth() == LocalDateTime.now().getMonth() &&
                         task.getDueDate().getYear() == LocalDateTime.now().getYear())
                 .count();
 
+        // Prepare the summary response
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalTasks", totalTasks);
         summary.put("totalSubtasks", totalSubtasks);
@@ -76,6 +86,8 @@ public class TaskController {
 
         return ResponseEntity.ok(summary);
     }
+
+
 
     // Update an existing task
     @PutMapping("/{id}")

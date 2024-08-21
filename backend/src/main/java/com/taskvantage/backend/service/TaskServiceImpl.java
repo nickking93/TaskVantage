@@ -1,16 +1,15 @@
 package com.taskvantage.backend.service;
 
+import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.taskvantage.backend.dto.TaskSummary;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
-
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -40,8 +39,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<Task> getTasksByUserId(Long userId) {
-        return taskRepository.findByUserId(userId);
+    public List<TaskSummary> getTasksByUserId(Long userId) {
+        return taskRepository.findTaskSummariesByUserId(userId);
     }
 
     @Override
@@ -78,11 +77,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskSummary getTaskSummary(Long userId) {
-        List<Task> tasks = taskRepository.findByUserId(userId);
+        List<TaskSummary> tasks = taskRepository.findTaskSummariesByUserId(userId);
 
         long totalTasks = tasks.size();
-        long totalSubtasks = tasks.stream().mapToLong(task -> task.getSubtasks().size()).sum();
-        long pastDeadlineTasks = tasks.stream().filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDateTime.now())).count();
+        long totalSubtasks = tasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
+        long pastDeadlineTasks = tasks.stream()
+                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDateTime.now()))
+                .count();
 
         YearMonth currentMonth = YearMonth.now();
         long completedTasksThisMonth = tasks.stream()
@@ -95,7 +96,7 @@ public class TaskServiceImpl implements TaskService {
                 .filter(task -> task.getDueDate() != null && YearMonth.from(task.getDueDate()).equals(currentMonth))
                 .count();
 
-        TaskSummary summary = new TaskSummary();
+        TaskSummary summary = new TaskSummary();  // Using the no-argument constructor
         summary.setTotalTasks(totalTasks);
         summary.setTotalSubtasks(totalSubtasks);
         summary.setPastDeadlineTasks(pastDeadlineTasks);
