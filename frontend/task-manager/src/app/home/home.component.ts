@@ -58,6 +58,9 @@ export class HomeComponent implements OnInit {
   completedTasksThisMonth: number = 0;
   totalTasksThisMonth: number = 0;
 
+  // Variable to hold recent completed tasks for the Activity section
+  recentCompletedTasks: { title: string, timeAgo: string }[] = [];
+
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
@@ -73,6 +76,7 @@ export class HomeComponent implements OnInit {
         if (user.id.toString() === this.userId) {
           this.username = user.username;
           this.fetchTaskSummary();  
+          this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
         } else {
           this.logout();
         }
@@ -103,6 +107,7 @@ export class HomeComponent implements OnInit {
         this.closeAddTaskModal();
         this.openSuccessDialog();  
         this.fetchTaskSummary();  
+        this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
       },
       error => {
         console.error('Failed to create task:', error);
@@ -127,6 +132,39 @@ export class HomeComponent implements OnInit {
     }, error => {
       console.error('Failed to fetch task summary:', error);
     });
+  }
+
+  fetchRecentCompletedTasks(): void {
+    this.taskService.getTasks(this.userId).subscribe(tasks => {
+      const completedTasks = tasks
+        .filter(task => task.status === 'Completed')
+        .sort((a, b) => {
+          const dateA = a.lastModifiedDate ? new Date(a.lastModifiedDate) : new Date();
+          const dateB = b.lastModifiedDate ? new Date(b.lastModifiedDate) : new Date();
+          return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, 10);
+  
+      this.recentCompletedTasks = completedTasks.map(task => ({
+        title: task.title,
+        timeAgo: this.calculateTimeAgo(task.lastModifiedDate ? new Date(task.lastModifiedDate) : new Date())
+      }));
+    }, error => {
+      console.error('Failed to fetch recent completed tasks:', error);
+    });
+  }
+
+  calculateTimeAgo(date: Date): string {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+
+    if (hours < 24) {
+      return `${hours} hours ago`;
+    } else {
+      return `${days} days ago`;
+    }
   }
 
   logout(): void {
