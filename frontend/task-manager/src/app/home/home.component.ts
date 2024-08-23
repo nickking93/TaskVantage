@@ -7,8 +7,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common'; 
 import { TasksComponent } from '../tasks/tasks.component'; 
-
-// Import Angular Material Modules
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -18,6 +16,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';  
+import { Chart, registerables } from 'chart.js';
 
 @Component({
   selector: 'app-home',
@@ -67,7 +66,9 @@ export class HomeComponent implements OnInit {
     public router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog  
-  ) {}
+  ) {
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -77,6 +78,7 @@ export class HomeComponent implements OnInit {
           this.username = user.username;
           this.fetchTaskSummary();  
           this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
+          this.loadWeeklyTaskStatusChart();  // Load the weekly task status chart
         } else {
           this.logout();
         }
@@ -108,6 +110,7 @@ export class HomeComponent implements OnInit {
         this.openSuccessDialog();  
         this.fetchTaskSummary();  
         this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
+        this.loadWeeklyTaskStatusChart();  // Refresh the chart data
       },
       error => {
         console.error('Failed to create task:', error);
@@ -167,18 +170,85 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  loadWeeklyTaskStatusChart(): void {
+    this.taskService.getTasks(this.userId).subscribe((tasks) => {
+      const startOfWeek = this.startOfWeek();
+  
+      // Calculate the counts for each status
+      const completed = tasks.filter(
+        (task) =>
+          task.status === 'Completed' &&
+          task.lastModifiedDate &&
+          new Date(task.lastModifiedDate).getTime() >= startOfWeek
+      ).length;
+  
+      const inProgress = tasks.filter(
+        (task) =>
+          task.status === 'In Progress' &&
+          task.lastModifiedDate &&
+          new Date(task.lastModifiedDate).getTime() >= startOfWeek
+      ).length;
+  
+      const pending = tasks.filter(
+        (task) =>
+          task.status === 'Pending' &&
+          task.lastModifiedDate &&
+          new Date(task.lastModifiedDate).getTime() >= startOfWeek
+      ).length;
+  
+      // Calculate the total number of tasks for the week
+      const totalTasksForWeek = completed + inProgress + pending;
+  
+      new Chart('taskStatusChart', {
+        type: 'bar',
+        data: {
+          labels: ['Completed', 'In Progress', 'Pending'],
+          datasets: [
+            {
+              data: [completed, inProgress, pending],
+              backgroundColor: ['#4caf50', '#ffeb3b', '#f44336'],
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: totalTasksForWeek, // Set the max value to the total number of tasks for the week
+            },
+          },
+          plugins: {
+            legend: {
+              display: false, // Ensure the legend is disabled
+            },
+          },
+        },
+      });
+    });
+  }
+  
+
+  startOfWeek(): number {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const start = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - dayOfWeek
+    );
+    return start.getTime();
+  }
+
   logout(): void {
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
   }
 
-  // Method to determine the active state
   isActive(route: string): boolean {
     return this.router.url === route;
   }
 
-  // Getter method to access the current route URL in the template
   get currentUrl(): string {
     return this.router.url;
   }

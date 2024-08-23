@@ -769,8 +769,3 @@ id,userId,title,description,priority,status,due_date,creation_date,last_modified
 768,1,Write unit tests,Write unit tests for the newly implemented features to ensure code quality.,Medium,Completed,2024-08-20 18:52:00,2024-08-20 18:52:00,2024-08-20 18:52:00,,,,,,False
 769,1,Clean up unused branches,Identify and delete any unused branches in the repository.,Low,Completed,2024-08-20 18:52:00,2024-08-20 18:52:00,2024-08-20 18:52:00,,,,,,False
 770,1,Develop user profile feature,Create a user profile section with the ability to update personal information and settings.,High,Completed,2024-08-20 18:52:00,2024-08-20 18:52:00,2024-08-20 18:52:00,,,,,,True
-6,1,Update API documentation,Update the API documentation with the latest changes.,Medium,In Progress,2024-08-25 05:25:15,2024-08-22 05:25:15,2024-08-23 01:25:15,,,,,,False
-7,1,Fix login bug,Fix the login issue causing users to be logged out unexpectedly.,High,In Progress,2024-08-26 05:25:15,2024-08-22 05:25:15,2024-08-23 03:25:15,,,,,,False
-8,1,Prepare release notes,Draft the release notes for the upcoming version.,High,Pending,2024-08-24 05:25:15,2024-08-23 05:25:15,2024-08-23 05:25:15,,,,,,False
-9,1,Code review for PR#45,Review the code for pull request #45.,Medium,Pending,2024-08-27 05:25:15,2024-08-23 05:25:15,2024-08-23 05:25:15,,,,,,False
-10,1,Optimize image loading,Optimize the image loading process to reduce page load times.,Low,Pending,2024-08-28 05:25:15,2024-08-23 05:25:15,2024-08-23 05:25:15,,,,,,False
