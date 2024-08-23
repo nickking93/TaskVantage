@@ -1,6 +1,9 @@
 <div class="dashboard-container">
+  <!-- Sidebar Toggle Button for Mobile -->
+  <button class="sidebar-toggle" (click)="toggleSidebar()">☰</button>
+
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
     <div class="logo">
       <h1>TaskVantage</h1>
     </div>
@@ -31,7 +34,7 @@
   </div>
   
   <!-- Main Content Area -->
-  <div class="content-area">
+  <div class="content-area" [class.expanded]="isSidebarCollapsed">
     <!-- Conditionally render the tasks component if the route matches; otherwise, show the main dashboard -->
     <ng-container *ngIf="router.url === '/home/' + userId + '/tasks'; else mainDashboard">
       <app-tasks [userId]="userId"></app-tasks>

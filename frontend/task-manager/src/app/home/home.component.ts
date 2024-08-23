@@ -44,6 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   username: string = '';
   userId: string = '';
   isAddTaskModalOpen: boolean = false;
+  isSidebarCollapsed: boolean = false; // New property to track sidebar state
   newTask: Task = {
     title: '',
     description: '',
@@ -122,6 +123,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   closeAddTaskModal(): void {
     this.isAddTaskModalOpen = false;
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed; // Toggle sidebar state
+    console.log('Sidebar collapsed state:', this.isSidebarCollapsed);
   }
 
   createTask(): void {
@@ -259,6 +265,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     const end = new Date(
       now.getFullYear(),
       now.getMonth(),
+     
+
       now.getDate() + (6 - dayOfWeek)
     );
     return end.getTime();
