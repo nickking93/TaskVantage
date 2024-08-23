@@ -1,21 +1,30 @@
 <div class="tasks-container">
-    <h2>Tasks</h2>
-    
-    <!-- Display the list of tasks -->
-    <div *ngIf="tasks.length > 0; else noTasks">
-      <ul class="task-list">
-        <li *ngFor="let task of tasks">
-          <h3>{{ task.title }}</h3>
-          <p>{{ task.description }}</p>
-          <p><strong>Due Date:</strong> {{ task.dueDate | date }}</p>
-          <p><strong>Priority:</strong> {{ task.priority }}</p>
-        </li>
-      </ul>
-    </div>
-  
-    <!-- Fallback when no tasks are available -->
-    <ng-template #noTasks>
-      <p>No tasks available.</p>
-    </ng-template>
+  <h2>Tasks</h2>
+
+  <!-- Task Filter Links -->
+  <div class="task-filters">
+    <button (click)="filterTasks('today')" [class.active]="selectedFilter === 'today'">Today</button>
+    <button (click)="filterTasks('overdue')" [class.active]="selectedFilter === 'overdue'">Overdue</button>
+    <button (click)="filterTasks('inProgress')" [class.active]="selectedFilter === 'inProgress'">In Progress</button>
+    <button (click)="filterTasks('pending')" [class.active]="selectedFilter === 'pending'">Pending</button>
+    <button (click)="filterTasks('completed')" [class.active]="selectedFilter === 'completed'">Completed</button>
   </div>
-  
+
+  <!-- Display the list of tasks -->
+  <div *ngIf="filteredTasks.length > 0; else noTasks">
+    <ul class="task-list">
+      <li *ngFor="let task of filteredTasks">
+        <h3>{{ task.title }}</h3>
+        <p>{{ task.description }}</p>
+        <p><strong>Due Date:</strong> {{ task.dueDate | date }}</p>
+        <p><strong>Priority:</strong> {{ task.priority }}</p>
+        <p><strong>Status:</strong> {{ task.status }}</p>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Fallback when no tasks are available -->
+  <ng-template #noTasks>
+    <p>No tasks available.</p>
+  </ng-template>
+</div>
