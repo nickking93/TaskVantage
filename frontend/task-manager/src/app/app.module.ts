@@ -10,15 +10,13 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-
-import { SuccessDialogComponent } from './success-dialog/success-dialog.component';
+import { SharedModule } from './shared.module'; 
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RegisterComponent,
-    SuccessDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -30,6 +28,7 @@ import { SuccessDialogComponent } from './success-dialog/success-dialog.componen
     MatIconModule,
     HttpClientModule,
     MatDialogModule,
+    SharedModule
   ],
   bootstrap: [AppComponent]
 })
