@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
 import { FormsModule } from '@angular/forms'; 
@@ -17,6 +17,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';  
 import { Chart, registerables } from 'chart.js';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -38,7 +40,7 @@ import { Chart, registerables } from 'chart.js';
     TasksComponent
   ]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   username: string = '';
   userId: string = '';
   isAddTaskModalOpen: boolean = false;
@@ -60,6 +62,9 @@ export class HomeComponent implements OnInit {
   // Variable to hold recent completed tasks for the Activity section
   recentCompletedTasks: { title: string, timeAgo: string }[] = [];
 
+  // Subscription to track route changes
+  private routeSub: Subscription = new Subscription();
+
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
@@ -71,6 +76,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Listen for changes in the route parameters
     this.route.paramMap.subscribe(params => {
       this.userId = params.get('userId') || '';
       this.authService.getUserDetails().subscribe(user => {
@@ -87,6 +93,22 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/login']);
       });
     });
+
+    // Listen for route change events
+    this.routeSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.urlAfterRedirects === `/home/${this.userId}`) {
+          this.loadWeeklyTaskStatusChart();  // Reload the chart when navigating back to /home
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from routeSub to prevent memory leaks
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
   }
 
   isTasksRoute(): boolean {
@@ -173,27 +195,31 @@ export class HomeComponent implements OnInit {
   loadWeeklyTaskStatusChart(): void {
     this.taskService.getTasks(this.userId).subscribe((tasks) => {
       const startOfWeek = this.startOfWeek();
+      const endOfWeek = this.endOfWeek();
   
-      // Calculate the counts for each status
+      // Calculate the counts for each status based on dueDate
       const completed = tasks.filter(
         (task) =>
           task.status === 'Completed' &&
-          task.lastModifiedDate &&
-          new Date(task.lastModifiedDate).getTime() >= startOfWeek
+          task.dueDate &&
+          new Date(task.dueDate).getTime() >= startOfWeek &&
+          new Date(task.dueDate).getTime() <= endOfWeek
       ).length;
   
       const inProgress = tasks.filter(
         (task) =>
           task.status === 'In Progress' &&
-          task.lastModifiedDate &&
-          new Date(task.lastModifiedDate).getTime() >= startOfWeek
+          task.dueDate &&
+          new Date(task.dueDate).getTime() >= startOfWeek &&
+          new Date(task.dueDate).getTime() <= endOfWeek
       ).length;
   
       const pending = tasks.filter(
         (task) =>
           task.status === 'Pending' &&
-          task.lastModifiedDate &&
-          new Date(task.lastModifiedDate).getTime() >= startOfWeek
+          task.dueDate &&
+          new Date(task.dueDate).getTime() >= startOfWeek &&
+          new Date(task.dueDate).getTime() <= endOfWeek
       ).length;
   
       // Calculate the total number of tasks for the week
@@ -226,7 +252,17 @@ export class HomeComponent implements OnInit {
       });
     });
   }
-  
+
+  endOfWeek(): number {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const end = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + (6 - dayOfWeek)
+    );
+    return end.getTime();
+  }
 
   startOfWeek(): number {
     const now = new Date();
