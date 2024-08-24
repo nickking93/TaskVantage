@@ -47,7 +47,7 @@ export class TasksComponent implements OnInit {
   filterTasks(filter: string): void {
     this.selectedFilter = filter;
     const now = new Date();
-
+  
     switch (filter) {
       case 'today':
         this.filteredTasks = this.tasks.filter(task => {
@@ -58,7 +58,7 @@ export class TasksComponent implements OnInit {
       case 'overdue':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate < now;
+          return dueDate && dueDate < now && task.status !== 'Completed';
         });
         break;
       case 'inProgress':
@@ -74,4 +74,5 @@ export class TasksComponent implements OnInit {
         this.filteredTasks = this.tasks;
     }
   }
+  
 }

@@ -764,7 +764,7 @@ id,userId,title,description,priority,status,due_date,creation_date,last_modified
 763,1,Optimize database queries,Improve the performance of database queries by adding indexes and optimizing SQL queries.,High,Completed,2024-08-17 18:52:00,2024-08-17 18:52:00,2024-08-17 18:52:00,,,,,,False
 764,1,Update software dependencies,Update all software dependencies to the latest versions.,Low,Pending,2024-08-18 18:52:00,2024-08-18 18:52:00,2024-08-18 18:52:00,,,,,,True
 765,1,Organize project board,Organize the project board and ensure all tasks are properly categorized.,Low,Completed,2024-08-18 18:52:00,2024-08-18 18:52:00,2024-08-18 18:52:00,,,,,,False
-766,1,Optimize database queries,Improve the performance of database queries by adding indexes and optimizing SQL queries.,High,Pending,2024-08-19 18:52:00,2024-08-19 18:52:00,2024-08-19 18:52:00,,,,,,False
+766,1,Optimize database queries,Improve the performance of database queries by adding indexes and optimizing SQL queries.,High,Completed,2024-08-19 18:52:00,2024-08-19 18:52:00,2024-08-19 18:52:00,,,,,,False
 767,1,Clean up unused branches,Identify and delete any unused branches in the repository.,Low,Completed,2024-08-19 18:52:00,2024-08-19 18:52:00,2024-08-19 18:52:00,,,,,,False
 768,1,Write unit tests,Write unit tests for the newly implemented features to ensure code quality.,Medium,Completed,2024-08-20 18:52:00,2024-08-20 18:52:00,2024-08-20 18:52:00,,,,,,False
 769,1,Clean up unused branches,Identify and delete any unused branches in the repository.,Low,Completed,2024-08-20 18:52:00,2024-08-20 18:52:00,2024-08-20 18:52:00,,,,,,False
