@@ -82,7 +82,9 @@ public class TaskServiceImpl implements TaskService {
         long totalTasks = tasks.size();
         long totalSubtasks = tasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
         long pastDeadlineTasks = tasks.stream()
-                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDateTime.now()))
+                .filter(task -> task.getDueDate() != null &&
+                        task.getDueDate().isBefore(LocalDateTime.now()) &&
+                        !"Completed".equalsIgnoreCase(task.getStatus())) // Exclude completed tasks
                 .count();
 
         YearMonth currentMonth = YearMonth.now();
