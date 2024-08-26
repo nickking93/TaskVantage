@@ -38,9 +38,6 @@
             <mat-error *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
               Password is required
             </mat-error>
-            <mat-error *ngIf="registerForm.get('password')?.hasError('uppercase') && registerForm.get('password')?.touched">
-              Must contain an uppercase letter
-            </mat-error>
             <mat-error *ngIf="registerForm.get('password')?.hasError('lowercase') && registerForm.get('password')?.touched">
               Must a lowercase letter
             </mat-error>
@@ -48,7 +45,7 @@
               Must contain a number
             </mat-error>
             <mat-error *ngIf="registerForm.get('password')?.hasError('specialChar') && registerForm.get('password')?.touched">
-              Must contain a special character !&&#64;#$%^&*(),.?":&#123;&#125;|&lt;&gt;
+              Must contain a special character: <br>!-&&#64;#$%^&*(),.?":&#123;&#125;|&lt;&gt;
             </mat-error>
             <mat-error *ngIf="registerForm.get('password')?.hasError('minLength') && registerForm.get('password')?.touched">
               Must be at least 8 characters long

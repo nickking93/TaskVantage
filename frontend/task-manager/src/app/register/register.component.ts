@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 // Strong Password Validator
+// Strong Password Validator
 export function strongPasswordValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const password = control.value;
@@ -15,34 +16,37 @@ export function strongPasswordValidator(): ValidatorFn {
 
     const errors: ValidationErrors = {};
 
-    const hasUpperCase = /[A-Z]/.test(password);
-    if (!hasUpperCase) {
-      errors['uppercase'] = true;
-    }
-
+    // Check for lowercase letters
     const hasLowerCase = /[a-z]/.test(password);
     if (!hasLowerCase) {
       errors['lowercase'] = true;
     }
 
+    // Check for numeric characters
     const hasNumeric = /[0-9]/.test(password);
     if (!hasNumeric) {
       errors['numeric'] = true;
     }
 
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    // Check for special characters
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>-]/.test(password);
     if (!hasSpecialChar) {
       errors['specialChar'] = true;
     }
 
+    // Check for minimum length
     const hasMinLength = password.length >= 8;
     if (!hasMinLength) {
       errors['minLength'] = true;
     }
 
-    return Object.keys(errors).length ? errors : null;
+    // Return errors object, making sure that all errors are considered
+    return Object.keys(errors).length > 0 ? errors : null;
   };
 }
+
+
+
 
 // Password Match Validator
 export function passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
