@@ -87,7 +87,12 @@ public class TaskController {
         return ResponseEntity.ok(summary);
     }
 
-
+    // Start a task by setting its start date and changing its status to 'In Progress'
+    @PatchMapping("/{id}/start")
+    public ResponseEntity<Void> startTask(@PathVariable Long id) {
+        taskService.startTask(id, LocalDateTime.now());
+        return ResponseEntity.noContent().build();
+    }
 
     // Update an existing task
     @PutMapping("/{id}")

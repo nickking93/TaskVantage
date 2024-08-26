@@ -59,4 +59,46 @@ export class TaskService {
     console.error('TaskService Error:', error.message);
     return throwError(() => new Error('TaskService Error: ' + error.message));
   }
+
+  // Method to start a task (change status to 'In Progress')
+startTask(taskId: string): Observable<Task> {
+  const headers = this.authService.getAuthHeaders();
+  const url = `${this.tasksUrl}/${taskId}/start`;
+
+  return this.http.patch<Task>(url, null, { headers }).pipe(
+    map(response => {
+      console.log('Task started successfully:', response);
+      return response;
+    }),
+    catchError(this.handleError)
+  );
+}
+
+// Method to update/edit a task
+editTask(taskId: string, updatedTask: Partial<Task>): Observable<Task> {
+  const headers = this.authService.getAuthHeaders();
+  const url = `${this.tasksUrl}/${taskId}`;
+
+  return this.http.put<Task>(url, updatedTask, { headers }).pipe(
+    map(response => {
+      console.log('Task updated successfully:', response);
+      return response;
+    }),
+    catchError(this.handleError)
+  );
+}
+
+// Method to delete a task
+deleteTask(taskId: string): Observable<void> {
+  const headers = this.authService.getAuthHeaders();
+  const url = `${this.tasksUrl}/${taskId}`;
+
+  return this.http.delete<void>(url, { headers }).pipe(
+    map(response => {
+      console.log('Task deleted successfully');
+      return response;
+    }),
+    catchError(this.handleError)
+  );
+}
 }

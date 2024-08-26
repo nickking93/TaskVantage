@@ -17,10 +17,11 @@ public class TaskSummary {
     private LocalDateTime dueDate;
     private LocalDateTime creationDate;
     private LocalDateTime lastModifiedDate;
+    private LocalDateTime startDate;  // Add this line
 
-    // 8-argument constructor
+    // 9-argument constructor (Updated to include startDate)
     public TaskSummary(Long id, String title, String description, String priority, String status,
-                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate) {
+                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate, LocalDateTime startDate) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -29,6 +30,7 @@ public class TaskSummary {
         this.dueDate = dueDate;
         this.creationDate = creationDate;
         this.lastModifiedDate = lastModifiedDate;
+        this.startDate = startDate;  // Set the startDate
     }
 
     // No-argument constructor
@@ -98,6 +100,14 @@ public class TaskSummary {
 
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;  // Add this getter
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;  // Add this setter
     }
 
     public long getTotalTasks() {

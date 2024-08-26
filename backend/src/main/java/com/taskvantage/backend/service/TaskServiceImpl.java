@@ -107,4 +107,10 @@ public class TaskServiceImpl implements TaskService {
 
         return summary;
     }
+
+    // New method to start a task
+    @Override
+    public void startTask(Long taskId, LocalDateTime startDate) {
+        taskRepository.startTask(taskId, startDate);
+    }
 }

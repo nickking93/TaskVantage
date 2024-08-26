@@ -19,9 +19,25 @@
         <p><strong>Due Date:</strong> {{ task.dueDate | date }}</p>
         <p><strong>Priority:</strong> {{ task.priority }}</p>
         <p><strong>Status:</strong> {{ task.status }}</p>
+  
+        <!-- Conditionally display the start date if the task is in progress -->
+        <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.startDate | date }}</p>
+  
+        <!-- Hide all buttons if the 'completed' filter is selected -->
+        <ng-container *ngIf="selectedFilter !== 'completed'">
+          <!-- Conditionally hide the "Start Task" button based on filter and task status -->
+          <button *ngIf="selectedFilter !== 'inProgress' && !(selectedFilter === 'overdue' && task.status === 'In Progress')" 
+                  (click)="startTask(task)">Start Task</button>
+          <button (click)="editTask(task)">Edit</button>
+          <button (click)="deleteTask(task)">Delete</button>
+        </ng-container>
+  
+        <!-- Add horizontal line -->
+        <hr>
       </li>
     </ul>
   </div>
+  
 
   <!-- Fallback when no tasks are available -->
   <ng-template #noTasks>
