@@ -102,7 +102,7 @@ Contributions are welcome! If you find any bugs or have feature suggestions, fee
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](./policy.md) file for more details.
 
 ## Contact
 
