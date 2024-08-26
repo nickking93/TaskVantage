@@ -25,7 +25,7 @@ public class Task {
     private String priority;
 
     @Column(nullable = false)
-    private String status = "Pending";  // Default value for status
+    private String status = "Pending";
 
     @Column(name = "due_date")
     private LocalDateTime dueDate;
@@ -36,7 +36,11 @@ public class Task {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    @ElementCollection(fetch = FetchType.LAZY)  // Set to LAZY
+    // New field for storing the start date of the task
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "tag")
     private List<String> tags;
@@ -45,7 +49,7 @@ public class Task {
     @JoinColumn(name = "task_id")
     private List<Subtask> subtasks;
 
-    @ElementCollection(fetch = FetchType.LAZY)  // Set to LAZY
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "task_attachments", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "attachment")
     private List<String> attachments;
@@ -54,7 +58,7 @@ public class Task {
     @JoinColumn(name = "task_id")
     private List<Comment> comments;
 
-    @ElementCollection(fetch = FetchType.LAZY)  // Set to LAZY
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "task_reminders", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "reminder")
     private List<LocalDateTime> reminders;
@@ -139,6 +143,14 @@ public class Task {
 
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
     public List<String> getTags() {

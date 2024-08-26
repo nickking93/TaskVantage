@@ -8,6 +8,7 @@ export class Task {
   userId?: string;
   status?: string; 
   lastModifiedDate?: string; 
+  startDate?: string;
 
   constructor(
     title: string,
@@ -17,7 +18,8 @@ export class Task {
     recurring: boolean,
     userId?: string,
     status?: string, 
-    lastModifiedDate?: string 
+    lastModifiedDate?: string,
+    startDate?: string
   ) {
     this.title = title;
     this.description = description;
@@ -27,5 +29,6 @@ export class Task {
     this.userId = userId;
     this.status = status; 
     this.lastModifiedDate = lastModifiedDate; 
+    this.startDate = startDate;
   }
 }
