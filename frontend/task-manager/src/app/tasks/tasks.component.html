@@ -26,8 +26,7 @@
         <!-- Hide all buttons if the 'completed' filter is selected -->
         <ng-container *ngIf="selectedFilter !== 'completed'">
           <!-- Conditionally hide the "Start Task" button based on filter and task status -->
-          <button *ngIf="selectedFilter !== 'inProgress' && !(selectedFilter === 'overdue' && task.status === 'In Progress')" 
-                  (click)="startTask(task)">Start Task</button>
+          <button *ngIf="task.status !== 'In Progress'" (click)="startTask(task)">Start Task</button>
           <button (click)="editTask(task)">Edit</button>
           <button (click)="deleteTask(task)">Delete</button>
         </ng-container>

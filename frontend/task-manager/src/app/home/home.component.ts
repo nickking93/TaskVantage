@@ -44,7 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   username: string = '';
   userId: string = '';
   isAddTaskModalOpen: boolean = false;
-  isSidebarCollapsed: boolean = false; // New property to track sidebar state
+  isSidebarCollapsed: boolean = false;
   newTask: Task = {
     title: '',
     description: '',
@@ -60,8 +60,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   completedTasksThisMonth: number = 0;
   totalTasksThisMonth: number = 0;
 
+  // Variable to hold tasks due today
+  tasksDueToday: Task[] = [];
+
   // Variable to hold recent completed tasks for the Activity section
   recentCompletedTasks: { title: string, timeAgo: string }[] = [];
+
+  // Variable to hold chart instance
+  taskStatusChart: Chart | undefined;
 
   // Subscription to track route changes
   private routeSub: Subscription = new Subscription();
@@ -84,6 +90,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (user.id.toString() === this.userId) {
           this.username = user.username;
           this.fetchTaskSummary();  
+          this.fetchTasksDueToday(); // Fetch tasks due today
           this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
           this.loadWeeklyTaskStatusChart();  // Load the weekly task status chart
         } else {
@@ -112,6 +119,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  fetchTasksDueToday(): void {
+    this.taskService.getTasks(this.userId).subscribe(tasks => {
+      const today = new Date().toISOString().split('T')[0];
+      this.tasksDueToday = tasks.filter(task => task.dueDate && task.dueDate.startsWith(today));
+    }, error => {
+      console.error('Failed to fetch tasks due today:', error);
+    });
+  }
+
   isTasksRoute(): boolean {
     return this.router.url === `/home/${this.userId}/tasks`;
   }
@@ -126,7 +142,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   toggleSidebar(): void {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed; // Toggle sidebar state
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
     console.log('Sidebar collapsed state:', this.isSidebarCollapsed);
   }
 
@@ -137,6 +153,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.closeAddTaskModal();
         this.openSuccessDialog();  
         this.fetchTaskSummary();  
+        this.fetchTasksDueToday();  // Refresh tasks due today
         this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
         this.loadWeeklyTaskStatusChart();  // Refresh the chart data
       },
@@ -203,7 +220,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       const startOfWeek = this.startOfWeek();
       const endOfWeek = this.endOfWeek();
   
-      // Calculate the counts for each status based on dueDate
       const completed = tasks.filter(
         (task) =>
           task.status === 'Completed' &&
@@ -228,10 +244,15 @@ export class HomeComponent implements OnInit, OnDestroy {
           new Date(task.dueDate).getTime() <= endOfWeek
       ).length;
   
-      // Calculate the total number of tasks for the week
       const totalTasksForWeek = completed + inProgress + pending;
   
-      new Chart('taskStatusChart', {
+      // Destroy the existing chart if it exists
+      if (this.taskStatusChart) {
+        this.taskStatusChart.destroy();
+      }
+  
+      // Recreate the chart
+      this.taskStatusChart = new Chart('taskStatusChart', {
         type: 'bar',
         data: {
           labels: ['Completed', 'In Progress', 'Pending'],
@@ -246,27 +267,26 @@ export class HomeComponent implements OnInit, OnDestroy {
           scales: {
             y: {
               beginAtZero: true,
-              max: totalTasksForWeek, // Set the max value to the total number of tasks for the week
+              max: totalTasksForWeek,
             },
           },
           plugins: {
             legend: {
-              display: false, // Ensure the legend is disabled
+              display: false,
             },
           },
         },
       });
     });
   }
+  
 
   endOfWeek(): number {
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const dayOfWeek = now.getDay();
     const end = new Date(
       now.getFullYear(),
       now.getMonth(),
-     
-
       now.getDate() + (6 - dayOfWeek)
     );
     return end.getTime();
@@ -274,7 +294,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   startOfWeek(): number {
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const dayOfWeek = now.getDay();
     const start = new Date(
       now.getFullYear(),
       now.getMonth(),
