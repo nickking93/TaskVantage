@@ -27,8 +27,8 @@ TaskVantage is a comprehensive task management web application designed to help 
   - JPA/Hibernate for database interaction
 
 - **Deployment**:
-  - Docker for containerization
   - Azure DevOps for CI/CD pipeline
+  - Azure App Services
 
 ## Installation
 
@@ -43,7 +43,7 @@ TaskVantage is a comprehensive task management web application designed to help 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YourGitHubUsername/TaskVantage.git
+   git clone https://github.com/quigonwhiskey/TaskVantage.git
    ```
 2. Navigate to the frontend directory:
    ```bash
@@ -76,18 +76,6 @@ TaskVantage is a comprehensive task management web application designed to help 
    ```
    The backend should now be running at `http://localhost:8080`.
 
-### Docker Setup (Optional)
-
-1. Build the Docker images for both frontend and backend:
-   ```bash
-   docker-compose build
-   ```
-2. Run the containers:
-   ```bash
-   docker-compose up
-   ```
-   The application should now be accessible at the configured host and port.
-
 ## Usage
 
 - Register or log in with your credentials.
@@ -108,5 +96,5 @@ This project is licensed under the MIT License. See the [LICENSE](./policy.md) f
 
 For any inquiries or support, you can reach me at:
 - Email: [nickking93@live.com](mailto:nickking93@live.com)
-- LinkedIn: [LinkedIn](www.linkedin.com/in/rnking93)
+- LinkedIn: [LinkedIn](https://linkedin.com/in/rnking93)
 - GitHub: [GitHub](https://github.com/quigonwhiskey)
