@@ -81,11 +81,9 @@
       </div>
 
       <!-- Calendar Section -->
-      <div class="calendar">
-        <div class="chart">
-          <h2>Calendar</h2>
-          <p>Coming soon!</p>
-        </div>
+      <div class="chart" id="calendar-section">
+        <h2>Calendar</h2>
+        <p>Coming soon!</p>
       </div>
     </div>
     
@@ -99,47 +97,5 @@
         </ul>
       </div>
     </ng-template>
-  </div>
-</div>
-
-<!-- Modal for Adding a Task -->
-<div class="modal" id="addTaskModal" *ngIf="isAddTaskModalOpen">
-  <div class="modal-content">
-    <span class="close" (click)="closeAddTaskModal()">&times;</span>
-    <h2>Add New Task</h2>
-    <form (ngSubmit)="createTask()" class="task-form">
-      <div fxLayout="column" fxLayoutGap="20px">
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Title</mat-label>
-          <input matInput [(ngModel)]="newTask.title" name="title" required>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Description</mat-label>
-          <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Due Date</mat-label>
-          <input matInput [matDatepicker]="picker" [(ngModel)]="newTask.dueDate" name="dueDate" required>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Priority</mat-label>
-          <mat-select [(ngModel)]="newTask.priority" name="priority" required>
-            <mat-option value="High">High</mat-option>
-            <mat-option value="Medium">Medium</mat-option>
-            <mat-option value="Low">Low</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
-        <div class="button-container">
-          <button mat-raised-button color="primary" type="submit">Create Task</button>
-        </div>
-      </div>
-    </form>
   </div>
 </div>
