@@ -1,3 +1,4 @@
+/* General Styling */
 .login-form mat-form-field + mat-form-field {
   margin-left: 8px;
 }
@@ -179,9 +180,60 @@ img {
   background-color: #1f5aa0;
 }
 
-@media (max-width: 1920px) {
+/* Mobile Optimization */
+@media only screen and (max-width: 768px) {
+  .row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .column {
+    width: 100%;
+    padding: 5px;
+  }
+
+  .logo {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .logo-img {
+    width: 80px;
+    padding-bottom: 20px;
+  }
+
+  .logo-h1 {
+    font-size: 200%;
+    text-align: center;
+    padding-bottom: 20px;
+  }
+
+  .register-form, mat-form-field {
+    width: 100%;
+  }
+
+  .google-signin-button,
+  .facebook-signin-button,
+  .appleid-signin,
   .register-button {
-    width: calc(100% - 20px); 
-    max-width: 360px; 
+    width: 90%;
+  }
+
+  .clipboard-img {
+    padding-top: 10%;
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  .designed-by {
+    padding-left: 0;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .centered-link {
+    padding-left: 0;
+    text-align: center;
+    font-size: 14px;
   }
 }

@@ -1,3 +1,4 @@
+/* General Styling */
 .login-form mat-form-field + mat-form-field {
   margin-left: 8px;
 }
@@ -12,7 +13,7 @@
   align-items: center;
 }
 
-.logo-h1{
+.logo-h1 {
   font-size: 250%;
   color: #2365B2;
   font-weight: bold;
@@ -152,4 +153,66 @@ img {
 .privacy-link {
   display: inline-block;
   margin-top: 10px;
+}
+
+/* Mobile Optimization */
+@media only screen and (max-width: 768px) {
+  .row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .column {
+    width: 100%;
+    padding: 5px;
+  }
+
+  .logo {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .logo-img {
+    width: 80px;
+    padding-bottom: 20px;
+  }
+
+  .logo-h1 {
+    font-size: 200%;
+    text-align: center;
+    padding-bottom: 20px;
+  }
+
+  .login-form mat-form-field {
+    width: 100%;
+  }
+
+  .google-signin-button,
+  .facebook-signin-button,
+  .appleid-signin,
+  .login-button {
+    width: 90%;
+  }
+
+  .clipboard-img {
+    padding-top: 10%;
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  .designed-by {
+    padding-left: 0;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .link-container {
+    width: 100%;
+    padding: 10px 0;
+  }
+
+  .register-link,
+  .privacy-link {
+    font-size: 14px;
+  }
 }
