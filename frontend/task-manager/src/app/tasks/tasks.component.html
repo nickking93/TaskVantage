@@ -1,14 +1,44 @@
 <div class="tasks-container">
   <h2>Tasks</h2>
 
-  <!-- Task Filter Links -->
-  <div class="task-filters">
-    <button (click)="filterTasks('today')" [class.active]="selectedFilter === 'today'">Today</button>
-    <button (click)="filterTasks('overdue')" [class.active]="selectedFilter === 'overdue'">Overdue</button>
-    <button (click)="filterTasks('inProgress')" [class.active]="selectedFilter === 'inProgress'">In Progress</button>
-    <button (click)="filterTasks('pending')" [class.active]="selectedFilter === 'pending'">Pending</button>
-    <button (click)="filterTasks('completed')" [class.active]="selectedFilter === 'completed'">Completed</button>
-  </div>
+<!-- Task Filter Links -->
+<div class="task-filters">
+  <button 
+      mat-raised-button 
+      class="task-filter-button" 
+      (click)="filterTasks('today')" 
+      [class.active]="selectedFilter === 'today'">
+    Today
+  </button>
+  <button 
+      mat-raised-button 
+      class="task-filter-button" 
+      (click)="filterTasks('overdue')" 
+      [class.active]="selectedFilter === 'overdue'">
+    Overdue
+  </button>
+  <button 
+      mat-raised-button 
+      class="task-filter-button" 
+      (click)="filterTasks('inProgress')" 
+      [class.active]="selectedFilter === 'inProgress'">
+    In Progress
+  </button>
+  <button 
+      mat-raised-button 
+      class="task-filter-button" 
+      (click)="filterTasks('pending')" 
+      [class.active]="selectedFilter === 'pending'">
+    Pending
+  </button>
+  <button 
+      mat-raised-button 
+      class="task-filter-button" 
+      (click)="filterTasks('completed')" 
+      [class.active]="selectedFilter === 'completed'">
+    Completed
+  </button>
+</div>
 
   <!-- Display the list of tasks -->
   <div *ngIf="filteredTasks.length > 0; else noTasks">
@@ -25,12 +55,35 @@
   
         <!-- Hide all buttons if the 'completed' filter is selected -->
         <ng-container *ngIf="selectedFilter !== 'completed'">
-          <!-- "Mark as Completed" button for tasks in progress -->
-          <button *ngIf="task.status === 'In Progress'" (click)="markTaskAsCompleted(task)">Mark as Completed</button>
-          <!-- Conditionally hide the "Start Task" button based on filter and task status -->
-          <button *ngIf="task.status !== 'In Progress'" (click)="startTask(task)">Start Task</button>
-          <button (click)="editTask(task)">Edit</button>
-          <button (click)="deleteTask(task)">Delete</button>
+          <!-- "Mark Completed" button for tasks in progress -->
+          <button 
+              mat-raised-button 
+              class="task-action-button mark-completed-button" 
+              *ngIf="task.status === 'In Progress'" 
+              (click)="markTaskAsCompleted(task)">
+            Mark Completed
+          </button>
+          <!-- "Start Task" button -->
+          <button 
+              mat-raised-button 
+              class="task-action-button start-task-button" 
+              *ngIf="task.status !== 'In Progress'" 
+              (click)="startTask(task)">
+            Start Task
+          </button>
+          <!-- Edit and Delete buttons -->
+          <button 
+              mat-raised-button 
+              class="task-action-button edit-button" 
+              (click)="editTask(task)">
+            Edit
+          </button>
+          <button 
+              mat-raised-button 
+              class="task-action-button delete-button" 
+              (click)="deleteTask(task)">
+            Delete
+          </button>
         </ng-container>
   
         <!-- Add horizontal line -->
@@ -38,7 +91,6 @@
       </li>
     </ul>
   </div>
-  
 
   <!-- Fallback when no tasks are available -->
   <ng-template #noTasks>

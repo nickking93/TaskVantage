@@ -1,0 +1,50 @@
+/* General styling for all task action buttons */
+.task-action-button {
+    background-color: #2365B2;
+    color: white;
+    font-size: 12px;
+    padding: 4px 8px;
+    margin-left: 8px;
+    border-radius: 4px;
+    min-width: 80px;
+  }
+  
+  /* Specific styles for different button types */
+  .mark-completed-button {
+    background-color: #28a745; /* Green */
+  }
+  
+  .start-task-button {
+    background-color: #ffc107; /* Yellow */
+  }
+  
+  .edit-button {
+    background-color: #007bff; /* Blue */
+  }
+  
+  .delete-button {
+    background-color: #dc3545; /* Red */
+  }
+  
+  /* Task filter button styles */
+  .task-filter-button {
+    background-color: #2365B2;
+    color: white;
+    font-size: 14px;
+    padding: 6px 12px;
+    margin: 0 5px;
+    border-radius: 4px;
+    min-width: 100px;
+  }
+  
+  /* Hover effect for all buttons */
+  .task-action-button:hover,
+  .task-filter-button:hover {
+    opacity: 0.9;
+  }
+  
+  /* Active filter button style */
+  .task-filter-button.active {
+    background-color: #11A3F8; /* Slightly brighter blue for active state */
+  }
+  

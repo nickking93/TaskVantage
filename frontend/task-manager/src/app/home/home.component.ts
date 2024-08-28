@@ -120,11 +120,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   fetchTasksDueToday(): void {
-    this.taskService.getTasks(this.userId).subscribe(tasks => {
+    this.taskService.fetchTasks(this.userId, (tasks) => {
       const today = new Date().toISOString().split('T')[0];
-      this.tasksDueToday = tasks.filter(task => task.dueDate && task.dueDate.startsWith(today));
-    }, error => {
-      console.error('Failed to fetch tasks due today:', error);
+      this.tasksDueToday = tasks.filter(task => task.dueDate && task.dueDate.startsWith(today) && task.status !== 'Completed');
     });
   }
 
@@ -170,6 +168,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  startTask(task: Task): void {
+    this.taskService.handleStartTask(task, () => this.fetchTasksDueToday());
+  }
+
   fetchTaskSummary(): void {
     this.taskService.getTaskSummary(this.userId).subscribe(summary => {
       this.totalTasks = summary.totalTasks;
@@ -183,7 +185,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   fetchRecentCompletedTasks(): void {
-    this.taskService.getTasks(this.userId).subscribe(tasks => {
+    this.taskService.fetchTasks(this.userId, (tasks) => {
       const completedTasks = tasks
         .filter(task => task.status === 'Completed')
         .sort((a, b) => {
@@ -197,8 +199,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         title: task.title,
         timeAgo: this.calculateTimeAgo(task.lastModifiedDate ? new Date(task.lastModifiedDate) : new Date())
       }));
-    }, error => {
-      console.error('Failed to fetch recent completed tasks:', error);
     });
   }
 
@@ -216,7 +216,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadWeeklyTaskStatusChart(): void {
-    this.taskService.getTasks(this.userId).subscribe((tasks) => {
+    this.taskService.fetchTasks(this.userId, (tasks) => {
       const startOfWeek = this.startOfWeek();
       const endOfWeek = this.endOfWeek();
   
@@ -315,5 +315,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   get currentUrl(): string {
     return this.router.url;
+  }
+
+  markTaskAsCompleted(task: Task): void {
+    this.taskService.handleMarkTaskAsCompleted(task, () => this.fetchTasksDueToday());
   }
 }
