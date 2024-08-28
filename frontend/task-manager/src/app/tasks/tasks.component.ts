@@ -110,29 +110,47 @@ export class TasksComponent implements OnInit {
     const now = new Date();
   
     switch (filter) {
-      case 'today':
-        this.filteredTasks = this.tasks.filter(task => {
-          const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate.toDateString() === now.toDateString();
-        });
-        break;
-      case 'overdue':
-        this.filteredTasks = this.tasks.filter(task => {
-          const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate < now && task.status !== 'Completed';
-        });
-        break;
-      case 'inProgress':
-        this.filteredTasks = this.tasks.filter(task => task.status === 'In Progress');
-        break;
-      case 'pending':
-        this.filteredTasks = this.tasks.filter(task => task.status === 'Pending');
-        break;
-      case 'completed':
-        this.filteredTasks = this.tasks.filter(task => task.status === 'Completed');
-        break;
-      default:
-        this.filteredTasks = this.tasks;
+        case 'today':
+            this.filteredTasks = this.tasks.filter(task => {
+                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+                return dueDate && dueDate.toDateString() === now.toDateString() && task.status !== 'Completed';
+            });
+            break;
+        case 'overdue':
+            this.filteredTasks = this.tasks.filter(task => {
+                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+                return dueDate && dueDate < now && task.status !== 'Completed';
+            });
+            break;
+        case 'inProgress':
+            this.filteredTasks = this.tasks.filter(task => task.status === 'In Progress');
+            break;
+        case 'pending':
+            this.filteredTasks = this.tasks.filter(task => task.status === 'Pending');
+            break;
+        case 'completed':
+            this.filteredTasks = this.tasks.filter(task => task.status === 'Completed');
+            break;
+        default:
+            this.filteredTasks = this.tasks;
     }
-  }
+}
+
+
+  markTaskAsCompleted(task: Task): void {
+    this.taskService.markTaskAsCompleted(task.id!).subscribe(
+      () => {
+        this.dialog.open(SuccessDialogComponent, {
+          data: {
+            message: 'Task has been marked as completed!'
+          }
+        }).afterClosed().subscribe(() => {
+          this.fetchTasks(); // Refresh the task list after marking as completed
+        });
+      },
+      (error) => {
+        console.error('Failed to mark task as completed:', error);
+      }
+    );
+  }  
 }

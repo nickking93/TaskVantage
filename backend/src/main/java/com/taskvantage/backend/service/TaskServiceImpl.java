@@ -1,6 +1,7 @@
 package com.taskvantage.backend.service;
 
 import com.taskvantage.backend.dto.TaskSummary;
+import com.taskvantage.backend.exception.TaskNotFoundException;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,4 +114,18 @@ public class TaskServiceImpl implements TaskService {
     public void startTask(Long taskId, LocalDateTime startDate) {
         taskRepository.startTask(taskId, startDate);
     }
+
+    @Override
+    public void markTaskAsCompleted(Long taskId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            task.setStatus("Completed");
+            task.setLastModifiedDate(LocalDateTime.now());
+            taskRepository.save(task);
+        } else {
+            throw new TaskNotFoundException("Task not found with id " + taskId);
+        }
+    }
+
 }

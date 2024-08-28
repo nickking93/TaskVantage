@@ -25,6 +25,8 @@
   
         <!-- Hide all buttons if the 'completed' filter is selected -->
         <ng-container *ngIf="selectedFilter !== 'completed'">
+          <!-- "Mark as Completed" button for tasks in progress -->
+          <button *ngIf="task.status === 'In Progress'" (click)="markTaskAsCompleted(task)">Mark as Completed</button>
           <!-- Conditionally hide the "Start Task" button based on filter and task status -->
           <button *ngIf="task.status !== 'In Progress'" (click)="startTask(task)">Start Task</button>
           <button (click)="editTask(task)">Edit</button>

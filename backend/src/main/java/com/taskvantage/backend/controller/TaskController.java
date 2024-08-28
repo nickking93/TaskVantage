@@ -94,6 +94,14 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
+
+    // Mark a task as completed
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<Void> markTaskAsCompleted(@PathVariable Long id) {
+        taskService.markTaskAsCompleted(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // Update an existing task
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {

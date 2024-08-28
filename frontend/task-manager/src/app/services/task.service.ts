@@ -88,6 +88,19 @@ editTask(taskId: string, updatedTask: Partial<Task>): Observable<Task> {
   );
 }
 
+markTaskAsCompleted(taskId: string): Observable<Task> {
+  const headers = this.authService.getAuthHeaders();
+  const url = `${this.tasksUrl}/${taskId}/complete`;
+
+  return this.http.patch<Task>(url, null, { headers }).pipe(
+    map(response => {
+      console.log('Task marked as completed successfully:', response);
+      return response;
+    }),
+    catchError(this.handleError)
+  );
+}
+
 // Method to delete a task
 deleteTask(taskId: string): Observable<void> {
   const headers = this.authService.getAuthHeaders();
