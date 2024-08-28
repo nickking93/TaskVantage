@@ -56,6 +56,9 @@ public class DataLoader {
                         task.setStatus(record.get("status"));
                         task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter));
                         task.setCreationDate(LocalDateTime.parse(record.get("creation_date"), formatter));
+                        task.setActualStart(LocalDateTime.parse(record.get("actual_start"), formatter)); // Updated field
+                        task.setScheduledStart(LocalDateTime.parse(record.get("scheduledStart"), formatter)); // New field
+                        task.setCompletionDateTime(LocalDateTime.parse(record.get("completionDateTime"), formatter)); // New field
                         task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter));
                         task.setRecurring(Boolean.parseBoolean(record.get("recurring")));
                         task.setUserId(user.getId());  // Associate task with the created user

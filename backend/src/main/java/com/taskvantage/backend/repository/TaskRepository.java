@@ -8,19 +8,24 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(t.id, t.title, t.description, t.priority, t.status, t.dueDate, t.creationDate, t.lastModifiedDate, t.startDate) " +
+    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(t.id, t.title, t.description, t.priority, t.status, t.dueDate, t.creationDate, t.lastModifiedDate, t.actualStart, t.completionDateTime, t.duration) " +
             "FROM Task t WHERE t.userId = :userId")
     List<TaskSummary> findTaskSummariesByUserId(Long userId);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE Task t SET t.actualStart = :actualStart, t.status = 'In Progress' WHERE t.id = :taskId")
+    void startTask(Long taskId, LocalDateTime actualStart);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Task t SET t.startDate = :startDate, t.status = 'In Progress' WHERE t.id = :taskId")
-    void startTask(Long taskId, LocalDateTime startDate);
+    @Query("UPDATE Task t SET t.completionDateTime = :completionDateTime, t.duration = :duration, t.status = 'Completed' WHERE t.id = :taskId")
+    void completeTask(Long taskId, LocalDateTime completionDateTime, Duration duration);
 }

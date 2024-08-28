@@ -1,5 +1,6 @@
 package com.taskvantage.backend.dto;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class TaskSummary {
@@ -17,11 +18,14 @@ public class TaskSummary {
     private LocalDateTime dueDate;
     private LocalDateTime creationDate;
     private LocalDateTime lastModifiedDate;
-    private LocalDateTime startDate;  // Add this line
+    private LocalDateTime actualStart;  // Updated field
+    private LocalDateTime completionDateTime;  // New field
+    private Duration duration;  // New field
 
-    // 9-argument constructor (Updated to include startDate)
+    // 11-argument constructor (Updated to include actualStart, completionDateTime, and duration)
     public TaskSummary(Long id, String title, String description, String priority, String status,
-                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate, LocalDateTime startDate) {
+                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate,
+                       LocalDateTime actualStart, LocalDateTime completionDateTime, Duration duration) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -30,7 +34,9 @@ public class TaskSummary {
         this.dueDate = dueDate;
         this.creationDate = creationDate;
         this.lastModifiedDate = lastModifiedDate;
-        this.startDate = startDate;  // Set the startDate
+        this.actualStart = actualStart;  // Set the actualStart
+        this.completionDateTime = completionDateTime;  // Set the completionDateTime
+        this.duration = duration;  // Set the duration
     }
 
     // No-argument constructor
@@ -102,12 +108,28 @@ public class TaskSummary {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;  // Add this getter
+    public LocalDateTime getActualStart() {
+        return actualStart;  // Updated getter
     }
 
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;  // Add this setter
+    public void setActualStart(LocalDateTime actualStart) {
+        this.actualStart = actualStart;  // Updated setter
+    }
+
+    public LocalDateTime getCompletionDateTime() {
+        return completionDateTime;  // New getter
+    }
+
+    public void setCompletionDateTime(LocalDateTime completionDateTime) {
+        this.completionDateTime = completionDateTime;  // New setter
+    }
+
+    public Duration getDuration() {
+        return duration;  // New getter
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;  // New setter
     }
 
     public long getTotalTasks() {

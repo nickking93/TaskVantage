@@ -1,6 +1,7 @@
 package com.taskvantage.backend.model;
 
 import jakarta.persistence.*;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,9 +37,18 @@ public class Task {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    // New field for storing the start date of the task
-    @Column(name = "start_date")
-    private LocalDateTime startDate;
+    @Column(name = "actual_start")
+    private LocalDateTime actualStart;
+
+    // New fields
+    @Column(name = "scheduledStart")
+    private LocalDateTime scheduledStart;
+
+    @Column(name = "completionDateTime")
+    private LocalDateTime completionDateTime;
+
+    @Column(name = "duration")
+    private Duration duration;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
@@ -145,12 +155,36 @@ public class Task {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;
+
+    public LocalDateTime getActualStart() {
+        return actualStart;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
+    public void setActualStart(LocalDateTime actualStart) {
+        this.actualStart = actualStart;
+    }
+
+    public LocalDateTime getScheduledStart() {
+        return scheduledStart;
+    }
+
+    public void setScheduledStart(LocalDateTime scheduledStart) {
+        this.scheduledStart = scheduledStart;
+    }
+
+    public LocalDateTime getCompletionDateTime() {
+        return completionDateTime;
+    }
+
+    public void setCompletionDateTime(LocalDateTime completionDateTime) {
+        this.completionDateTime = completionDateTime;
+        if (this.actualStart != null && completionDateTime != null) {
+            this.duration = Duration.between(this.actualStart, completionDateTime);
+        }
+    }
+
+    public Duration getDuration() {
+        return duration;
     }
 
     public List<String> getTags() {
@@ -199,5 +233,8 @@ public class Task {
 
     public void setRecurring(boolean recurring) {
         this.recurring = recurring;
+    }
+
+    public void setDuration(Duration duration) {
     }
 }
