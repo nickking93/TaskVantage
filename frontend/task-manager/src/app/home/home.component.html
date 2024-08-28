@@ -11,7 +11,7 @@
       <li 
         class="menu-item" 
         [class.active]="isActive('/home/' + userId) && !isAddTaskModalOpen">
-        <a [routerLink]="['/home', userId]">Home</a>
+        <a [routerLink]="['/home', userId]" (click)="reloadData()">Home</a>
       </li>
       <li 
         class="menu-item" 
