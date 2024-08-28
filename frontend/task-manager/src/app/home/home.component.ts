@@ -45,10 +45,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   userId: string = '';
   isAddTaskModalOpen: boolean = false;
   isSidebarCollapsed: boolean = false;
+
+  // Added properties for date and time
+  dueDate: string = '';
+  dueTime: string = '';
+  scheduledStartDate: string = '';
+  scheduledStartTime: string = '';
+
   newTask: Task = {
     title: '',
     description: '',
     dueDate: '',
+    scheduledStart: '',
     priority: 'Medium',
     recurring: false,
   };
@@ -146,6 +154,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   createTask(): void {
     this.newTask.userId = this.userId;
+  
+    // Convert date strings to proper format
+    const formattedDueDate = this.formatDate(this.dueDate);
+    const formattedScheduledStartDate = this.formatDate(this.scheduledStartDate);
+  
+    // Combine date and time into a full datetime string for dueDate
+    this.newTask.dueDate = this.combineDateAndTime(formattedDueDate, this.dueTime);
+  
+    // Combine date and time into a full datetime string for scheduledStart
+    this.newTask.scheduledStart = this.combineDateAndTime(formattedScheduledStartDate, this.scheduledStartTime);
+  
     this.taskService.createTask(this.newTask).subscribe(
       () => {
         this.closeAddTaskModal();
@@ -159,6 +178,20 @@ export class HomeComponent implements OnInit, OnDestroy {
         console.error('Failed to create task:', error);
       }
     );
+  }
+  
+  // Helper method to format the date to YYYY-MM-DD
+  formatDate(date: string): string {
+    const parsedDate = new Date(date);
+    const year = parsedDate.getFullYear();
+    const month = (`0${parsedDate.getMonth() + 1}`).slice(-2);
+    const day = (`0${parsedDate.getDate()}`).slice(-2);
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Helper method to combine date and time into a full datetime string
+  combineDateAndTime(date: string, time: string): string {
+    return `${date}T${time}:00`;
   }
 
   openSuccessDialog(): void {

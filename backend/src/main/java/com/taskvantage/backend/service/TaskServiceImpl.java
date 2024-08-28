@@ -7,6 +7,7 @@ import com.taskvantage.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -58,18 +59,28 @@ public class TaskServiceImpl implements TaskService {
             existingTask.setStatus(updatedTask.getStatus());
             existingTask.setDueDate(updatedTask.getDueDate());
             existingTask.setLastModifiedDate(LocalDateTime.now());
+            existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Update scheduledStart
+            existingTask.setActualStart(updatedTask.getActualStart()); // Update actualStart
+            existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Update completionDateTime
             existingTask.setTags(updatedTask.getTags());
             existingTask.setSubtasks(updatedTask.getSubtasks());
             existingTask.setAttachments(updatedTask.getAttachments());
             existingTask.setComments(updatedTask.getComments());
             existingTask.setReminders(updatedTask.getReminders());
             existingTask.setRecurring(updatedTask.isRecurring());
+            // Calculate the duration if completionDateTime and actualStart are present
+            if (updatedTask.getCompletionDateTime() != null && updatedTask.getActualStart() != null) {
+                Duration duration = Duration.between(updatedTask.getActualStart(), updatedTask.getCompletionDateTime());
+                existingTask.setDuration(duration);
+            }
 
             return taskRepository.save(existingTask);
         } else {
-            return null;
+            // Consider throwing an exception if the task is not found
+            throw new TaskNotFoundException("Task with id " + updatedTask.getId() + " not found.");
         }
     }
+
 
     @Override
     public void deleteTask(Long id) {

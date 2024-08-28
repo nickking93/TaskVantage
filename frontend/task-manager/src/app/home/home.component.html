@@ -152,7 +152,7 @@
           </li>
         </ul>
       </div>
-      <!-- Modal for Adding a Task -->
+    <!-- Modal for Adding a Task -->
 <div class="modal" id="addTaskModal" *ngIf="isAddTaskModalOpen">
   <div class="modal-content">
     <span class="close" (click)="closeAddTaskModal()">&times;</span>
@@ -169,11 +169,32 @@
           <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
         </mat-form-field>
 
+        <!-- Due Date -->
         <mat-form-field appearance="fill" class="form-field">
           <mat-label>Due Date</mat-label>
-          <input matInput [matDatepicker]="picker" [(ngModel)]="newTask.dueDate" name="dueDate" required>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
+          <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required>
+          <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #dueDatePicker></mat-datepicker>
+        </mat-form-field>
+
+        <!-- Due Time -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Due Time</mat-label>
+          <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
+        </mat-form-field>
+
+        <!-- Scheduled Start Date -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Scheduled Start Date</mat-label>
+          <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required>
+          <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
+        </mat-form-field>
+
+        <!-- Scheduled Start Time -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Scheduled Start Time</mat-label>
+          <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
         </mat-form-field>
 
         <mat-form-field appearance="fill" class="form-field">
