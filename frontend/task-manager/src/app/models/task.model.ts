@@ -7,6 +7,9 @@ export class Task {
   recurring: boolean;
   userId?: string;
   status?: string; 
+  scheduledStart?: string;
+  completion_date_time?: string;
+  duration?: string;
   lastModifiedDate?: string; 
   startDate?: string;
 
@@ -18,6 +21,9 @@ export class Task {
     recurring: boolean,
     userId?: string,
     status?: string, 
+    scheduledStart?: string,
+    completion_date_time?: string,
+    duration?: string,
     lastModifiedDate?: string,
     startDate?: string
   ) {
@@ -28,6 +34,9 @@ export class Task {
     this.recurring = recurring;
     this.userId = userId;
     this.status = status; 
+    this.scheduledStart = scheduledStart;
+    this.completion_date_time = completion_date_time;
+    this.duration = duration;
     this.lastModifiedDate = lastModifiedDate; 
     this.startDate = startDate;
   }
