@@ -40,7 +40,6 @@ public class Task {
     @Column(name = "actual_start")
     private LocalDateTime startDate;
 
-    // New fields
     @Column(name = "scheduledStart")
     private LocalDateTime scheduledStart;
 
@@ -187,6 +186,10 @@ public class Task {
         return duration;
     }
 
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
     public List<String> getTags() {
         return tags;
     }
@@ -233,8 +236,5 @@ public class Task {
 
     public void setRecurring(boolean recurring) {
         this.recurring = recurring;
-    }
-
-    public void setDuration(Duration duration) {
     }
 }
