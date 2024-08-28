@@ -30,39 +30,19 @@ export class TasksComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('TasksComponent initialized with userId:', this.userId);
-    this.fetchTasks();  
+    this.loadTasks();  
   }
 
-  fetchTasks(): void {
-    this.taskService.getTasks(this.userId).subscribe(
-      (tasks: Task[]) => {
-        this.tasks = tasks;
-        this.filterTasks(this.selectedFilter);
-        console.log('Fetched tasks:', this.tasks);
-      },
-      (error) => {
-        console.error('Failed to fetch tasks:', error);
-      }
-    );
+  loadTasks(): void {
+    this.taskService.fetchTasks(this.userId, (tasks) => {
+      this.tasks = tasks;
+      this.filterTasks(this.selectedFilter);
+      console.log('Fetched tasks:', this.tasks);
+    });
   }
 
   startTask(task: Task): void {
-    if (task.status !== 'In Progress') {
-      this.taskService.startTask(task.id!).subscribe(
-        () => {
-          this.dialog.open(SuccessDialogComponent, {
-            data: {
-              message: 'Task has been started successfully!'
-            }
-          }).afterClosed().subscribe(() => {
-            this.fetchTasks();
-          });
-        },
-        (error) => {
-          console.error('Failed to start task:', error);
-        }
-      );
-    }
+    this.taskService.handleStartTask(task, () => this.loadTasks());
   }
 
   editTask(task: Task): void {
@@ -136,21 +116,7 @@ export class TasksComponent implements OnInit {
     }
 }
 
-
-  markTaskAsCompleted(task: Task): void {
-    this.taskService.markTaskAsCompleted(task.id!).subscribe(
-      () => {
-        this.dialog.open(SuccessDialogComponent, {
-          data: {
-            message: 'Task has been marked as completed!'
-          }
-        }).afterClosed().subscribe(() => {
-          this.fetchTasks(); // Refresh the task list after marking as completed
-        });
-      },
-      (error) => {
-        console.error('Failed to mark task as completed:', error);
-      }
-    );
-  }  
+markTaskAsCompleted(task: Task): void {
+  this.taskService.handleMarkTaskAsCompleted(task, () => this.loadTasks());
+}
 }

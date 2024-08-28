@@ -103,7 +103,7 @@
 .info-label {
   display: block;
   font-size: 14px;
-  color: #888;
+  color: white;
   margin-bottom: 8px;
 }
 
@@ -134,6 +134,15 @@
 
 .calendar {
   margin-bottom: 40px;
+}
+
+/* Task Properties Styles */
+.status-pending {
+  color: #ffeb3b;
+}
+
+.status-in-progress {
+  color: green;
 }
 
 /* Activity Section */
@@ -237,6 +246,17 @@ button[type="submit"] {
 #todays-tasks, #weekly-tasks-bar-chart {
   margin-bottom: 20px;
 }
+
+.today {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.today li{
+  margin-bottom: 10px; /* Example: Add spacing between list items */
+}
+
 
 /* Sidebar Toggle Button */
 .sidebar-toggle {

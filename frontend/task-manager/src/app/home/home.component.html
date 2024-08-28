@@ -66,18 +66,67 @@
           </div>
         </div>
     
-        <!-- Today's Tasks Section -->
-        <div class="chart" id="todays-tasks">
-          <h2>Today's Tasks</h2>
-          <ul>
-            <li *ngFor="let task of tasksDueToday">
-              {{ task.title }} - Due by {{ task.dueDate | date: 'shortTime' }}
-            </li>
-            <li *ngIf="tasksDueToday.length === 0">
-              No tasks due today.
-            </li>
-          </ul>
-        </div>
+<!-- Today's Tasks Section -->
+<div class="chart" id="todays-tasks">
+  <h2>Today's Tasks</h2>
+  <ul class="today">
+    <li 
+        *ngFor="let task of tasksDueToday" 
+        style="
+          display: flex; 
+          align-items: center;
+        ">
+      {{ task.title }}: 
+      <span 
+          [ngClass]="{
+            'status-pending': task.status === 'Pending',
+            'status-in-progress': task.status === 'In Progress'
+          }" 
+          style="
+            margin-left: 8px; 
+            margin-right: 8px;
+          ">
+        {{ task.status }}
+      </span> 
+      - Due by {{ task.dueDate | date: 'shortTime' }}
+      
+      <!-- Button for marking task completed -->
+      <button 
+          mat-raised-button 
+          *ngIf="task.status === 'In Progress'" 
+          (click)="markTaskAsCompleted(task)" 
+          style="
+            background-color: #28a745; 
+            color: white; 
+            font-size: 10px; 
+            padding: 4px 8px; 
+            margin-left: 8px;
+          ">
+        Mark Completed
+      </button>
+
+      <!-- Button for starting the task -->
+      <button 
+          mat-raised-button 
+          *ngIf="task.status === 'Pending'" 
+          (click)="startTask(task)" 
+          style="
+            background-color: #ffc107; 
+            color: white; 
+            font-size: 10px; 
+            padding: 4px 8px; 
+            margin-left: 8px;
+          ">
+        Start Task
+      </button>
+      <br>
+      <br>
+    </li>
+    <li *ngIf="tasksDueToday.length === 0">
+      No tasks due today.
+    </li>
+  </ul>
+</div>
 
         <!-- Weekly Tasks Status Bar Chart -->
         <div class="chart responsive-chart" id="weekly-tasks-bar-chart">
