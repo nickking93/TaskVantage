@@ -24,4 +24,6 @@ public interface TaskService {
     TaskSummary getTaskSummary(Long userId);
 
     void startTask(Long taskId, LocalDateTime startDate);
+
+    void markTaskAsCompleted(Long taskId);
 }
