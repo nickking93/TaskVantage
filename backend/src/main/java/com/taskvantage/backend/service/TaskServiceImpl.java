@@ -60,7 +60,7 @@ public class TaskServiceImpl implements TaskService {
             existingTask.setDueDate(updatedTask.getDueDate());
             existingTask.setLastModifiedDate(LocalDateTime.now());
             existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Update scheduledStart
-            existingTask.setStartDate(updatedTask.getStartDate()); // Update start_date
+            existingTask.setStartDate(updatedTask.getStartDate()); // Update startDate
             existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Update completionDateTime
             existingTask.setTags(updatedTask.getTags());
             existingTask.setSubtasks(updatedTask.getSubtasks());
@@ -68,7 +68,7 @@ public class TaskServiceImpl implements TaskService {
             existingTask.setComments(updatedTask.getComments());
             existingTask.setReminders(updatedTask.getReminders());
             existingTask.setRecurring(updatedTask.isRecurring());
-            // Calculate the duration if completionDateTime and start_date are present
+            // Calculate the duration if completionDateTime and startDate are present
             if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
                 Duration duration = Duration.between(updatedTask.getStartDate(), updatedTask.getCompletionDateTime());
                 existingTask.setDuration(duration);

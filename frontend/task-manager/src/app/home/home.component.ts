@@ -41,6 +41,7 @@ import { filter } from 'rxjs/operators';
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
+
   username: string = '';
   userId: string = '';
   isAddTaskModalOpen: boolean = false;
@@ -97,10 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.authService.getUserDetails().subscribe(user => {
         if (user.id.toString() === this.userId) {
           this.username = user.username;
-          this.fetchTaskSummary();  
-          this.fetchTasksDueToday(); // Fetch tasks due today
-          this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
-          this.loadWeeklyTaskStatusChart();  // Load the weekly task status chart
+          this.reloadData(); // Load all data initially
         } else {
           this.logout();
         }
@@ -109,16 +107,25 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       });
     });
-
+  
     // Listen for route change events
     this.routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         if (event.urlAfterRedirects === `/home/${this.userId}`) {
-          this.loadWeeklyTaskStatusChart();  // Reload the chart when navigating back to /home
+          this.reloadData();  // Reload all data when navigating back to /home
         }
       });
   }
+  
+  // Helper method to reload all the data
+  reloadData(): void {
+    this.fetchTaskSummary();  
+    this.fetchTasksDueToday(); // Fetch tasks due today
+    this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
+    this.loadWeeklyTaskStatusChart();  // Load the weekly task status chart
+  }
+  
 
   ngOnDestroy(): void {
     // Unsubscribe from routeSub to prevent memory leaks

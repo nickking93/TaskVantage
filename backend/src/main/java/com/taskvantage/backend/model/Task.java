@@ -37,8 +37,8 @@ public class Task {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    @Column(name = "start_date")
-    private LocalDateTime startDate;  // Renamed for consistency with Java naming conventions
+    @Column(name = "actual_start")
+    private LocalDateTime startDate;
 
     @Column(name = "scheduledStart")
     private LocalDateTime scheduledStart;
@@ -154,11 +154,12 @@ public class Task {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getStartDate() {  // Corrected getter
+
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {  // Corrected setter
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
