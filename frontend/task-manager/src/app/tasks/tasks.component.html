@@ -1,44 +1,44 @@
 <div class="tasks-container">
   <h2>Tasks</h2>
 
-<!-- Task Filter Links -->
-<div class="task-filters">
-  <button 
-      mat-raised-button 
-      class="task-filter-button" 
-      (click)="filterTasks('today')" 
-      [class.active]="selectedFilter === 'today'">
-    Today
-  </button>
-  <button 
-      mat-raised-button 
-      class="task-filter-button" 
-      (click)="filterTasks('overdue')" 
-      [class.active]="selectedFilter === 'overdue'">
-    Overdue
-  </button>
-  <button 
-      mat-raised-button 
-      class="task-filter-button" 
-      (click)="filterTasks('inProgress')" 
-      [class.active]="selectedFilter === 'inProgress'">
-    In Progress
-  </button>
-  <button 
-      mat-raised-button 
-      class="task-filter-button" 
-      (click)="filterTasks('pending')" 
-      [class.active]="selectedFilter === 'pending'">
-    Pending
-  </button>
-  <button 
-      mat-raised-button 
-      class="task-filter-button" 
-      (click)="filterTasks('completed')" 
-      [class.active]="selectedFilter === 'completed'">
-    Completed
-  </button>
-</div>
+  <!-- Task Filter Links -->
+  <div class="task-filters">
+    <button 
+        mat-raised-button 
+        class="task-filter-button" 
+        (click)="filterTasks('today')" 
+        [class.active]="selectedFilter === 'today'">
+      Today
+    </button>
+    <button 
+        mat-raised-button 
+        class="task-filter-button" 
+        (click)="filterTasks('overdue')" 
+        [class.active]="selectedFilter === 'overdue'">
+      Overdue
+    </button>
+    <button 
+        mat-raised-button 
+        class="task-filter-button" 
+        (click)="filterTasks('inProgress')" 
+        [class.active]="selectedFilter === 'inProgress'">
+      In Progress
+    </button>
+    <button 
+        mat-raised-button 
+        class="task-filter-button" 
+        (click)="filterTasks('pending')" 
+        [class.active]="selectedFilter === 'pending'">
+      Pending
+    </button>
+    <button 
+        mat-raised-button 
+        class="task-filter-button" 
+        (click)="filterTasks('completed')" 
+        [class.active]="selectedFilter === 'completed'">
+      Completed
+    </button>
+  </div>
 
   <!-- Display the list of tasks -->
   <div *ngIf="filteredTasks.length > 0; else noTasks">
@@ -46,12 +46,12 @@
       <li *ngFor="let task of filteredTasks">
         <h3>{{ task.title }}</h3>
         <p>{{ task.description }}</p>
-        <p><strong>Due Date:</strong> {{ task.dueDate | date }}</p>
+        <p><strong>Due Date:</strong> {{ task.dueDate | date: 'short' }}</p>
         <p><strong>Priority:</strong> {{ task.priority }}</p>
         <p><strong>Status:</strong> {{ task.status }}</p>
   
         <!-- Conditionally display the start date if the task is in progress -->
-        <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.startDate | date }}</p>
+        <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.startDate | date: 'short' }}</p>
   
         <!-- Hide all buttons if the 'completed' filter is selected -->
         <ng-container *ngIf="selectedFilter !== 'completed'">

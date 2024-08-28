@@ -46,7 +46,7 @@ public class DataLoader {
                         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
                 ) {
                     List<Task> tasks = new ArrayList<>();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
                     for (CSVRecord record : csvParser) {
                         Task task = new Task();
@@ -56,12 +56,18 @@ public class DataLoader {
                         task.setStatus(record.get("status"));
                         task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter));
                         task.setCreationDate(LocalDateTime.parse(record.get("creation_date"), formatter));
-                        task.setActualStart(LocalDateTime.parse(record.get("actual_start"), formatter)); // Updated field
-                        task.setScheduledStart(LocalDateTime.parse(record.get("scheduledStart"), formatter)); // New field
-                        task.setCompletionDateTime(LocalDateTime.parse(record.get("completionDateTime"), formatter)); // New field
-                        task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter));
-                        task.setRecurring(Boolean.parseBoolean(record.get("recurring")));
-                        task.setUserId(user.getId());  // Associate task with the created user
+                        task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter)); // Updated
+                        task.setStartDate(LocalDateTime.parse(record.get("actual_start"), formatter)); // Updated
+                        task.setScheduledStart(LocalDateTime.parse(record.get("scheduledStart"), formatter)); // Updated
+
+                        // Handle optional completionDateTime
+                        String completionDateTime = record.get("completionDateTime");
+                        if (completionDateTime != null && !completionDateTime.isEmpty()) {
+                            task.setCompletionDateTime(LocalDateTime.parse(completionDateTime, formatter));
+                        }
+
+                        // Set the userId for the task
+                        task.setUserId(user.getId());
 
                         tasks.add(task);
                     }

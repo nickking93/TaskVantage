@@ -38,7 +38,7 @@ public class Task {
     private LocalDateTime lastModifiedDate;
 
     @Column(name = "actual_start")
-    private LocalDateTime actualStart;
+    private LocalDateTime startDate;
 
     // New fields
     @Column(name = "scheduledStart")
@@ -156,12 +156,12 @@ public class Task {
     }
 
 
-    public LocalDateTime getActualStart() {
-        return actualStart;
+    public LocalDateTime getStartDate() {
+        return startDate;
     }
 
-    public void setActualStart(LocalDateTime actualStart) {
-        this.actualStart = actualStart;
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
     public LocalDateTime getScheduledStart() {
@@ -178,8 +178,8 @@ public class Task {
 
     public void setCompletionDateTime(LocalDateTime completionDateTime) {
         this.completionDateTime = completionDateTime;
-        if (this.actualStart != null && completionDateTime != null) {
-            this.duration = Duration.between(this.actualStart, completionDateTime);
+        if (this.startDate != null && completionDateTime != null) {
+            this.duration = Duration.between(this.startDate, completionDateTime);
         }
     }
 
