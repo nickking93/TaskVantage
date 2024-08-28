@@ -80,7 +80,11 @@ export class TaskService {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}/start`;
 
-    return this.http.patch<Task>(url, null, { headers }).pipe(
+    // Include current datetime as startDate
+    const startDate = new Date().toISOString();
+    const body = { startDate };
+
+    return this.http.patch<Task>(url, body, { headers }).pipe(
       map(response => {
         console.log('Task started successfully:', response);
         return response;

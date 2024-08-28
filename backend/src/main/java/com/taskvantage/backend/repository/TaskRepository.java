@@ -15,14 +15,14 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(t.id, t.title, t.description, t.priority, t.status, t.dueDate, t.creationDate, t.lastModifiedDate, t.actualStart, t.completionDateTime, t.duration) " +
+    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(t.id, t.title, t.description, t.priority, t.status, t.dueDate, t.creationDate, t.lastModifiedDate, t.startDate, t.completionDateTime, t.duration) " +
             "FROM Task t WHERE t.userId = :userId")
     List<TaskSummary> findTaskSummariesByUserId(Long userId);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Task t SET t.actualStart = :actualStart, t.status = 'In Progress' WHERE t.id = :taskId")
-    void startTask(Long taskId, LocalDateTime actualStart);
+    @Query("UPDATE Task t SET t.startDate = :startDate, t.status = 'In Progress' WHERE t.id = :taskId")
+    void startTask(Long taskId, LocalDateTime startDate);
 
     @Transactional
     @Modifying

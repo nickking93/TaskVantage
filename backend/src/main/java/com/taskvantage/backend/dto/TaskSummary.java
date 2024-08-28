@@ -18,14 +18,14 @@ public class TaskSummary {
     private LocalDateTime dueDate;
     private LocalDateTime creationDate;
     private LocalDateTime lastModifiedDate;
-    private LocalDateTime actualStart;  // Updated field
+    private LocalDateTime start_date;  // Updated field
     private LocalDateTime completionDateTime;  // New field
     private Duration duration;  // New field
 
-    // 11-argument constructor (Updated to include actualStart, completionDateTime, and duration)
+    // 11-argument constructor (Updated to include start_date, completionDateTime, and duration)
     public TaskSummary(Long id, String title, String description, String priority, String status,
                        LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate,
-                       LocalDateTime actualStart, LocalDateTime completionDateTime, Duration duration) {
+                       LocalDateTime start_date, LocalDateTime completionDateTime, Duration duration) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -34,7 +34,7 @@ public class TaskSummary {
         this.dueDate = dueDate;
         this.creationDate = creationDate;
         this.lastModifiedDate = lastModifiedDate;
-        this.actualStart = actualStart;  // Set the actualStart
+        this.start_date = start_date;  // Set the start_date
         this.completionDateTime = completionDateTime;  // Set the completionDateTime
         this.duration = duration;  // Set the duration
     }
@@ -108,12 +108,12 @@ public class TaskSummary {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getActualStart() {
-        return actualStart;  // Updated getter
+    public LocalDateTime getstart_date() {
+        return start_date;  // Updated getter
     }
 
-    public void setActualStart(LocalDateTime actualStart) {
-        this.actualStart = actualStart;  // Updated setter
+    public void setstart_date(LocalDateTime start_date) {
+        this.start_date = start_date;  // Updated setter
     }
 
     public LocalDateTime getCompletionDateTime() {

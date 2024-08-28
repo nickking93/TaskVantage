@@ -37,10 +37,9 @@ public class Task {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-    @Column(name = "actual_start")
-    private LocalDateTime actualStart;
+    @Column(name = "start_date")
+    private LocalDateTime startDate;  // Renamed for consistency with Java naming conventions
 
-    // New fields
     @Column(name = "scheduledStart")
     private LocalDateTime scheduledStart;
 
@@ -155,13 +154,12 @@ public class Task {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-
-    public LocalDateTime getActualStart() {
-        return actualStart;
+    public LocalDateTime getStartDate() {  // Corrected getter
+        return startDate;
     }
 
-    public void setActualStart(LocalDateTime actualStart) {
-        this.actualStart = actualStart;
+    public void setStartDate(LocalDateTime startDate) {  // Corrected setter
+        this.startDate = startDate;
     }
 
     public LocalDateTime getScheduledStart() {
@@ -178,13 +176,17 @@ public class Task {
 
     public void setCompletionDateTime(LocalDateTime completionDateTime) {
         this.completionDateTime = completionDateTime;
-        if (this.actualStart != null && completionDateTime != null) {
-            this.duration = Duration.between(this.actualStart, completionDateTime);
+        if (this.startDate != null && completionDateTime != null) {
+            this.duration = Duration.between(this.startDate, completionDateTime);
         }
     }
 
     public Duration getDuration() {
         return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
     }
 
     public List<String> getTags() {
@@ -233,8 +235,5 @@ public class Task {
 
     public void setRecurring(boolean recurring) {
         this.recurring = recurring;
-    }
-
-    public void setDuration(Duration duration) {
     }
 }
