@@ -156,37 +156,44 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
-    console.log('Sidebar collapsed state:', this.isSidebarCollapsed);
   }
 
   createTask(): void {
     this.newTask.userId = this.userId;
-  
+
     // Convert date strings to proper format
     const formattedDueDate = this.formatDate(this.dueDate);
     const formattedScheduledStartDate = this.formatDate(this.scheduledStartDate);
-  
+
     // Combine date and time into a full datetime string for dueDate
     this.newTask.dueDate = this.combineDateAndTime(formattedDueDate, this.dueTime);
-  
+
     // Combine date and time into a full datetime string for scheduledStart
     this.newTask.scheduledStart = this.combineDateAndTime(formattedScheduledStartDate, this.scheduledStartTime);
-  
+
+    // Send the task to the backend
     this.taskService.createTask(this.newTask).subscribe(
-      () => {
-        this.closeAddTaskModal();
-        this.openSuccessDialog();  
-        this.fetchTaskSummary();  
-        this.fetchTasksDueToday();  // Refresh tasks due today
-        this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
-        this.loadWeeklyTaskStatusChart();  // Refresh the chart data
-      },
-      error => {
-        console.error('Failed to create task:', error);
-      }
+        () => {
+            this.closeAddTaskModal();
+            this.openSuccessDialog();
+            this.fetchTaskSummary();
+            this.fetchTasksDueToday();  // Refresh tasks due today
+            this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
+            this.loadWeeklyTaskStatusChart();  // Refresh the chart data
+        },
+        error => {
+            console.error('Failed to create task:', error);
+        }
     );
-  }
+}
   
+  // Helper method to convert a local datetime string to UTC
+  convertToUTC(localDateTime: string): string {
+    const localDate = new Date(localDateTime);
+    const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
+    return utcDate;
+  }
+
   // Helper method to format the date to YYYY-MM-DD
   formatDate(date: string): string {
     const parsedDate = new Date(date);
@@ -198,8 +205,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   // Helper method to combine date and time into a full datetime string
   combineDateAndTime(date: string, time: string): string {
-    return `${date}T${time}:00`;
-  }
+    // Parse the date and time components separately
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+
+    // Create a Date object with the provided date and time in local time
+    const localDateTime = new Date(year, month - 1, day, hours, minutes);
+
+    // Manually calculate the UTC time by subtracting the timezone offset
+    const utcDateTime = new Date(localDateTime.getTime() - (localDateTime.getTimezoneOffset() * 60000));
+
+    return utcDateTime.toISOString(); // Returning the UTC datetime string
+}
 
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
