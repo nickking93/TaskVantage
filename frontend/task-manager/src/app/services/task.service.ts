@@ -24,7 +24,8 @@ export class TaskService {
   fetchTasks(userId: string, filterCallback: (tasks: Task[]) => void): void {
     this.getTasks(userId).subscribe(
       (tasks: Task[]) => {
-        filterCallback(tasks);
+        const localTasks = tasks.map(task => this.convertUTCToLocal(task));
+        filterCallback(localTasks);
       },
       (error) => {
         console.error('Failed to fetch tasks:', error);
@@ -35,7 +36,8 @@ export class TaskService {
   // Method to create a new task
   createTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
-    return this.http.post<Task>(this.tasksUrl, task, { headers }).pipe(
+    const utcTask = this.convertLocalToUTC(task);
+    return this.http.post<Task>(this.tasksUrl, utcTask, { headers }).pipe(
       map(response => {
         console.log('Task created successfully:', response);
         return response;
@@ -63,10 +65,44 @@ export class TaskService {
     return this.http.get<Task[]>(url, { headers }).pipe(
       map(response => {
         console.log('Fetched tasks:', response);
-        return response;
+        return response.map(task => this.convertUTCToLocal(task));
       }),
       catchError(this.handleError)
     );
+  }
+
+  // Convert task date properties from UTC to local time
+  private convertUTCToLocal(task: Task): Task {
+    if (task.dueDate) {
+      task.dueDate = this.convertUTCStringToLocal(task.dueDate);
+    }
+    if (task.scheduledStart) {
+      task.scheduledStart = this.convertUTCStringToLocal(task.scheduledStart);
+    }
+    return task;
+  }
+
+  // Convert task date properties from local time to UTC
+  private convertLocalToUTC(task: Task): Task {
+    if (task.dueDate) {
+      task.dueDate = this.convertLocalStringToUTC(task.dueDate);
+    }
+    if (task.scheduledStart) {
+      task.scheduledStart = this.convertLocalStringToUTC(task.scheduledStart);
+    }
+    return task;
+  }
+
+  // Convert a UTC string to local date-time string
+  private convertUTCStringToLocal(utcString: string): string {
+    const localDate = new Date(utcString);
+    return localDate.toLocaleString();
+  }
+
+  // Convert a local date-time string to UTC string
+  private convertLocalStringToUTC(localString: string): string {
+    const localDate = new Date(localString);
+    return localDate.toISOString();
   }
 
   // Handle error response

@@ -136,10 +136,20 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   fetchTasksDueToday(): void {
     this.taskService.fetchTasks(this.userId, (tasks) => {
-      const today = new Date().toISOString().split('T')[0];
-      this.tasksDueToday = tasks.filter(task => task.dueDate && task.dueDate.startsWith(today) && task.status !== 'Completed');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset to start of the day
+
+        this.tasksDueToday = tasks.filter(task => {
+            const taskDueDate = task.dueDate ? new Date(task.dueDate) : null;
+            if (!taskDueDate || task.status === 'Completed') return false;
+            
+            // Reset task due date time to midnight for comparison
+            taskDueDate.setHours(0, 0, 0, 0);
+
+            return taskDueDate.getTime() === today.getTime();
+        });
     });
-  }
+}
 
   isTasksRoute(): boolean {
     return this.router.url === `/home/${this.userId}/tasks`;
@@ -160,63 +170,63 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   createTask(): void {
     this.newTask.userId = this.userId;
-
-    // Convert date strings to proper format
-    const formattedDueDate = this.formatDate(this.dueDate);
-    const formattedScheduledStartDate = this.formatDate(this.scheduledStartDate);
-
+  
+    // Log the raw values from the date and time pickers
+    console.log('Due Date:', this.dueDate, 'Due Time:', this.dueTime);
+    console.log('Scheduled Start Date:', this.scheduledStartDate, 'Scheduled Start Time:', this.scheduledStartTime);
+  
     // Combine date and time into a full datetime string for dueDate
-    this.newTask.dueDate = this.combineDateAndTime(formattedDueDate, this.dueTime);
-
+    this.newTask.dueDate = this.combineDateAndTime(this.dueDate, this.dueTime);
+  
     // Combine date and time into a full datetime string for scheduledStart
-    this.newTask.scheduledStart = this.combineDateAndTime(formattedScheduledStartDate, this.scheduledStartTime);
-
+    this.newTask.scheduledStart = this.combineDateAndTime(this.scheduledStartDate, this.scheduledStartTime);
+  
+    // Log the task object before sending to the backend
+    console.log('Task object being sent to the backend:', this.newTask);
+  
     // Send the task to the backend
     this.taskService.createTask(this.newTask).subscribe(
-        () => {
-            this.closeAddTaskModal();
-            this.openSuccessDialog();
-            this.fetchTaskSummary();
-            this.fetchTasksDueToday();  // Refresh tasks due today
-            this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
-            this.loadWeeklyTaskStatusChart();  // Refresh the chart data
-        },
-        error => {
-            console.error('Failed to create task:', error);
-        }
+      () => {
+        this.closeAddTaskModal();
+        this.openSuccessDialog();
+        this.fetchTaskSummary();
+        this.fetchTasksDueToday();  // Refresh tasks due today
+        this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
+        this.loadWeeklyTaskStatusChart();  // Refresh the chart data
+      },
+      error => {
+        console.error('Failed to create task:', error);
+      }
     );
-}
-  
-  // Helper method to convert a local datetime string to UTC
-  convertToUTC(localDateTime: string): string {
-    const localDate = new Date(localDateTime);
-    const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
-    return utcDate;
   }
 
-  // Helper method to format the date to YYYY-MM-DD
-  formatDate(date: string): string {
-    const parsedDate = new Date(date);
-    const year = parsedDate.getFullYear();
-    const month = (`0${parsedDate.getMonth() + 1}`).slice(-2);
-    const day = (`0${parsedDate.getDate()}`).slice(-2);
-    return `${year}-${month}-${day}`;
-  }
-  
   // Helper method to combine date and time into a full datetime string
-  combineDateAndTime(date: string, time: string): string {
-    // Parse the date and time components separately
-    const [year, month, day] = date.split('-').map(Number);
-    const [hours, minutes] = time.split(':').map(Number);
-
+  combineDateAndTime(date: any, time: string): string {
+    let year, month, day;
+  
+    // Check if the date is a string or Date object and extract the components
+    if (typeof date === 'string') {
+      [year, month, day] = date.split('-').map(Number);
+    } else if (date instanceof Date) {
+      year = date.getFullYear();
+      month = date.getMonth() + 1;
+      day = date.getDate();
+    } else {
+      throw new Error('Invalid date format');
+    }
+  
+    // Ensure month and day are two digits
+    const formattedMonth = month < 10 ? `0${month}` : `${month}`;
+    const formattedDay = day < 10 ? `0${day}` : `${day}`;
+  
     // Create a Date object with the provided date and time in local time
-    const localDateTime = new Date(year, month - 1, day, hours, minutes);
-
-    // Manually calculate the UTC time by subtracting the timezone offset
+    const localDateTime = new Date(`${year}-${formattedMonth}-${formattedDay}T${time}:00`);
+  
+    // Convert to UTC and return the ISO string
     const utcDateTime = new Date(localDateTime.getTime() - (localDateTime.getTimezoneOffset() * 60000));
-
+  
     return utcDateTime.toISOString(); // Returning the UTC datetime string
-}
+  }
 
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
