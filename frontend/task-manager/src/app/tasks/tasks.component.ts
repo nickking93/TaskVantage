@@ -88,35 +88,35 @@ export class TasksComponent implements OnInit {
   filterTasks(filter: string): void {
     this.selectedFilter = filter;
     const now = new Date();
-  
-    switch (filter) {
-        case 'today':
-            this.filteredTasks = this.tasks.filter(task => {
-                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-                return dueDate && dueDate.toDateString() === now.toDateString() && task.status !== 'Completed';
-            });
-            break;
-        case 'overdue':
-            this.filteredTasks = this.tasks.filter(task => {
-                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-                return dueDate && dueDate < now && task.status !== 'Completed';
-            });
-            break;
-        case 'inProgress':
-            this.filteredTasks = this.tasks.filter(task => task.status === 'In Progress');
-            break;
-        case 'pending':
-            this.filteredTasks = this.tasks.filter(task => task.status === 'Pending');
-            break;
-        case 'completed':
-            this.filteredTasks = this.tasks.filter(task => task.status === 'Completed');
-            break;
-        default:
-            this.filteredTasks = this.tasks;
-    }
-}
 
-markTaskAsCompleted(task: Task): void {
-  this.taskService.handleMarkTaskAsCompleted(task, () => this.loadTasks());
-}
+    switch (filter) {
+      case 'today':
+        this.filteredTasks = this.tasks.filter(task => {
+          const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+          return dueDate && dueDate.toDateString() === now.toDateString() && task.status !== 'Completed';
+        });
+        break;
+      case 'overdue':
+        this.filteredTasks = this.tasks.filter(task => {
+          const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+          return dueDate && dueDate < now && task.status !== 'Completed';
+        });
+        break;
+      case 'inProgress':
+        this.filteredTasks = this.tasks.filter(task => task.status === 'In Progress');
+        break;
+      case 'pending':
+        this.filteredTasks = this.tasks.filter(task => task.status === 'Pending');
+        break;
+      case 'completed':
+        this.filteredTasks = this.tasks.filter(task => task.status === 'Completed');
+        break;
+      default:
+        this.filteredTasks = this.tasks;
+    }
+  }
+
+  markTaskAsCompleted(task: Task): void {
+    this.taskService.handleMarkTaskAsCompleted(task, () => this.loadTasks());
+  }
 }
