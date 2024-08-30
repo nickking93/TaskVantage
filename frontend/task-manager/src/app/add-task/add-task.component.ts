@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router'; // Import Router
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -30,9 +31,9 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
   templateUrl: './add-task.component.html',
   styleUrls: ['./add-task.component.css']
 })
-export class AddTaskComponent {
+export class AddTaskComponent implements OnInit { // Implement OnInit to handle initialization logic
 
-  userId: string = ''; // The user ID should be passed in or obtained from a service
+  userId: string = ''; // The user ID will be retrieved from the route parameters
   dueDate: string = '';
   dueTime: string = '';
   scheduledStartDate: string = '';
@@ -45,7 +46,7 @@ export class AddTaskComponent {
     '', // dueDate
     'Medium', // priority
     false, // recurring
-    this.userId, // userId
+    this.userId, // userId will be set later
     'Pending', // status
     '', // scheduledStart
     '', // completion_date_time
@@ -55,11 +56,22 @@ export class AddTaskComponent {
   );
 
   constructor(
+    private route: ActivatedRoute, // Inject ActivatedRoute to access route parameters
+    private router: Router, // Inject Router to navigate after task creation
     private taskService: TaskService,
     private dialog: MatDialog  
   ) {}
 
+  ngOnInit(): void {
+    // Retrieve the userId from the parent route parameters
+    this.route.parent?.paramMap.subscribe(params => {
+      this.userId = params.get('userId') || '';
+      this.newTask.userId = this.userId; // Assign userId to the newTask object
+    });
+  }
+
   createTask(): void {
+    // Ensure the userId is correctly set before creating the task
     this.newTask.userId = this.userId;
 
     // Combine date and time into a full datetime string for dueDate
@@ -72,7 +84,6 @@ export class AddTaskComponent {
     this.taskService.createTask(this.newTask).subscribe(
       () => {
         this.openSuccessDialog();
-        // Reset the form or navigate back after successful task creation
       },
       error => {
         console.error('Failed to create task:', error);
@@ -112,6 +123,9 @@ export class AddTaskComponent {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
       data: { message: 'Task created successfully!' }
+    }).afterClosed().subscribe(() => {
+      // Navigate back to the main home page after the dialog is closed
+      this.router.navigate([`/home/${this.userId}`]);
     });
   }
 }
