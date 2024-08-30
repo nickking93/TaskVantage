@@ -302,6 +302,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   markTaskAsCompleted(task: Task): void {
-    this.taskService.handleMarkTaskAsCompleted(task, () => this.fetchTasksDueToday());
+    this.taskService.handleMarkTaskAsCompleted(task, () => this.reloadData());
   }
 }
