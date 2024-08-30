@@ -6,6 +6,8 @@ import { RouterModule } from '@angular/router';
 import { HomeComponent } from './home.component';
 import { TasksComponent } from '../tasks/tasks.component';
 import { SettingsComponent } from '../settings/settings.component';
+import { SharedModule } from '../shared.module';  
+import { HelpPageComponent } from '../help-page/help-page.component';
 
 // Import Angular Material Modules
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,7 +18,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
-import { SharedModule } from '../shared.module';  // Import SharedModule
 
 @NgModule({
   imports: [
@@ -35,6 +36,10 @@ import { SharedModule } from '../shared.module';  // Import SharedModule
             path: 'settings',
             component: SettingsComponent,
           },
+          {
+            path: 'help-page',
+            component: HelpPageComponent,
+          },
         ],
       },
     ]),
@@ -47,9 +52,10 @@ import { SharedModule } from '../shared.module';  // Import SharedModule
     MatButtonModule,
     MatDialogModule,
     SharedModule,
-    HomeComponent,   // Importing standalone components
-    TasksComponent,  // Importing standalone components
-    SettingsComponent // Importing standalone components
+    HomeComponent,   
+    TasksComponent,  
+    SettingsComponent,
+    HelpPageComponent
   ]
 })
 export class HomeModule {}

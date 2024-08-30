@@ -14,7 +14,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   { path: 'privacy-policy', loadChildren: () => import('./privacy-policy/privacy-policy.module').then(m => m.PrivacyPolicyModule) },
-  { path: 'help-page', loadChildren: () => import('./help-page/help-page.module').then(m => m.HelpPageModule) },
+  // Removed the standalone route for help-page
   { path: '**', redirectTo: '/login' }
 ];
 
