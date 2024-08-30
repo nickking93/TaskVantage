@@ -15,7 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';  
+import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -37,30 +37,14 @@ import { filter } from 'rxjs/operators';
     MatCheckboxModule,
     MatButtonModule,
     MatDialogModule,
-    TasksComponent
+    TasksComponent,
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
   username: string = '';
   userId: string = '';
-  isAddTaskModalOpen: boolean = false;
   isSidebarCollapsed: boolean = false;
-
-  // Added properties for date and time
-  dueDate: string = '';
-  dueTime: string = '';
-  scheduledStartDate: string = '';
-  scheduledStartTime: string = '';
-
-  newTask: Task = {
-    title: '',
-    description: '',
-    dueDate: '',
-    scheduledStart: '',
-    priority: 'Medium',
-    recurring: false,
-  };
 
   // Variables to hold the summary data
   totalTasks: number = 0;
@@ -86,7 +70,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private taskService: TaskService,
     public router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog  
+    private dialog: MatDialog  // Ensure MatDialog is injected for dialog handling
   ) {
     Chart.register(...registerables);
   }
@@ -125,7 +109,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
     this.loadWeeklyTaskStatusChart();  // Load the weekly task status chart
   }
-  
 
   ngOnDestroy(): void {
     // Unsubscribe from routeSub to prevent memory leaks
@@ -149,83 +132,18 @@ export class HomeComponent implements OnInit, OnDestroy {
             return taskDueDate.getTime() === today.getTime();
         });
     });
-}
+  }
 
   isTasksRoute(): boolean {
     return this.router.url === `/home/${this.userId}/tasks`;
   }
 
-  openAddTaskModal(event: Event): void {
-    event.preventDefault();
-    this.isAddTaskModalOpen = true;
-  }
-
-  closeAddTaskModal(): void {
-    this.isAddTaskModalOpen = false;
+  navigateToAddTask(): void {
+    this.router.navigate([`/home/${this.userId}/add-task`]);
   }
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
-  }
-
-  createTask(): void {
-    this.newTask.userId = this.userId;
-  
-    // Log the raw values from the date and time pickers
-    console.log('Due Date:', this.dueDate, 'Due Time:', this.dueTime);
-    console.log('Scheduled Start Date:', this.scheduledStartDate, 'Scheduled Start Time:', this.scheduledStartTime);
-  
-    // Combine date and time into a full datetime string for dueDate
-    this.newTask.dueDate = this.combineDateAndTime(this.dueDate, this.dueTime);
-  
-    // Combine date and time into a full datetime string for scheduledStart
-    this.newTask.scheduledStart = this.combineDateAndTime(this.scheduledStartDate, this.scheduledStartTime);
-  
-    // Log the task object before sending to the backend
-    console.log('Task object being sent to the backend:', this.newTask);
-  
-    // Send the task to the backend
-    this.taskService.createTask(this.newTask).subscribe(
-      () => {
-        this.closeAddTaskModal();
-        this.openSuccessDialog();
-        this.fetchTaskSummary();
-        this.fetchTasksDueToday();  // Refresh tasks due today
-        this.fetchRecentCompletedTasks();  // Refresh recent completed tasks
-        this.loadWeeklyTaskStatusChart();  // Refresh the chart data
-      },
-      error => {
-        console.error('Failed to create task:', error);
-      }
-    );
-  }
-
-  // Helper method to combine date and time into a full datetime string
-  combineDateAndTime(date: any, time: string): string {
-    let year, month, day;
-  
-    // Check if the date is a string or Date object and extract the components
-    if (typeof date === 'string') {
-      [year, month, day] = date.split('-').map(Number);
-    } else if (date instanceof Date) {
-      year = date.getFullYear();
-      month = date.getMonth() + 1;
-      day = date.getDate();
-    } else {
-      throw new Error('Invalid date format');
-    }
-  
-    // Ensure month and day are two digits
-    const formattedMonth = month < 10 ? `0${month}` : `${month}`;
-    const formattedDay = day < 10 ? `0${day}` : `${day}`;
-  
-    // Create a Date object with the provided date and time in local time
-    const localDateTime = new Date(`${year}-${formattedMonth}-${formattedDay}T${time}:00`);
-  
-    // Convert to UTC and return the ISO string
-    const utcDateTime = new Date(localDateTime.getTime() - (localDateTime.getTimezoneOffset() * 60000));
-  
-    return utcDateTime.toISOString(); // Returning the UTC datetime string
   }
 
   openSuccessDialog(): void {
@@ -346,7 +264,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     });
   }
-  
 
   endOfWeek(): number {
     const now = new Date();

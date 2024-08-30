@@ -10,13 +10,13 @@
     <ul class="menu">
       <li 
         class="menu-item" 
-        [class.active]="isActive('/home/' + userId) && !isAddTaskModalOpen">
+        [class.active]="isActive('/home/' + userId)">
         <a [routerLink]="['/home', userId]" (click)="reloadData()">Home</a>
       </li>
       <li 
         class="menu-item" 
-        [class.active]="isAddTaskModalOpen">
-        <a href="#" (click)="openAddTaskModal($event)">Add Task</a>
+        [class.active]="isActive('/home/' + userId + '/add-task')">
+        <a [routerLink]="['/home', userId, 'add-task']">Add Task</a>
       </li>
       <li class="menu-item" [class.active]="isActive('/home/' + userId + '/tasks')">
         <a [routerLink]="['/home', userId, 'tasks']">Tasks</a>
@@ -135,68 +135,5 @@
     <ng-template #contentOutlet>
       <router-outlet></router-outlet>
     </ng-template>
-    
-    <!-- Modal for Adding a Task -->
-    <div class="modal" id="addTaskModal" *ngIf="isAddTaskModalOpen">
-      <div class="modal-content">
-        <span class="close" (click)="closeAddTaskModal()">&times;</span>
-        <h2>Add New Task</h2>
-        <form (ngSubmit)="createTask()" class="task-form">
-          <div fxLayout="column" fxLayoutGap="20px">
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Title</mat-label>
-              <input matInput [(ngModel)]="newTask.title" name="title" required>
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Description</mat-label>
-              <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
-            </mat-form-field>
-
-            <!-- Due Date -->
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Due Date</mat-label>
-              <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required>
-              <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #dueDatePicker></mat-datepicker>
-            </mat-form-field>
-
-            <!-- Due Time -->
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Due Time</mat-label>
-              <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
-            </mat-form-field>
-
-            <!-- Scheduled Start Date -->
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Scheduled Start Date</mat-label>
-              <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required>
-              <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
-            </mat-form-field>
-
-            <!-- Scheduled Start Time -->
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Scheduled Start Time</mat-label>
-              <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Priority</mat-label>
-              <mat-select [(ngModel)]="newTask.priority" name="priority" required>
-                <mat-option value="High">High</mat-option>
-                <mat-option value="Medium">Medium</mat-option>
-                <mat-option value="Low">Low</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
-            <div class="button-container">
-              <button mat-raised-button color="primary" type="submit">Create Task</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
 </div>
