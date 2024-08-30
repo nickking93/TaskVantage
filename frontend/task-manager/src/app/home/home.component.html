@@ -133,7 +133,12 @@
 
     <!-- Router outlet for child components like tasks and settings -->
     <ng-template #contentOutlet>
-      <router-outlet></router-outlet>
+      <ng-container *ngIf="router.url === '/home/' + userId + '/tasks'; else defaultOutlet">
+        <app-tasks [userId]="userId"></app-tasks>
+      </ng-container>
+      <ng-template #defaultOutlet>
+        <router-outlet></router-outlet>
+      </ng-template>
     </ng-template>
   </div>
 </div>
