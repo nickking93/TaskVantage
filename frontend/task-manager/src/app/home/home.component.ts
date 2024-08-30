@@ -141,7 +141,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
         this.tasksDueToday = tasks.filter(task => {
             const taskDueDate = task.dueDate ? new Date(task.dueDate) : null;
-            if (!taskDueDate || task.status === 'Completed') return false;
+            if (!taskDueDate || task.status === 'Complete') return false;
             
             // Reset task due date time to midnight for comparison
             taskDueDate.setHours(0, 0, 0, 0);

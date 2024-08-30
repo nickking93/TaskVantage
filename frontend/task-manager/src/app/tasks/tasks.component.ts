@@ -88,18 +88,18 @@ export class TasksComponent implements OnInit {
   filterTasks(filter: string): void {
     this.selectedFilter = filter;
     const now = new Date();
-
+  
     switch (filter) {
       case 'today':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate.toDateString() === now.toDateString() && task.status !== 'Completed';
+          return dueDate && dueDate.toDateString() === now.toDateString() && task.status !== 'Complete';
         });
         break;
       case 'overdue':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate < now && task.status !== 'Completed';
+          return dueDate && dueDate < now && task.status !== 'Complete';
         });
         break;
       case 'inProgress':
@@ -108,11 +108,11 @@ export class TasksComponent implements OnInit {
       case 'pending':
         this.filteredTasks = this.tasks.filter(task => task.status === 'Pending');
         break;
-      case 'completed':
-        this.filteredTasks = this.tasks.filter(task => task.status === 'Completed');
+      case 'complete':
+        this.filteredTasks = this.tasks.filter(task => task.status === 'Complete');
         break;
       default:
-        this.filteredTasks = this.tasks;
+        this.filteredTasks = this.tasks.filter(task => task.status !== 'Complete');
     }
   }
 
