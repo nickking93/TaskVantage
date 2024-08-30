@@ -3,7 +3,8 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
-
+import { MatDialog } from '@angular/material/dialog'; 
+import { LoadingDialogComponent } from '../loading-dialog.component';
 // Declare the gapi object to use Google API functions
 declare const gapi: any;
 
@@ -20,8 +21,9 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private renderer: Renderer2,
-    private authService: AuthService,  // Inject AuthService
-    private router: Router  // Inject Router
+    private authService: AuthService,  
+    private router: Router,  
+    private dialog: MatDialog
   ) {
     // Initialize the FormGroup using FormBuilder
     this.signin = this.fb.group({
@@ -53,7 +55,7 @@ export class LoginComponent implements OnInit {
   initializeGoogleSignIn() {
     gapi.load('auth2', () => {
       gapi.auth2.init({
-        client_id: environment.googleClientId // Updated to use environment variable
+        client_id: environment.googleClientId 
       }).then(() => {
         // Attach the Google Sign-In to the button element
         this.attachSignIn(document.getElementById('google-signin-button'));
@@ -141,12 +143,20 @@ export class LoginComponent implements OnInit {
   // Handle form submission
   onSubmit() {
     if (this.signin.valid) {
+      // Open the loading dialog
+      const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
+        disableClose: true
+      });
+
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
 
       // Call AuthService to handle login
       this.authService.login({ username: email, password }).subscribe(
         response => {
+          // Close the loading dialog
+          loadingDialogRef.close();
+
           // Store the JWT token in localStorage
           localStorage.setItem('token', response.token);
 
@@ -155,6 +165,9 @@ export class LoginComponent implements OnInit {
           this.router.navigate([`/home/${userId}`]);
         },
         error => {
+          // Close the loading dialog
+          loadingDialogRef.close();
+
           // Handle login error
           console.error('Login failed', error);
           alert('Login failed. Please check your credentials and try again.');

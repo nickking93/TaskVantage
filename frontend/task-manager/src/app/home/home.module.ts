@@ -2,50 +2,43 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { SharedModule } from '../shared.module'; // Import SharedModule
 
-import { HomeComponent } from './home.component';
+import { HomeComponent } from './home.component';  // Import HomeComponent explicitly
 import { TasksComponent } from '../tasks/tasks.component';
-
-// Import Angular Material Modules
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
-import { SharedModule } from '../shared.module';  // Import SharedModule
+import { SettingsComponent } from '../settings/settings.component';
+import { HelpPageComponent } from '../help-page/help-page.component';
+import { AddTaskComponent } from '../add-task/add-task.component';
 
 @NgModule({
-  declarations: [
-  ],
   imports: [
-    HomeComponent,
-    TasksComponent,
     CommonModule,
     FormsModule,
     RouterModule.forChild([
       {
         path: '',
-        component: HomeComponent,
+        component: HomeComponent,  // Now HomeComponent is recognized
         children: [
           {
             path: 'tasks',
             component: TasksComponent,
           },
+          {
+            path: 'settings',
+            component: SettingsComponent,
+          },
+          {
+            path: 'help-page',
+            component: HelpPageComponent,
+          },
+          {
+            path: 'add-task',
+            component: AddTaskComponent,
+          },
         ],
       },
     ]),
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatButtonModule,
-    MatDialogModule,
-    SharedModule
-  ]
+    SharedModule, // Import SharedModule to make SuccessDialogComponent available
+  ],
 })
 export class HomeModule {}
