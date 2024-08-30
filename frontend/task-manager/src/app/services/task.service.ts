@@ -71,13 +71,15 @@ export class TaskService {
     );
   }
 
-  // Convert task date properties from UTC to local time
   private convertUTCToLocal(task: Task): Task {
     if (task.dueDate) {
       task.dueDate = this.convertUTCStringToLocal(task.dueDate);
     }
     if (task.scheduledStart) {
       task.scheduledStart = this.convertUTCStringToLocal(task.scheduledStart);
+    }
+    if (task.lastModifiedDate) {
+      task.lastModifiedDate = this.convertUTCStringToLocal(task.lastModifiedDate);
     }
     return task;
   }
