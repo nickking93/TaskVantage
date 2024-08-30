@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 
 import { HomeComponent } from './home.component';
 import { TasksComponent } from '../tasks/tasks.component';
+import { SettingsComponent } from '../settings/settings.component';
 
 // Import Angular Material Modules
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,11 +19,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { SharedModule } from '../shared.module';  // Import SharedModule
 
 @NgModule({
-  declarations: [
-  ],
   imports: [
-    HomeComponent,
-    TasksComponent,
     CommonModule,
     FormsModule,
     RouterModule.forChild([
@@ -33,6 +30,10 @@ import { SharedModule } from '../shared.module';  // Import SharedModule
           {
             path: 'tasks',
             component: TasksComponent,
+          },
+          {
+            path: 'settings',
+            component: SettingsComponent,
           },
         ],
       },
@@ -45,7 +46,10 @@ import { SharedModule } from '../shared.module';  // Import SharedModule
     MatCheckboxModule,
     MatButtonModule,
     MatDialogModule,
-    SharedModule
+    SharedModule,
+    HomeComponent,   // Importing standalone components
+    TasksComponent,  // Importing standalone components
+    SettingsComponent // Importing standalone components
   ]
 })
 export class HomeModule {}

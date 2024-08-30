@@ -21,9 +21,9 @@
       <li class="menu-item" [class.active]="isActive('/home/' + userId + '/tasks')">
         <a [routerLink]="['/home', userId, 'tasks']">Tasks</a>
       </li>
-      <li class="menu-item">
-        <a [routerLink]="['/settings', userId]">Settings</a>
-      </li>
+      <li class="menu-item" [class.active]="isActive('/home/' + userId + '/settings')">
+        <a [routerLink]="['/home', userId, 'settings']">Settings</a>
+      </li>      
       <li class="menu-item">
         <a [routerLink]="['/help-page']">Help</a>
       </li>
@@ -35,15 +35,10 @@
   
   <!-- Main Content Area -->
   <div class="content-area" [class.expanded]="isSidebarCollapsed">
-    <!-- Conditionally render the tasks component if the route matches; otherwise, show the main dashboard -->
-    <ng-container *ngIf="router.url === '/home/' + userId + '/tasks'; else mainDashboard">
-      <app-tasks [userId]="userId"></app-tasks>
-    </ng-container>
-    
-    <!-- Template for the main dashboard -->
-    <ng-template #mainDashboard>
+    <!-- Render the main dashboard content if no specific child route is active -->
+    <ng-container *ngIf="router.url === '/home/' + userId; else contentOutlet">
       <div class="main-dashboard">
-        <!-- Info Section (combined component) -->
+        <!-- Info Section -->
         <div class="info-section">
           <div class="info-item">
             <span class="info-label">Tasks</span>
@@ -66,67 +61,49 @@
           </div>
         </div>
     
-<!-- Today's Tasks Section -->
-<div class="chart" id="todays-tasks">
-  <h2>Today's Tasks</h2>
-  <ul class="today">
-    <li 
-        *ngFor="let task of tasksDueToday" 
-        style="
-          display: flex; 
-          align-items: center;
-        ">
-      {{ task.title }}: 
-      <span 
-          [ngClass]="{
-            'status-pending': task.status === 'Pending',
-            'status-in-progress': task.status === 'In Progress'
-          }" 
-          style="
-            margin-left: 8px; 
-            margin-right: 8px;
-          ">
-        {{ task.status }}
-      </span> 
-      - Due by {{ task.dueDate | date: 'shortTime' }}
-      
-      <!-- Button for marking task completed -->
-      <button 
-          mat-raised-button 
-          *ngIf="task.status === 'In Progress'" 
-          (click)="markTaskAsCompleted(task)" 
-          style="
-            background-color: #28a745; 
-            color: white; 
-            font-size: 10px; 
-            padding: 4px 8px; 
-            margin-left: 8px;
-          ">
-        Mark Completed
-      </button>
+        <!-- Today's Tasks Section -->
+        <div class="chart" id="todays-tasks">
+          <h2>Today's Tasks</h2>
+          <ul class="today">
+            <li 
+              *ngFor="let task of tasksDueToday" 
+              style="display: flex; align-items: center;">
+              {{ task.title }}: 
+              <span 
+                [ngClass]="{
+                  'status-pending': task.status === 'Pending',
+                  'status-in-progress': task.status === 'In Progress'
+                }" 
+                style="margin-left: 8px; margin-right: 8px;">
+                {{ task.status }}
+              </span> 
+              - Due by {{ task.dueDate | date: 'shortTime' }}
+              
+              <!-- Button for marking task completed -->
+              <button 
+                mat-raised-button 
+                *ngIf="task.status === 'In Progress'" 
+                (click)="markTaskAsCompleted(task)" 
+                style="background-color: #28a745; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
+                Mark Completed
+              </button>
 
-      <!-- Button for starting the task -->
-      <button 
-          mat-raised-button 
-          *ngIf="task.status === 'Pending'" 
-          (click)="startTask(task)" 
-          style="
-            background-color: #ffc107; 
-            color: white; 
-            font-size: 10px; 
-            padding: 4px 8px; 
-            margin-left: 8px;
-          ">
-        Start Task
-      </button>
-      <br>
-      <br>
-    </li>
-    <li *ngIf="tasksDueToday.length === 0">
-      No tasks due today.
-    </li>
-  </ul>
-</div>
+              <!-- Button for starting the task -->
+              <button 
+                mat-raised-button 
+                *ngIf="task.status === 'Pending'" 
+                (click)="startTask(task)" 
+                style="background-color: #ffc107; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
+                Start Task
+              </button>
+              <br>
+              <br>
+            </li>
+            <li *ngIf="tasksDueToday.length === 0">
+              No tasks due today.
+            </li>
+          </ul>
+        </div>
 
         <!-- Weekly Tasks Status Bar Chart -->
         <div class="chart responsive-chart" id="weekly-tasks-bar-chart">
@@ -152,65 +129,74 @@
           </li>
         </ul>
       </div>
+    </ng-container>
+
+    <!-- Router outlet for child components like tasks and settings -->
+    <ng-template #contentOutlet>
+      <router-outlet></router-outlet>
+    </ng-template>
+    
     <!-- Modal for Adding a Task -->
-<div class="modal" id="addTaskModal" *ngIf="isAddTaskModalOpen">
-  <div class="modal-content">
-    <span class="close" (click)="closeAddTaskModal()">&times;</span>
-    <h2>Add New Task</h2>
-    <form (ngSubmit)="createTask()" class="task-form">
-      <div fxLayout="column" fxLayoutGap="20px">
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Title</mat-label>
-          <input matInput [(ngModel)]="newTask.title" name="title" required>
-        </mat-form-field>
+    <div class="modal" id="addTaskModal" *ngIf="isAddTaskModalOpen">
+      <div class="modal-content">
+        <span class="close" (click)="closeAddTaskModal()">&times;</span>
+        <h2>Add New Task</h2>
+        <form (ngSubmit)="createTask()" class="task-form">
+          <div fxLayout="column" fxLayoutGap="20px">
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Title</mat-label>
+              <input matInput [(ngModel)]="newTask.title" name="title" required>
+            </mat-form-field>
 
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Description</mat-label>
-          <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
-        </mat-form-field>
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Description</mat-label>
+              <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
+            </mat-form-field>
 
-        <!-- Due Date -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Due Date</mat-label>
-          <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required>
-          <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #dueDatePicker></mat-datepicker>
-        </mat-form-field>
+            <!-- Due Date -->
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Due Date</mat-label>
+              <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required>
+              <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #dueDatePicker></mat-datepicker>
+            </mat-form-field>
 
-        <!-- Due Time -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Due Time</mat-label>
-          <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
-        </mat-form-field>
+            <!-- Due Time -->
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Due Time</mat-label>
+              <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
+            </mat-form-field>
 
-        <!-- Scheduled Start Date -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Scheduled Start Date</mat-label>
-          <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required>
-          <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
-        </mat-form-field>
+            <!-- Scheduled Start Date -->
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Scheduled Start Date</mat-label>
+              <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required>
+              <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
+            </mat-form-field>
 
-        <!-- Scheduled Start Time -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Scheduled Start Time</mat-label>
-          <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
-        </mat-form-field>
+            <!-- Scheduled Start Time -->
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Scheduled Start Time</mat-label>
+              <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
+            </mat-form-field>
 
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Priority</mat-label>
-          <mat-select [(ngModel)]="newTask.priority" name="priority" required>
-            <mat-option value="High">High</mat-option>
-            <mat-option value="Medium">Medium</mat-option>
-            <mat-option value="Low">Low</mat-option>
-          </mat-select>
-        </mat-form-field>
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Priority</mat-label>
+              <mat-select [(ngModel)]="newTask.priority" name="priority" required>
+                <mat-option value="High">High</mat-option>
+                <mat-option value="Medium">Medium</mat-option>
+                <mat-option value="Low">Low</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-        <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
-        <div class="button-container">
-          <button mat-raised-button color="primary" type="submit">Create Task</button>
-        </div>
+            <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
+            <div class="button-container">
+              <button mat-raised-button color="primary" type="submit">Create Task</button>
+            </div>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   </div>
 </div>
