@@ -131,7 +131,7 @@ public class TaskServiceImpl implements TaskService {
         Optional<Task> taskOptional = taskRepository.findById(taskId);
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
-            task.setStatus("Completed");
+            task.setStatus("Complete");
             task.setLastModifiedDate(LocalDateTime.now());
             taskRepository.save(task);
         } else {

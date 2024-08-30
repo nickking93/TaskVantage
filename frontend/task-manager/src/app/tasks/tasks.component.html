@@ -34,8 +34,8 @@
     <button 
         mat-raised-button 
         class="task-filter-button" 
-        (click)="filterTasks('completed')" 
-        [class.active]="selectedFilter === 'completed'">
+        (click)="filterTasks('complete')" 
+        [class.active]="selectedFilter === 'complete'">
       Completed
     </button>
   </div>
@@ -53,8 +53,8 @@
         <!-- Conditionally display the start date if the task is in progress -->
         <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.start_date | date: 'short' }}</p>
   
-        <!-- Hide all buttons if the 'completed' filter is selected -->
-        <ng-container *ngIf="selectedFilter !== 'completed'">
+        <!-- Hide all buttons if the 'complete' filter is selected -->
+        <ng-container *ngIf="selectedFilter !== 'complete'">
           <!-- "Mark Completed" button for tasks in progress -->
           <button 
               mat-raised-button 
