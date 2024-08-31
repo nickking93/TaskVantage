@@ -41,15 +41,15 @@
   </div>
 
   <!-- Display the list of tasks -->
-  <div *ngIf="filteredTasks.length > 0; else noTasks">
+  <div *ngIf="paginatedTasks.length > 0; else noTasks">
     <ul class="task-list">
-      <li *ngFor="let task of filteredTasks">
+      <li *ngFor="let task of paginatedTasks">
         <h3>{{ task.title }}</h3>
         <p>{{ task.description }}</p>
         <p><strong>Due Date:</strong> {{ task.dueDate | date: 'short' }}</p>
         <p><strong>Priority:</strong> {{ task.priority }}</p>
         <p><strong>Status:</strong> {{ task.status }}</p>
-  
+
         <!-- Conditionally display the start date if the task is in progress -->
         <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.start_date | date: 'short' }}</p>
   
@@ -90,6 +90,22 @@
         <hr>
       </li>
     </ul>
+
+<!-- Angular Material Paginator -->
+<mat-paginator 
+  [length]="filteredTasks.length" 
+  [pageSize]="tasksPerPage" 
+  [pageSizeOptions]="[5, 10, 25, 100]" 
+  (page)="setPage($event)"
+  style="margin-top: 16px; display: flex; justify-content: flex-end; align-items: center; font-size: 14px; color: #2365B2;">
+  
+  <ng-template matPaginatorIntl let-rangeLabel let-previousPageLabel let-nextPageLabel let-firstPageLabel let-lastPageLabel>
+    <button mat-button style="background-color: #2365B2; color: white;">{{ previousPageLabel }}</button>
+    <span>{{ rangeLabel }}</span>
+    <button mat-button style="background-color: #2365B2; color: white;">{{ nextPageLabel }}</button>
+  </ng-template>
+
+</mat-paginator>
   </div>
 
   <!-- Fallback when no tasks are available -->
