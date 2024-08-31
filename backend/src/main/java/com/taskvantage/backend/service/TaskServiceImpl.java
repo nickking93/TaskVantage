@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -132,7 +133,7 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setLastModifiedDate(LocalDateTime.now());
+            task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC)); // Set in UTC
             taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);
