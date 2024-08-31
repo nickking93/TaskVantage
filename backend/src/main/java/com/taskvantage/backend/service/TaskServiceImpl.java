@@ -133,7 +133,8 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC)); // Set in UTC            taskRepository.save(task);
+            task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC)); // Set in UTC
+            taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);
         }
