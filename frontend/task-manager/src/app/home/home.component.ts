@@ -187,18 +187,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  calculateTimeAgo(date: Date): string {
+  calculateTimeAgo(utcDate: Date): string {
+    console.log('Original UTC Date:', utcDate);
+
+    // Convert the UTC date to local time
+    const localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
+
+    console.log('Converted Local Date:', localDate);
+
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
+    const diff = now.getTime() - localDate.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
 
     if (hours < 24) {
-      return `${hours} hours ago`;
+        return `${hours} hours ago`;
     } else {
-      return `${days} days ago`;
+        return `${days} days ago`;
     }
-  }
+}
 
   loadWeeklyTaskStatusChart(): void {
     this.taskService.fetchTasks(this.userId, (tasks) => {
