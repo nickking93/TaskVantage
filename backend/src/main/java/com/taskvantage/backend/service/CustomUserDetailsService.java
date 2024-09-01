@@ -63,10 +63,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     // Method to update the FCM token for a user
     public void updateUserToken(String username, String token) {
         User user = userRepository.findByUsername(username);
-        if (user != null) {
-            user.setToken(token); // Set the new FCM token
-            userRepository.save(user); // Save the updated user entity
-            logger.info("Updated FCM Token for user: {}", username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with username: " + username);
         }
+        user.setToken(token); // Set the new FCM token
+        userRepository.save(user); // Save the updated user entity
+        logger.info("Updated FCM Token for user: {}", username);
     }
 }
