@@ -9,6 +9,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Profile({"dev", "test"}) // Only load data in development or test profiles
 public class DataLoader {
 
     @Bean
