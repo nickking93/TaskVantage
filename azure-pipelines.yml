@@ -66,9 +66,22 @@ stages:
 
           - script: |
               echo Writing Firebase JSON config to file...
-              echo $(FIREBASE_CONFIG) > "$(backendPath)\firebaseConfig.json"
-              type "$(backendPath)\firebaseConfig.json"
-            displayName: 'Write Firebase Config to File and Verify'
+
+              # Determine the path dynamically
+              set JSON_FILE_PATH=$(backendPath)\firebaseConfig.json
+
+              # Write the Firebase config to the file
+              echo $(FIREBASE_CONFIG) > "%JSON_FILE_PATH%"
+
+              # Verify the file contents
+              type "%JSON_FILE_PATH%"
+
+              # Set the path as an environment variable for later use
+              echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]%JSON_FILE_PATH%
+
+              # Confirm the environment variable is set
+              echo FIREBASE_CONFIG_PATH is set to %FIREBASE_CONFIG_PATH%
+            displayName: 'Write Firebase Config to File and Set Path'
 
           - task: Maven@4
             inputs:

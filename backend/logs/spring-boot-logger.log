@@ -1254,3 +1254,314 @@ Caused by: java.io.FileNotFoundException: "src\main\resources\taskvantage-c1425-
 2024-09-01 04:42:23 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 09:42:23 and 2024-09-01 09:57:23
 2024-09-01 04:42:23 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
 2024-09-01 04:42:23 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:34:13 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:34:14 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:34:14 and 2024-09-01 10:49:14
+2024-09-01 05:34:14 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:34:14 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:34:26 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:34:26 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:34:26 and 2024-09-01 10:49:26
+2024-09-01 05:34:27 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:34:27 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:34:37 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:34:37 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:34:37 and 2024-09-01 10:49:37
+2024-09-01 05:34:38 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:34:38 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:35:08 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:35:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:35:08 and 2024-09-01 10:50:08
+2024-09-01 05:35:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:35:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:36:58 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:36:58 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:36:58 and 2024-09-01 10:51:58
+2024-09-01 05:36:58 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:36:58 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:37:58 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:37:58 and 2024-09-01 10:52:58
+2024-09-01 05:37:58 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:37:58 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:38:28 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [dev]
+2024-09-01 05:38:28 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using development Firebase configuration.
+2024-09-01 05:38:28 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:38:29 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:38:29 and 2024-09-01 10:53:29
+2024-09-01 05:38:29 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:38:29 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:39:29 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:39:29 and 2024-09-01 10:54:29
+2024-09-01 05:39:29 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:39:29 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 05:41:14 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [prod]
+2024-09-01 05:41:14 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using production Firebase configuration.
+2024-09-01 05:41:14 [restartedMain] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+2024-09-01 05:41:14 [restartedMain] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:648)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:485)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1355)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1185)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:971)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:625)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
+	at com.taskvantage.backend.BackendApplication.main(BackendApplication.java:12)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:178)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:644)
+	... 22 common frames omitted
+Caused by: com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at com.google.gson.stream.JsonReader.syntaxError(JsonReader.java:1659)
+	at com.google.gson.stream.JsonReader.checkLenient(JsonReader.java:1465)
+	at com.google.gson.stream.JsonReader.doPeek(JsonReader.java:602)
+	at com.google.gson.stream.JsonReader.peek(JsonReader.java:433)
+	at com.google.api.client.json.gson.GsonParser.nextToken(GsonParser.java:149)
+	at com.google.api.client.json.JsonParser.startParsing(JsonParser.java:213)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:358)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:335)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:79)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:73)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:162)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:139)
+	at com.taskvantage.backend.config.FirebaseConfig.initializeFirebase(FirebaseConfig.java:42)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.CGLIB$initializeFirebase$0(<generated>)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:348)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.initializeFirebase(<generated>)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:146)
+	... 23 common frames omitted
+2024-09-01 05:43:10 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [prod]
+2024-09-01 05:43:10 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using production Firebase configuration.
+2024-09-01 05:43:10 [restartedMain] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+2024-09-01 05:43:10 [restartedMain] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:648)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:485)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1355)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1185)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:971)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:625)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
+	at com.taskvantage.backend.BackendApplication.main(BackendApplication.java:12)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:178)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:644)
+	... 22 common frames omitted
+Caused by: com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at com.google.gson.stream.JsonReader.syntaxError(JsonReader.java:1659)
+	at com.google.gson.stream.JsonReader.checkLenient(JsonReader.java:1465)
+	at com.google.gson.stream.JsonReader.doPeek(JsonReader.java:602)
+	at com.google.gson.stream.JsonReader.peek(JsonReader.java:433)
+	at com.google.api.client.json.gson.GsonParser.nextToken(GsonParser.java:149)
+	at com.google.api.client.json.JsonParser.startParsing(JsonParser.java:213)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:358)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:335)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:79)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:73)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:162)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:139)
+	at com.taskvantage.backend.config.FirebaseConfig.initializeFirebase(FirebaseConfig.java:42)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.CGLIB$initializeFirebase$0(<generated>)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:348)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.initializeFirebase(<generated>)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:146)
+	... 23 common frames omitted
+2024-09-01 05:43:39 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [prod]
+2024-09-01 05:43:39 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using production Firebase configuration.
+2024-09-01 05:43:39 [restartedMain] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+2024-09-01 05:43:39 [restartedMain] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:648)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:485)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1355)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1185)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:971)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:625)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
+	at com.taskvantage.backend.BackendApplication.main(BackendApplication.java:12)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:178)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:644)
+	... 22 common frames omitted
+Caused by: com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at com.google.gson.stream.JsonReader.syntaxError(JsonReader.java:1659)
+	at com.google.gson.stream.JsonReader.checkLenient(JsonReader.java:1465)
+	at com.google.gson.stream.JsonReader.doPeek(JsonReader.java:602)
+	at com.google.gson.stream.JsonReader.peek(JsonReader.java:433)
+	at com.google.api.client.json.gson.GsonParser.nextToken(GsonParser.java:149)
+	at com.google.api.client.json.JsonParser.startParsing(JsonParser.java:213)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:358)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:335)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:79)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:73)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:162)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:139)
+	at com.taskvantage.backend.config.FirebaseConfig.initializeFirebase(FirebaseConfig.java:42)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.CGLIB$initializeFirebase$0(<generated>)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:348)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.initializeFirebase(<generated>)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:146)
+	... 23 common frames omitted
+2024-09-01 05:43:45 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [prod]
+2024-09-01 05:43:45 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using production Firebase configuration.
+2024-09-01 05:43:45 [restartedMain] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+2024-09-01 05:43:45 [restartedMain] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:648)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:485)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1355)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1185)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:971)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:625)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
+	at com.taskvantage.backend.BackendApplication.main(BackendApplication.java:12)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:178)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:644)
+	... 22 common frames omitted
+Caused by: com.google.gson.stream.MalformedJsonException: Use JsonReader.setLenient(true) to accept malformed JSON at line 1 column 1 path $
+	at com.google.gson.stream.JsonReader.syntaxError(JsonReader.java:1659)
+	at com.google.gson.stream.JsonReader.checkLenient(JsonReader.java:1465)
+	at com.google.gson.stream.JsonReader.doPeek(JsonReader.java:602)
+	at com.google.gson.stream.JsonReader.peek(JsonReader.java:433)
+	at com.google.api.client.json.gson.GsonParser.nextToken(GsonParser.java:149)
+	at com.google.api.client.json.JsonParser.startParsing(JsonParser.java:213)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:358)
+	at com.google.api.client.json.JsonParser.parse(JsonParser.java:335)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:79)
+	at com.google.api.client.json.JsonObjectParser.parseAndClose(JsonObjectParser.java:73)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:162)
+	at com.google.auth.oauth2.GoogleCredentials.fromStream(GoogleCredentials.java:139)
+	at com.taskvantage.backend.config.FirebaseConfig.initializeFirebase(FirebaseConfig.java:42)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.CGLIB$initializeFirebase$0(<generated>)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:348)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.initializeFirebase(<generated>)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:146)
+	... 23 common frames omitted
+2024-09-01 05:44:04 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [dev]
+2024-09-01 05:44:04 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using development Firebase configuration.
+2024-09-01 05:44:04 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 05:44:04 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 10:44:04 and 2024-09-01 10:59:04
+2024-09-01 05:44:04 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 05:44:04 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 06:01:35 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [dev]
+2024-09-01 06:01:35 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using Firebase configuration from file: 
+2024-09-01 06:01:35 [restartedMain] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: 
+2024-09-01 06:01:35 [restartedMain] ERROR o.s.boot.SpringApplication - Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initializeFirebase' defined in class path resource [com/taskvantage/backend/config/FirebaseConfig.class]: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: 
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:648)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:485)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1355)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1185)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:971)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:625)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:335)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1363)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1352)
+	at com.taskvantage.backend.BackendApplication.main(BackendApplication.java:12)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.google.firebase.FirebaseApp]: Factory method 'initializeFirebase' threw exception with message: 
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:178)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:644)
+	... 22 common frames omitted
+Caused by: java.io.FileNotFoundException: 
+	at java.base/java.io.FileInputStream.open0(Native Method)
+	at java.base/java.io.FileInputStream.open(FileInputStream.java:213)
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:152)
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:106)
+	at com.taskvantage.backend.config.FirebaseConfig.initializeFirebase(FirebaseConfig.java:39)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.CGLIB$initializeFirebase$0(<generated>)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$FastClass$$1.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invokeSuper(MethodProxy.java:258)
+	at org.springframework.context.annotation.ConfigurationClassEnhancer$BeanMethodInterceptor.intercept(ConfigurationClassEnhancer.java:348)
+	at com.taskvantage.backend.config.FirebaseConfig$$SpringCGLIB$$0.initializeFirebase(<generated>)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:146)
+	... 23 common frames omitted
+2024-09-01 06:02:14 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [dev]
+2024-09-01 06:02:14 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using Firebase configuration from file: src\main\resources\taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json
+2024-09-01 06:02:14 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 06:02:14 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 11:02:14 and 2024-09-01 11:17:14
+2024-09-01 06:02:14 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 06:02:14 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
