@@ -67,6 +67,7 @@ stages:
           - script: |
               echo "Writing Firebase JSON config to file..."
               echo $(FIREBASE_CONFIG) > $(backendPath)\firebaseConfig.json
+              cat $(backendPath)\firebaseConfig.json
             displayName: 'Write Firebase Config to File'
 
           - task: Maven@4
