@@ -4,6 +4,7 @@ public class AuthRequest {
 
     private String username;
     private String password;
+    private String fcmToken;
 
     // Getters and Setters
     public String getUsername() {
@@ -21,4 +22,12 @@ public class AuthRequest {
     public void setPassword(String password) {
         this.password = password;
     }
-}
+
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }}

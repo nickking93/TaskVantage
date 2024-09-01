@@ -58,6 +58,11 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.1.1</version> <!-- Latest version at the time of writing -->
+        </dependency>
         <!-- JJWT dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -80,6 +85,16 @@
             <version>1.9.0</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>google-maven-central</id>
+            <url>https://maven.google.com</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

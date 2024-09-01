@@ -71,35 +71,42 @@ export class TaskService {
     );
   }
 
-  private convertUTCToLocal(task: Task): Task {
-    if (task.dueDate) {
-      task.dueDate = this.convertUTCStringToLocal(task.dueDate);
-    }
-    if (task.scheduledStart) {
-      task.scheduledStart = this.convertUTCStringToLocal(task.scheduledStart);
-    }
-    if (task.lastModifiedDate) {
-      task.lastModifiedDate = this.convertUTCStringToLocal(task.lastModifiedDate);
-    }
-    return task;
-  }
-
   // Convert task date properties from local time to UTC
   private convertLocalToUTC(task: Task): Task {
-    if (task.dueDate) {
-      task.dueDate = this.convertLocalStringToUTC(task.dueDate);
-    }
-    if (task.scheduledStart) {
-      task.scheduledStart = this.convertLocalStringToUTC(task.scheduledStart);
-    }
-    return task;
+    const localToUTC = (localDate?: string | null): string | null => {
+      if (!localDate) return null; // Return null if the date is null or undefined
+      const date = new Date(localDate);
+      return date.toISOString(); // Convert to UTC string
+    };
+  
+    return {
+      ...task,
+      dueDate: localToUTC(task.dueDate) || '', // Ensure that dueDate is never undefined
+      scheduledStart: localToUTC(task.scheduledStart) || '',
+      lastModifiedDate: localToUTC(task.lastModifiedDate) || ''
+    };
   }
+  
+  
+  
 
   // Convert a UTC string to local date-time string
-  private convertUTCStringToLocal(utcString: string): string {
-    const localDate = new Date(utcString);
-    return localDate.toLocaleString();
+  private convertUTCToLocal(task: Task): Task {
+    const utcToLocal = (utcDate?: string | null): string | null => {
+      if (!utcDate) return null; // Return null if the date is null or undefined
+      const date = new Date(utcDate);
+      return date.toLocaleString(); // Convert to local string
+    };
+  
+    return {
+      ...task,
+      dueDate: utcToLocal(task.dueDate) || '', // Ensure that dueDate is never undefined
+      scheduledStart: utcToLocal(task.scheduledStart) || '',
+      lastModifiedDate: utcToLocal(task.lastModifiedDate) || ''
+    };
   }
+  
+  
 
   // Convert a local date-time string to UTC string
   private convertLocalStringToUTC(localString: string): string {
@@ -208,4 +215,18 @@ export class TaskService {
       catchError(this.handleError)
     );
   }
+
+  // task.service.ts
+
+saveToken(token: string): Observable<any> {
+  const url = `${this.tasksUrl}/save-token`;  // Adjust the endpoint as needed
+  const headers = this.authService.getAuthHeaders();
+  return this.http.post(url, { token }, { headers }).pipe(
+    map(response => {
+      console.log('Token saved successfully:', response);
+      return response;
+    }),
+    catchError(this.handleError)
+  );
+}
 }

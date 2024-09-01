@@ -5,9 +5,9 @@ import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 import { MatDialog } from '@angular/material/dialog'; 
 import { LoadingDialogComponent } from '../loading-dialog.component';
-// Declare the gapi object to use Google API functions
-declare const gapi: any;
+import { getMessaging, getToken } from 'firebase/messaging';
 
+declare var gapi: any;
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
 
   hide = true;
   signin: FormGroup;
+  fcmToken: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -39,6 +40,9 @@ export class LoginComponent implements OnInit {
 
     // Dynamically load the Google API script and initialize Google Sign-In
     this.loadGoogleApi();
+
+    // Get FCM token
+    this.getFcmToken();
   }
 
   loadGoogleApi() {
@@ -147,19 +151,23 @@ export class LoginComponent implements OnInit {
       const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
         disableClose: true
       });
-
+  
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
-
+  
       // Call AuthService to handle login
-      this.authService.login({ username: email, password }).subscribe(
+      this.authService.login({ 
+        username: email, 
+        password, 
+        fcmToken: this.fcmToken || undefined // Handle null case for fcmToken
+      }).subscribe(
         response => {
           // Close the loading dialog
           loadingDialogRef.close();
-
+  
           // Store the JWT token in localStorage
           localStorage.setItem('token', response.token);
-
+  
           // Extract userId from response and navigate to user's home page
           const userId = response.id;
           this.router.navigate([`/home/${userId}`]);
@@ -167,7 +175,7 @@ export class LoginComponent implements OnInit {
         error => {
           // Close the loading dialog
           loadingDialogRef.close();
-
+  
           // Handle login error
           console.error('Login failed', error);
           alert('Login failed. Please check your credentials and try again.');
@@ -176,5 +184,21 @@ export class LoginComponent implements OnInit {
     } else {
       alert('Please fill out the form correctly.');
     }
+  }  
+
+  getFcmToken(): void {
+    const messaging = getMessaging();
+    getToken(messaging, { vapidKey: environment.firebaseConfig.vapidKey })
+      .then((currentToken) => {
+        if (currentToken) {
+          console.log('FCM Token:', currentToken);
+          this.fcmToken = currentToken;
+        } else {
+          console.log('No registration token available. Request permission to generate one.');
+        }
+      })
+      .catch((err) => {
+        console.log('An error occurred while retrieving token. ', err);
+      });
   }
 }

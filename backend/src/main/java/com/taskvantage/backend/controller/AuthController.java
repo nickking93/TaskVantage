@@ -51,6 +51,12 @@ public class AuthController {
             // Retrieve the actual User entity using the username
             User user = customUserDetailsService.findUserByUsername(authRequest.getUsername());
 
+            // Update the user's FCM token if provided
+            if (authRequest.getFcmToken() != null && !authRequest.getFcmToken().isEmpty()) {
+                customUserDetailsService.updateUserToken(user.getUsername(), authRequest.getFcmToken());
+                System.out.println("Updated FCM Token for user: " + user.getUsername());
+            }
+
             // Create a response map to return as JSON
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login successful");
@@ -71,6 +77,7 @@ public class AuthController {
         }
     }
 
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {
         String result = customUserDetailsService.registerUser(authRequest);
@@ -82,6 +89,25 @@ public class AuthController {
         } else {
             response.put("message", result);
             return ResponseEntity.status(400).body(response);
+        }
+    }
+
+    @PostMapping("/update-token")
+    public ResponseEntity<Map<String, Object>> updateFcmToken(@RequestBody Map<String, String> tokenRequest) {
+        String username = jwtUtil.extractUsername(tokenRequest.get("token")); // Extract username from the JWT token
+        String fcmToken = tokenRequest.get("fcmToken");
+
+        if (username != null && fcmToken != null && !fcmToken.isEmpty()) {
+            customUserDetailsService.updateUserToken(username, fcmToken);
+            System.out.println("Updated FCM Token for user: " + username);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "FCM Token updated successfully");
+            return ResponseEntity.ok(response);
+        } else {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Invalid token or FCM token");
+            return ResponseEntity.status(400).body(errorResponse);
         }
     }
 }

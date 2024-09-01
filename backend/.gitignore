@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore the Firebase service account JSON file
+src/main/resources/taskvantage-c1425-firebase-adminsdk-yc2y8-76ac3c072f.json

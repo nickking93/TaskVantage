@@ -5,6 +5,7 @@ import com.taskvantage.backend.model.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +23,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Transactional
     @Modifying
     @Query("UPDATE Task t SET t.startDate = :startDate, t.status = 'In Progress' WHERE t.id = :taskId")
-    void startTask(Long taskId, LocalDateTime startDate);
+    void startTask(@Param("taskId") Long taskId, @Param("startDate") LocalDateTime startDate);
 
     @Transactional
     @Modifying
     @Query("UPDATE Task t SET t.completionDateTime = :completionDateTime, t.duration = :duration, t.status = 'Completed' WHERE t.id = :taskId")
-    void completeTask(Long taskId, LocalDateTime completionDateTime, Duration duration);
+    void completeTask(@Param("taskId") Long taskId, @Param("completionDateTime") LocalDateTime completionDateTime, @Param("duration") Duration duration);
+
+    // New Query to Fetch Tasks that Need Notification
+    @Query(value = "SELECT * FROM taskvantage.tasks WHERE scheduled_start BETWEEN :start AND :end", nativeQuery = true)
+    List<Task> findTasksToNotify(@Param("start") String start, @Param("end") String end);
 }

@@ -12,6 +12,7 @@ export class Task {
   duration?: string;
   lastModifiedDate?: string; 
   start_date?: string;
+  notifyBeforeStart?: boolean;  
 
   constructor(
     title: string,
@@ -25,7 +26,8 @@ export class Task {
     completion_date_time?: string,
     duration?: string,
     lastModifiedDate?: string,
-    start_date?: string
+    start_date?: string,
+    notifyBeforeStart?: boolean  
   ) {
     this.title = title;
     this.description = description;
@@ -39,5 +41,6 @@ export class Task {
     this.duration = duration;
     this.lastModifiedDate = lastModifiedDate; 
     this.start_date = start_date;
+    this.notifyBeforeStart = notifyBeforeStart;
   }
 }

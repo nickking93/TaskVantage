@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +34,11 @@ public class JwtUtil {
 
     // Extract username from the JWT token
     public String getUsernameFromToken(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    // New method to extract the username from the JWT token
+    public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 

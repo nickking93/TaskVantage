@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router'; // Import Router
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,9 +9,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { TaskService } from '../services/task.service'; // Adjust the import path as necessary
+import { TaskService } from '../services/task.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Task } from '../models/task.model'; // Adjust the import path as necessary
+import { Task } from '../models/task.model';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 @Component({
@@ -31,7 +31,7 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
   templateUrl: './add-task.component.html',
   styleUrls: ['./add-task.component.css']
 })
-export class AddTaskComponent implements OnInit { // Implement OnInit to handle initialization logic
+export class AddTaskComponent implements OnInit {
 
   userId: string = ''; // The user ID will be retrieved from the route parameters
   dueDate: string = '';
@@ -52,7 +52,8 @@ export class AddTaskComponent implements OnInit { // Implement OnInit to handle 
     '', // completion_date_time
     '', // duration
     '', // lastModifiedDate
-    ''  // start_date
+    '',  // start_date
+    false // notifyBeforeStart - initialize to false
   );
 
   constructor(

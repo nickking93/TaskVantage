@@ -3,6 +3,8 @@ package com.taskvantage.backend.service;
 import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.model.AuthRequest;
 import com.taskvantage.backend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -54,5 +58,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         userRepository.save(user);
 
         return "User registered successfully.";
+    }
+
+    // Method to update the FCM token for a user
+    public void updateUserToken(String username, String token) {
+        User user = userRepository.findByUsername(username);
+        if (user != null) {
+            user.setToken(token); // Set the new FCM token
+            userRepository.save(user); // Save the updated user entity
+            logger.info("Updated FCM Token for user: {}", username);
+        }
     }
 }

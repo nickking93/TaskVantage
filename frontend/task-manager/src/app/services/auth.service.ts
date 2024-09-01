@@ -34,7 +34,7 @@ export class AuthService {
   }
 
   // Manual login method
-  login(credentials: { username: string; password: string }): Observable<User> {
+  login(credentials: { username: string; password: string; fcmToken?: string }): Observable<User> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
       map((response: any) => {
@@ -73,12 +73,6 @@ export class AuthService {
   // Method to get the JWT token from localStorage
   private getToken(): string | null {
     return localStorage.getItem('jwtToken');
-  }
-
-  // Check token retrieval
-  private debugToken(): void {
-    const token = this.getToken();
-    console.log('JWT Token from localStorage:', token);
   }
 
   // Include the token in the headers for authenticated requests

@@ -67,7 +67,7 @@ public class Task {
     @JoinColumn(name = "task_id")
     private List<Comment> comments;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_reminders", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "reminder")
     private List<LocalDateTime> reminders;
@@ -75,13 +75,14 @@ public class Task {
     @Column(name = "is_recurring", nullable = false)
     private boolean recurring;
 
-    // Constructor
-    public Task() {
-        this.status = "Pending";  // Set default status if not provided
-        this.creationDate = LocalDateTime.now();  // Set creation date
-    }
+    @Column(name = "notify_before_start")
+    private boolean notifyBeforeStart;
+
+    @Column(name = "notification_sent")
+    private Boolean notificationSent;
 
     // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -154,7 +155,6 @@ public class Task {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-
     public LocalDateTime getStartDate() {
         return startDate;
     }
@@ -177,9 +177,6 @@ public class Task {
 
     public void setCompletionDateTime(LocalDateTime completionDateTime) {
         this.completionDateTime = completionDateTime;
-        if (this.startDate != null && completionDateTime != null) {
-            this.duration = Duration.between(this.startDate, completionDateTime);
-        }
     }
 
     public Duration getDuration() {
@@ -222,14 +219,6 @@ public class Task {
         this.comments = comments;
     }
 
-    public List<LocalDateTime> getReminders() {
-        return reminders;
-    }
-
-    public void setReminders(List<LocalDateTime> reminders) {
-        this.reminders = reminders;
-    }
-
     public boolean isRecurring() {
         return recurring;
     }
@@ -237,4 +226,30 @@ public class Task {
     public void setRecurring(boolean recurring) {
         this.recurring = recurring;
     }
+
+    public List<LocalDateTime> getReminders() {
+        return reminders;
+    }
+
+    // Setter for reminders
+    public void setReminders(List<LocalDateTime> reminders) {
+        this.reminders = reminders;
+    }
+
+    public boolean isNotifyBeforeStart() {
+        return notifyBeforeStart;
+    }
+
+    public void setNotifyBeforeStart(boolean notifyBeforeStart) {
+        this.notifyBeforeStart = notifyBeforeStart;
+    }
+
+    public Boolean getNotificationSent() {
+        return notificationSent;
+    }
+
+    public void setNotificationSent(Boolean notificationSent) {
+        this.notificationSent = notificationSent;
+    }
+
 }
