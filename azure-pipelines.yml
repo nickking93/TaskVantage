@@ -65,10 +65,11 @@ stages:
             displayName: 'Checkout Latest Commit'
 
           - script: |
-              echo "Writing Firebase JSON config to file..."
-              echo $(FIREBASE_CONFIG) > $(backendPath)\firebaseConfig.json
-              type $(backendPath)\firebaseConfig.json
-            displayName: 'Write Firebase Config to File'
+             echo "Writing Firebase JSON config to file..."
+             echo $(FIREBASE_CONFIG) | sed 's/\\n/\n/g' > $(backendPath)\firebaseConfig.json
+             type $(backendPath)\firebaseConfig.json
+            displayName: 'Write Firebase Config to File and Verify'
+
 
           - task: Maven@4
             inputs:
