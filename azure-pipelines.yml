@@ -13,9 +13,6 @@ variables:
   backendAppService: 'taskvantage-backend'
   backendPath: 'C:\agents\_work\1\s\backend'
   backendJar: '$(backendPath)\target\*.jar'
-  dbUrl: $(DB_URL)
-  dbUsername: $(DB_USERNAME)
-  dbPassword: $(DB_PASSWORD)
   SPRING_PROFILES_ACTIVE: 'prod'
 
 stages:
@@ -79,7 +76,7 @@ stages:
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '17'
               jdkArchitectureOption: 'x64'
-              goals: 'clean package'
+              goals: 'clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)'
             displayName: 'Build Spring Boot app'
 
           - task: AzureWebApp@1
@@ -100,4 +97,4 @@ stages:
                   "spring.datasource.username": "$(dbUsername)",
                   "spring.datasource.password": "$(dbPassword)"
                 }
-            displayName: 'Deploy Spring Boot app to Azure App Service'
+            displayName: 'Configure App Service Settings'
