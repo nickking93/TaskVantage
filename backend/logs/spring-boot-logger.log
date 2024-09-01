@@ -714,3 +714,11 @@ Caused by: com.google.gson.stream.MalformedJsonException: Unterminated string at
 2024-09-01 02:49:54 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 07:49:54 and 2024-09-01 08:04:54
 2024-09-01 02:49:54 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
 2024-09-01 02:49:54 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 03:08:25 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 03:08:26 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 08:08:26 and 2024-09-01 08:23:26
+2024-09-01 03:08:26 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 03:08:26 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 03:14:06 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 03:14:06 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 08:14:06 and 2024-09-01 08:29:06
+2024-09-01 03:14:06 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 03:14:06 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
