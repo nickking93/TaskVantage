@@ -17,25 +17,24 @@ public class FirebaseConfig {
     @Bean
     public FirebaseApp initializeFirebase() {
         try {
-            // Check if running in production by checking if the environment variable exists
             String firebaseConfig = System.getenv("FIREBASE_CONFIG");
 
             FirebaseOptions options;
-
             if (firebaseConfig != null && !firebaseConfig.isEmpty()) {
-                // In production, use the environment variable
+                // Use the environment variable (Base64 encoded JSON)
                 byte[] decodedConfig = Base64.getDecoder().decode(firebaseConfig);
                 options = new FirebaseOptions.Builder()
                         .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(decodedConfig)))
                         .build();
             } else {
-                // In local development, use the JSON file
+                // Fallback to using the local JSON file for local development
                 FileInputStream serviceAccount = new FileInputStream("src/main/resources/taskvantage-c1425-firebase-adminsdk-yc2y8-76ac3c072f.json");
                 options = new FirebaseOptions.Builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .build();
             }
 
+            // Initialize the FirebaseApp instance
             return FirebaseApp.initializeApp(options);
         } catch (IOException e) {
             e.printStackTrace();
