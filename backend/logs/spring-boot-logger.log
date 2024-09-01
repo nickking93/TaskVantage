@@ -1246,3 +1246,11 @@ Caused by: java.io.FileNotFoundException: "src\main\resources\taskvantage-c1425-
 2024-09-01 04:22:54 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 09:22:54 and 2024-09-01 09:37:54
 2024-09-01 04:22:54 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
 2024-09-01 04:22:54 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 04:38:53 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 04:38:53 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 09:38:53 and 2024-09-01 09:53:53
+2024-09-01 04:38:53 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 04:38:53 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 04:42:22 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 04:42:23 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-01 09:42:23 and 2024-09-01 09:57:23
+2024-09-01 04:42:23 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 04:42:23 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
