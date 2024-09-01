@@ -38,6 +38,9 @@ stages:
               echo "Step 2: Installing npm dependencies..."
               npm install || exit /b 1
             displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
+          
+          - script: npm install firebase @angular/fire --save
+            displayName: 'Install Firebase and AngularFire'
 
           - script: |
               echo "Step 3: Building Angular app..."
