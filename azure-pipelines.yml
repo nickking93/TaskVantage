@@ -64,16 +64,13 @@ stages:
             fetchDepth: 1
             displayName: 'Checkout Latest Commit'
 
-          - task: PowerShell@2
+          - script: |
+              echo "Writing Firebase JSON config to file..."
+              echo $Env:FIREBASE_CONFIG | Out-File -FilePath "$(backendPath)\firebaseConfig.json" -Encoding utf8
+              Get-Content "$(backendPath)\firebaseConfig.json"
             displayName: 'Write Firebase Config to File and Verify'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "Writing Firebase JSON config to file..."
-                $firebaseConfig = "$(FIREBASE_CONFIG)"
-                $firebaseConfig = $firebaseConfig -replace "\\n", "`n"
-                $firebaseConfig | Out-File -FilePath "$(backendPath)\firebaseConfig.json" -Encoding utf8
-                Get-Content "$(backendPath)\firebaseConfig.json"
+            env:
+              FIREBASE_CONFIG: $(FIREBASE_CONFIG)
 
           - task: Maven@4
             inputs:
