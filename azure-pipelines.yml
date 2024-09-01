@@ -57,48 +57,47 @@ stages:
             displayName: 'Deploy Angular app to Azure App Service'
 
   - stage: Build_And_Deploy_Backend
-  dependsOn: Build_And_Deploy_Frontend
-  jobs:
-    - job: Build_Backend
-      displayName: 'Build and Deploy Spring Boot Backend'
-      steps:
-        - checkout: self
-          clean: false
-          fetchDepth: 1
-          displayName: 'Checkout Latest Commit'
+    dependsOn: Build_And_Deploy_Frontend
+    jobs:
+      - job: Build_Backend
+        displayName: 'Build and Deploy Spring Boot Backend'
+        steps:
+          - checkout: self
+            clean: false
+            fetchDepth: 1
+            displayName: 'Checkout Latest Commit'
 
-        - script: |
-            echo "Writing Firebase JSON config to file..."
-            echo $(FIREBASE_CONFIG) > $(backendPath)\firebaseConfig.json
-          displayName: 'Write Firebase Config to File'
+          - script: |
+              echo "Writing Firebase JSON config to file..."
+              echo $(FIREBASE_CONFIG) > $(backendPath)\firebaseConfig.json
+            displayName: 'Write Firebase Config to File'
 
-        - task: Maven@4
-          inputs:
-            mavenPomFile: '$(backendPath)\pom.xml'
-            mavenOptions: '-Xmx3072m'
-            javaHomeOption: 'JDKVersion'
-            jdkVersionOption: '17'
-            jdkArchitectureOption: 'x64'
-            goals: 'clean package'
-          displayName: 'Build Spring Boot app'
+          - task: Maven@4
+            inputs:
+              mavenPomFile: '$(backendPath)\pom.xml'
+              mavenOptions: '-Xmx3072m'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '17'
+              jdkArchitectureOption: 'x64'
+              goals: 'clean package'
+            displayName: 'Build Spring Boot app'
 
-        - task: AzureWebApp@1
-          inputs:
-            azureSubscription: '$(azureSubscription)'
-            appName: '$(backendAppService)'
-            package: '$(backendJar)'
-            appType: 'webApp'
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(backendAppService)'
+              package: '$(backendJar)'
+              appType: 'webApp'
 
-        - task: AzureAppServiceSettings@1
-          inputs:
-            azureSubscription: '$(azureSubscription)'
-            resourceGroupName: 'TaskVantage'
-            appName: '$(backendAppService)'
-            appSettings: |
-              {
-                "spring.datasource.url": "$(dbUrl)",
-                "spring.datasource.username": "$(dbUsername)",
-                "spring.datasource.password": "$(dbPassword)"
-              }
-          displayName: 'Deploy Spring Boot app to Azure App Service'
-
+          - task: AzureAppServiceSettings@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              resourceGroupName: 'TaskVantage'
+              appName: '$(backendAppService)'
+              appSettings: |
+                {
+                  "spring.datasource.url": "$(dbUrl)",
+                  "spring.datasource.username": "$(dbUsername)",
+                  "spring.datasource.password": "$(dbPassword)"
+                }
+            displayName: 'Deploy Spring Boot app to Azure App Service'
