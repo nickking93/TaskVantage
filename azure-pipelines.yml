@@ -107,22 +107,10 @@ stages:
               resourceGroupName: 'TaskVantage'
               appName: '$(backendAppService)'
               appSettings: |
-                [
-                  {
-                    "name": "spring.datasource.url",
-                    "value": "$(dbUrl)"
-                  },
-                  {
-                    "name": "spring.datasource.username",
-                    "value": "$(dbUsername)"
-                  },
-                  {
-                    "name": "spring.datasource.password",
-                    "value": "$(dbPassword)"
-                  },
-                  {
-                    "name": "FIREBASE_CONFIG_PATH",
-                    "value": "$(FIREBASE_CONFIG_PATH)"
-                  }
-                ]
+                {
+                  "spring.datasource.url": "$(dbUrl)",
+                  "spring.datasource.username": "$(dbUsername)",
+                  "spring.datasource.password": "$(dbPassword)",
+                  "FIREBASE_CONFIG_PATH": "$(FIREBASE_CONFIG_PATH)"
+                }
             displayName: 'Configure App Service Settings'
