@@ -77,7 +77,8 @@ stages:
 
           - script: |
               echo Writing Firebase JSON config to resources directory...
-              cp $(Agent.TempDirectory)\$(firebaseConfigFileName) $(firebaseConfigPath)
+              mkdir "$(backendPath)\src\main\resources"
+              copy "$(Agent.TempDirectory)\$(firebaseConfigFileName)" "$(firebaseConfigPath)"
               echo Firebase JSON file is written to $(firebaseConfigPath)
               echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
