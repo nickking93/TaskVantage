@@ -7,13 +7,15 @@ pool:
   name: 'Self-Hosted Agents'
 
 variables:
-  SYSTEM_DEBUG: true  # Enable detailed logging for diagnostics
+  SYSTEM_DEBUG: true  # Consider disabling this in production for less verbose logs
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
   backendPath: 'C:\agents\_work\1\s\backend'
   backendJar: '$(backendPath)\target\*.jar'
   SPRING_PROFILES_ACTIVE: 'prod'
+  firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json'
+  firebaseConfigPath: '$(backendPath)\src\main\resources\$(firebaseConfigFileName)'
 
 stages:
   - stage: Build_And_Deploy_Frontend
@@ -22,7 +24,7 @@ stages:
         displayName: 'Build and Deploy Angular Frontend'
         steps:
           - checkout: self
-            clean: false
+            clean: false  # Clean the repository before the build to ensure a fresh state
             fetchDepth: 1
             displayName: 'Checkout Latest Commit'
 
@@ -39,6 +41,7 @@ stages:
               npm install || exit /b 1
             displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
           
+          # This step is optional if firebase and @angular/fire are already in package.json
           - script: npm install firebase @angular/fire --save
             displayName: 'Install Firebase and AngularFire'
 
@@ -67,14 +70,18 @@ stages:
             fetchDepth: 1
             displayName: 'Checkout Latest Commit'
 
+          - task: DownloadSecureFile@1
+            name: DownloadFirebaseConfig
+            inputs:
+              secureFile: '$(firebaseConfigFileName)'
+
           - script: |
-              echo Writing Firebase JSON config to file...
-              set JSON_FILE_PATH=$(backendPath)\firebaseConfig.json
-              echo $(FIREBASE_CONFIG) > "%JSON_FILE_PATH%"
-              type "%JSON_FILE_PATH%"
-              echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]%JSON_FILE_PATH%
-              echo FIREBASE_CONFIG_PATH is set to %FIREBASE_CONFIG_PATH%
-            displayName: 'Write Firebase Config to File and Set Path'
+              echo Writing Firebase JSON config to resources directory...
+              cp $(Agent.TempDirectory)\$(firebaseConfigFileName) $(firebaseConfigPath)
+              echo Firebase JSON file is written to $(firebaseConfigPath)
+              echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
+              echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
+            displayName: 'Write Firebase Config to Resources Directory'
 
           - task: Maven@4
             inputs:
@@ -102,6 +109,7 @@ stages:
                 {
                   "spring.datasource.url": "$(dbUrl)",
                   "spring.datasource.username": "$(dbUsername)",
-                  "spring.datasource.password": "$(dbPassword)"
+                  "spring.datasource.password": "$(dbPassword)",
+                  "FIREBASE_CONFIG_PATH": "$(FIREBASE_CONFIG_PATH)"
                 }
             displayName: 'Configure App Service Settings'

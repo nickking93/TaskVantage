@@ -13,6 +13,8 @@ import org.springframework.core.env.Environment;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Configuration
 public class FirebaseConfig {
@@ -34,14 +36,25 @@ public class FirebaseConfig {
 
         logger.info("Active profiles: {}", (Object) env.getActiveProfiles());
 
-        if (env.acceptsProfiles("prod") || env.acceptsProfiles("dev")) {
-            logger.info("Using Firebase configuration from file: {}", firebaseConfigPath);
-            InputStream serviceAccount = new FileInputStream(firebaseConfigPath);
+        // Ensure the Firebase configuration path is provided
+        if (firebaseConfigPath == null || firebaseConfigPath.isEmpty()) {
+            throw new IllegalStateException("FIREBASE_CONFIG_PATH is not set or is empty.");
+        }
+
+        // Ensure the file exists at the provided path
+        if (!Files.exists(Paths.get(firebaseConfigPath))) {
+            throw new IllegalStateException("Firebase configuration file not found at: " + firebaseConfigPath);
+        }
+
+        logger.info("Using Firebase configuration from file: {}", firebaseConfigPath);
+
+        try (InputStream serviceAccount = new FileInputStream(firebaseConfigPath)) {
             options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-        } else {
-            throw new IllegalStateException("No valid environment profile found!");
+        } catch (IOException e) {
+            logger.error("Failed to initialize Firebase: {}", e.getMessage());
+            throw e;  // Re-throwing the exception after logging
         }
 
         return FirebaseApp.initializeApp(options);
