@@ -107,5 +107,9 @@ stages:
               resourceGroupName: 'TaskVantage'
               appName: '$(backendAppService)'
               appSettings: |
-                "{\"spring.datasource.url\": \"$(dbUrl)\", \"spring.datasource.username\": \"$(dbUsername)\", \"spring.datasource.password\": \"$(dbPassword)\", \"FIREBASE_CONFIG_PATH\": \"$(FIREBASE_CONFIG_PATH)\"}"
-            displayName: 'Configure App Service Settings'
+                {
+                  "spring.datasource.url": "$(dbUrl)",
+                  "spring.datasource.username": "$(dbUsername)",
+                  "spring.datasource.password": "$(dbPassword)"
+                }
+            displayName: 'Deploy Spring Boot app to Azure App Service'
