@@ -1,6 +1,0 @@
-2024-09-03 12:31:16 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [dev]
-2024-09-03 12:31:16 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using Firebase configuration from file: src\main\resources\taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json
-2024-09-03 12:31:16 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2024-09-03 12:31:17 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-03 17:31:17 and 2024-09-03 17:46:17
-2024-09-03 12:31:17 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
-2024-09-03 12:31:17 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
