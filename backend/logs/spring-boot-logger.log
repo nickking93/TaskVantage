@@ -1609,3 +1609,13 @@ Caused by: java.io.FileNotFoundException:
 2024-09-01 22:31:05 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-02 03:31:05 and 2024-09-02 03:46:05
 2024-09-01 22:31:05 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
 2024-09-01 22:31:05 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 23:48:07 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Active profiles: [dev]
+2024-09-01 23:48:07 [restartedMain] INFO  c.t.backend.config.FirebaseConfig - Using Firebase configuration from file: src\main\resources\taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json
+2024-09-01 23:48:07 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-09-01 23:48:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-02 04:48:08 and 2024-09-02 05:03:08
+2024-09-01 23:48:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 23:48:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
+2024-09-01 23:48:54 [http-nio-8080-exec-2] INFO  c.t.b.service.NotificationService - Updated FCM Token for user: pat@example.com
+2024-09-01 23:49:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Querying for tasks with scheduled_start between 2024-09-02 04:49:08 and 2024-09-02 05:04:08
+2024-09-01 23:49:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Found 0 tasks within the time range
+2024-09-01 23:49:08 [scheduling-1] INFO  c.t.b.service.NotificationService - Notification check completed.
