@@ -117,8 +117,11 @@ export class AddTaskComponent implements OnInit {
     // Convert to UTC and return the ISO string
     const utcDateTime = new Date(localDateTime.getTime() - (localDateTime.getTimezoneOffset() * 60000));
 
+    console.log("Local date/time:", localDateTime.toISOString());
+    console.log("UTC date/time:", utcDateTime.toISOString()); // Log to check in production
+
     return utcDateTime.toISOString(); // Returning the UTC datetime string
-  }
+}
 
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
