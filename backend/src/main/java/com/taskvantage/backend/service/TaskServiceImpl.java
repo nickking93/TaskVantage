@@ -26,8 +26,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task addTask(Task task) {
-        task.setCreationDate(LocalDateTime.now());
-        task.setLastModifiedDate(LocalDateTime.now());
+        // Ensure that creation and modification dates are set in UTC
+        task.setCreationDate(LocalDateTime.now(ZoneOffset.UTC));
+        task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC));
+
+        // The dueDate, scheduledStart, etc. should already be in UTC from the frontend.
         return taskRepository.save(task);
     }
 
@@ -46,16 +49,13 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findTaskSummariesByUserId(userId);
     }
 
-    // New method to get non-completed tasks by user ID
     @Override
     public List<TaskSummary> getNonCompletedTasksByUserId(Long userId) {
-        // Implement the logic here to fetch non-completed tasks
         return taskRepository.findTaskSummariesByUserId(userId).stream()
                 .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
                 .toList();
     }
 
-    // Use the existing getTaskSummary method to provide a summary for all tasks, including monthly tasks
     @Override
     public TaskSummary getTaskSummary(Long userId) {
         List<TaskSummary> tasks = taskRepository.findTaskSummariesByUserId(userId);
@@ -65,7 +65,7 @@ public class TaskServiceImpl implements TaskService {
         long pastDeadlineTasks = tasks.stream()
                 .filter(task -> task.getDueDate() != null &&
                         task.getDueDate().isBefore(LocalDateTime.now()) &&
-                        !"Completed".equalsIgnoreCase(task.getStatus())) // Exclude completed tasks
+                        !"Completed".equalsIgnoreCase(task.getStatus()))
                 .count();
 
         YearMonth currentMonth = YearMonth.now();
@@ -79,7 +79,7 @@ public class TaskServiceImpl implements TaskService {
                 .filter(task -> task.getDueDate() != null && YearMonth.from(task.getDueDate()).equals(currentMonth))
                 .count();
 
-        TaskSummary summary = new TaskSummary();  // Using the no-argument constructor
+        TaskSummary summary = new TaskSummary();
         summary.setTotalTasks(totalTasks);
         summary.setTotalSubtasks(totalSubtasks);
         summary.setPastDeadlineTasks(pastDeadlineTasks);
@@ -102,17 +102,17 @@ public class TaskServiceImpl implements TaskService {
             existingTask.setPriority(updatedTask.getPriority());
             existingTask.setStatus(updatedTask.getStatus());
             existingTask.setDueDate(updatedTask.getDueDate());
-            existingTask.setLastModifiedDate(LocalDateTime.now());
-            existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Update scheduledStart
-            existingTask.setStartDate(updatedTask.getStartDate()); // Update startDate
-            existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Update completionDateTime
+            existingTask.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC));
+            existingTask.setScheduledStart(updatedTask.getScheduledStart());
+            existingTask.setStartDate(updatedTask.getStartDate());
+            existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime());
             existingTask.setTags(updatedTask.getTags());
             existingTask.setSubtasks(updatedTask.getSubtasks());
             existingTask.setAttachments(updatedTask.getAttachments());
             existingTask.setComments(updatedTask.getComments());
             existingTask.setReminders(updatedTask.getReminders());
             existingTask.setRecurring(updatedTask.isRecurring());
-            // Calculate the duration if completionDateTime and startDate are present
+
             if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
                 Duration duration = Duration.between(updatedTask.getStartDate(), updatedTask.getCompletionDateTime());
                 existingTask.setDuration(duration);
@@ -129,10 +129,10 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.deleteById(id);
     }
 
-    // New method to start a task
     @Override
     public void startTask(Long taskId, LocalDateTime startDate) {
-        taskRepository.startTask(taskId, startDate);
+        // Ensure the start date is saved in UTC
+        taskRepository.startTask(taskId, startDate.atOffset(ZoneOffset.UTC).toLocalDateTime());
     }
 
     @Override
@@ -141,7 +141,7 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC)); // Set in UTC
+            task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC));
             taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);
