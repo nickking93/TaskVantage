@@ -9,25 +9,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @Configuration
 public class FirebaseConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(FirebaseConfig.class);
 
-    @Value("${FIREBASE_CONFIG_PATH:}")
+    @Value("${FIREBASE_CONFIG_PATH:classpath:taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json}")
     private String firebaseConfigPath;
 
     private final Environment env;
+    private final ResourceLoader resourceLoader;
 
-    public FirebaseConfig(Environment env) {
+    public FirebaseConfig(Environment env, ResourceLoader resourceLoader) {
         this.env = env;
+        this.resourceLoader = resourceLoader;
     }
 
     @Bean
@@ -36,19 +37,15 @@ public class FirebaseConfig {
         if (FirebaseApp.getApps().isEmpty()) {
             logger.info("Active profiles: {}", (Object) env.getActiveProfiles());
 
-            // Ensure the Firebase configuration path is provided
-            if (firebaseConfigPath == null || firebaseConfigPath.isEmpty()) {
-                throw new IllegalStateException("FIREBASE_CONFIG_PATH is not set or is empty.");
-            }
-
-            // Ensure the file exists at the provided path
-            if (!Files.exists(Paths.get(firebaseConfigPath))) {
+            // Load the Firebase configuration file from the classpath
+            Resource resource = resourceLoader.getResource(firebaseConfigPath);
+            if (!resource.exists()) {
                 throw new IllegalStateException("Firebase configuration file not found at: " + firebaseConfigPath);
             }
 
             logger.info("Using Firebase configuration from file: {}", firebaseConfigPath);
 
-            try (InputStream serviceAccount = new FileInputStream(firebaseConfigPath)) {
+            try (InputStream serviceAccount = resource.getInputStream()) {
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .build();
