@@ -96,18 +96,21 @@ export class TasksComponent implements OnInit {
   filterTasks(filter: string): void {
     this.selectedFilter = filter;
     const now = new Date();
+    const nowLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000); // Convert UTC to local
   
     switch (filter) {
       case 'today':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate.toDateString() === now.toDateString() && task.status !== 'Complete';
+          const dueDateLocal = dueDate ? new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000) : null;
+          return dueDateLocal && dueDateLocal.toDateString() === nowLocal.toDateString() && task.status !== 'Complete';
         });
         break;
       case 'overdue':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && dueDate < now && task.status !== 'Complete';
+          const dueDateLocal = dueDate ? new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000) : null;
+          return dueDateLocal && dueDateLocal < nowLocal && task.status !== 'Complete';
         });
         break;
       case 'inProgress':
@@ -122,10 +125,10 @@ export class TasksComponent implements OnInit {
       default:
         this.filteredTasks = this.tasks.filter(task => task.status !== 'Complete');
     }
-    
+  
     this.currentPage = 1; // Reset to first page after filtering
     this.updatePagination();
-  }
+  }  
 
   setPage(event: PageEvent): void {
     this.currentPage = event.pageIndex + 1; // Angular Material uses zero-based indexing
