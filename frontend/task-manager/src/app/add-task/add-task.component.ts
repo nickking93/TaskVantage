@@ -74,13 +74,18 @@ export class AddTaskComponent implements OnInit {
   createTask(): void {
     // Ensure the userId is correctly set before creating the task
     this.newTask.userId = this.userId;
-
+  
     // Combine date and time into a full datetime string for dueDate
     this.newTask.dueDate = this.combineDateAndTime(this.dueDate, this.dueTime);
-
+  
     // Combine date and time into a full datetime string for scheduledStart
     this.newTask.scheduledStart = this.combineDateAndTime(this.scheduledStartDate, this.scheduledStartTime);
-
+  
+    // Log the task before sending to the backend
+    console.log('Task before sending to backend:', this.newTask);
+    console.log('Due Date in UTC:', this.newTask.dueDate);
+    console.log('Scheduled Start in UTC:', this.newTask.scheduledStart);
+  
     // Send the task to the backend
     this.taskService.createTask(this.newTask).subscribe(
       () => {
@@ -90,7 +95,7 @@ export class AddTaskComponent implements OnInit {
         console.error('Failed to create task:', error);
       }
     );
-  }
+  }  
 
   // Helper method to combine date and time into a full datetime string
   combineDateAndTime(date: any, time: string): string {
