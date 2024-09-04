@@ -39,9 +39,9 @@ public class NotificationService {
         String nowUTCString = nowUTC.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String endUTCString = endUTC.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        logger.info("Querying for tasks with scheduled_start between {} and {}", nowUTCString, endUTCString);
+        logger.info("Querying for tasks with scheduled_start between {} and {}", nowUTC, endUTC);
 
-        List<Task> tasks = taskRepository.findTasksToNotify(nowUTCString, endUTCString);
+        List<Task> tasks = taskRepository.findTasksToNotify(nowUTC, endUTC);
 
         logger.info("Found {} tasks within the time range", tasks.size());
 

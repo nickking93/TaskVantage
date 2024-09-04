@@ -46,6 +46,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     void completeTask(@Param("taskId") Long taskId, @Param("completionDateTime") LocalDateTime completionDateTime, @Param("duration") Duration duration);
 
     // Query to Fetch Tasks that Need Notification
+    // Update to use LocalDateTime directly instead of strings
     @Query(value = "SELECT * FROM taskvantage.tasks WHERE scheduled_start BETWEEN :start AND :end", nativeQuery = true)
-    List<Task> findTasksToNotify(@Param("start") String start, @Param("end") String end);
+    List<Task> findTasksToNotify(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
