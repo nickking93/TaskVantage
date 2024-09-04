@@ -22,6 +22,15 @@ public class TaskSummary {
     private LocalDateTime completionDateTime;  // New field
     private Duration duration;  // New field
 
+    // 5-argument constructor for the monthly task summary
+    public TaskSummary(long totalTasks, long totalSubtasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth) {
+        this.totalTasks = totalTasks;
+        this.totalSubtasks = totalSubtasks;
+        this.pastDeadlineTasks = pastDeadlineTasks;
+        this.completedTasksThisMonth = completedTasksThisMonth;
+        this.totalTasksThisMonth = totalTasksThisMonth;
+    }
+
     // 11-argument constructor (Updated to include startDate, completionDateTime, and duration)
     public TaskSummary(Long id, String title, String description, String priority, String status,
                        LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate,
@@ -108,11 +117,11 @@ public class TaskSummary {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getstartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;  // Updated getter
     }
 
-    public void setstartDate(LocalDateTime startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;  // Updated setter
     }
 

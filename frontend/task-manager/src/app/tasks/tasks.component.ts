@@ -45,7 +45,7 @@ export class TasksComponent implements OnInit {
     this.taskService.fetchTasks(this.userId, (tasks) => {
       this.tasks = tasks;
       this.filterTasks(this.selectedFilter);
-      console.log('Fetched tasks:', this.tasks);
+      // console.log('Fetched tasks:', this.tasks);
     });
   }
 

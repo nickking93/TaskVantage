@@ -17,10 +17,14 @@ public interface TaskService {
 
     List<TaskSummary> getTasksByUserId(Long userId);
 
+    // New method to get non-completed tasks by user ID
+    List<TaskSummary> getNonCompletedTasksByUserId(Long userId);
+
     Task updateTask(Task task);
 
     void deleteTask(Long id);
 
+    // Existing method to get task summary
     TaskSummary getTaskSummary(Long userId);
 
     void startTask(Long taskId, LocalDateTime startDate);

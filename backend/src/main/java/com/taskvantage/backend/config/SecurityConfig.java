@@ -29,22 +29,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("Configuring SecurityFilterChain");
         return http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
-                    // corsConfig.addAllowedOriginPattern("*"); // Allow all origins temporarily
                     corsConfig.addAllowedOrigin("http://localhost:4200");
                     corsConfig.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
                     corsConfig.addAllowedMethod("*");
                     corsConfig.addAllowedHeader("*");
-                    corsConfig.setAllowCredentials(true); // Must set to false when using "*"
-                    System.out.println("CORS Configuration: " + corsConfig.toString()); // Log CORS configuration
+                    corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/login", "/api/register").permitAll() // Ensure the API endpoints are permitted
+                        .requestMatchers("/api/login", "/api/register").permitAll()
+                        .requestMatchers("api/tasks/**").authenticated()  // Ensure /home/** endpoints are accessible for authenticated users
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -63,10 +61,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        // Temporarily allow all origins
-        // config.addAllowedOriginPattern("*");  // Allow all origins temporarily
-
-        // Keep existing origins as comments for reference
+        // Existing origins
         config.addAllowedOrigin("http://localhost:4200");
         config.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
 
@@ -74,8 +69,8 @@ public class SecurityConfig {
         config.addAllowedHeader("*");  // Allow all headers
         config.setAllowCredentials(true);  // Set to false when using "*"
 
-        source.registerCorsConfiguration("/api/**", config);
+        // Apply CORS to all endpoints, including /home/**
+        source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
-
 }

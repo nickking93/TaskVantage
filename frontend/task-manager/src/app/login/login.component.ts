@@ -1,13 +1,10 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { environment } from '../../environments/environment';
 import { MatDialog } from '@angular/material/dialog'; 
 import { LoadingDialogComponent } from '../loading-dialog.component';
-import { getMessaging, getToken } from 'firebase/messaging';
 
-// declare var gapi: any;
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -17,137 +14,23 @@ export class LoginComponent implements OnInit {
 
   hide = true;
   signin: FormGroup;
-  fcmToken: string | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private renderer: Renderer2,
     private authService: AuthService,  
     private router: Router,  
     private dialog: MatDialog
   ) {
-    // Initialize the FormGroup using FormBuilder
     this.signin = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
   }
 
-  ngOnInit(): void {
-    // this.overrideGoogleSignInButton();
-    // this.overrideFacebookSignInButton();
-    // this.overrideAppleSignInButton();
+  ngOnInit(): void {}
 
-    // Dynamically load the Google API script and initialize Google Sign-In
-    // this.loadGoogleApi();
-
-    // Get FCM token
-    this.getFcmToken();
-  }
-
-  // loadGoogleApi() {
-  //   const script = this.renderer.createElement('script');
-  //   script.src = 'https://apis.google.com/js/platform.js';
-  //   script.async = true;
-  //   script.defer = true;
-  //   script.onload = () => {
-  //     this.initializeGoogleSignIn();
-  //   };
-  //   this.renderer.appendChild(document.body, script);
-  // }
-
-  // initializeGoogleSignIn() {
-  //   gapi.load('auth2', () => {
-  //     gapi.auth2.init({
-  //       client_id: environment.googleClientId 
-  //     }).then(() => {
-  //       // Attach the Google Sign-In to the button element
-  //       this.attachSignIn(document.getElementById('google-signin-button'));
-  //     });
-  //   });
-  // }
-
-  // attachSignIn(element: HTMLElement | null) {
-  //   if (element) {
-  //     const auth2 = gapi.auth2.getAuthInstance();
-  //     auth2.attachClickHandler(element, {},
-  //       (googleUser: any) => this.onSignIn(googleUser), // On successful sign-in
-  //       (error: any) => console.error(JSON.stringify(error)) // On error
-  //     );
-  //   }
-  // }
-
-  // onSignIn(googleUser: any) {
-  //   const profile = googleUser.getBasicProfile();
-  //   console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-  //   console.log('Name: ' + profile.getName());
-  //   console.log('Image URL: ' + profile.getImageUrl());
-  //   console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-  // }
-
-  // Override Google Sign-In button click behavior
-  // overrideGoogleSignInButton() {
-  //   const googleSignInButton = document.getElementById('google-signin-button');
-  //   if (googleSignInButton) {
-  //     googleSignInButton.addEventListener('click', (event) => {
-  //       event.preventDefault(); // Prevent the default Google Sign-In behavior
-  //       this.loginWithGoogle();  // Call the custom Google Sign-In function
-  //     });
-  //   }
-  // }
-
-  // Override Facebook Sign-In button click behavior
-  // overrideFacebookSignInButton() {
-  //   const facebookSignInButton = document.getElementById('facebook-signin-button');
-  //   if (facebookSignInButton) {
-  //     facebookSignInButton.addEventListener('click', (event) => {
-  //       event.preventDefault(); // Prevent the default Facebook Sign-In behavior
-  //       this.facebookLogin();  // Call the custom Facebook Sign-In function
-  //     });
-  //   }
-  // }
-
-  // Override Apple Sign-In button click behavior
-  // overrideAppleSignInButton() {
-  //   const appleSignInButton = document.getElementById('appleid-signin');
-  //   if (appleSignInButton) {
-  //     appleSignInButton.addEventListener('click', (event) => {
-  //       event.preventDefault(); // Prevent the default pop-up or post behavior
-  //       this.redirectToApple();  // Call the custom redirect function
-  //     });
-  //   }
-  // }
-
-  // Redirect-based Apple Sign-In function with fragment response mode
-  // redirectToApple() {
-  //   const clientId = environment.appleClientId; // Updated to use environment variable
-  //   const redirectURI = environment.appleRedirectURI; // Use environment for redirect URI
-  //   const state = '[STATE]'; // Optional: Replace with your state if needed
-  //   const scope = 'name email'; // Adjust the scope as necessary
-
-  //   // Construct the URL for redirect-based sign-in with fragment response mode
-  //   const appleAuthURL = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectURI)}&response_type=code&scope=${scope}&response_mode=fragment`;
-
-  //   console.log('Redirecting to:', appleAuthURL); // Log the URL for debugging
-
-  //   // Redirect to Apple's authentication page
-  //   window.location.href = appleAuthURL;
-  // }
-
-  // Method to trigger Google OAuth login using a redirect
-  // loginWithGoogle() {
-  //   window.location.href = environment.googleRedirectURI; // Updated to use environment variable
-  // }
-
-  // Method to trigger Facebook OAuth login using a redirect
-  // facebookLogin() {
-  //   window.location.href = environment.facebookRedirectURI; // Updated to use environment variable
-  // }
-
-  // Handle form submission
   onSubmit() {
     if (this.signin.valid) {
-      // Open the loading dialog
       const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
         disableClose: true
       });
@@ -155,28 +38,22 @@ export class LoginComponent implements OnInit {
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
   
-      // Call AuthService to handle login
-      this.authService.login({ 
-        username: email, 
-        password, 
-        fcmToken: this.fcmToken || undefined // Handle null case for fcmToken
+      this.authService.login({
+        username: email,
+        password
       }).subscribe(
-        response => {
-          // Close the loading dialog
-          loadingDialogRef.close();
-  
-          // Store the JWT token in localStorage
+        (response) => {
+          console.log('Login response:', response);
+          
           localStorage.setItem('token', response.token);
-  
-          // Extract userId from response and navigate to user's home page
           const userId = response.id;
+          console.log('User ID after login:', userId);
+
+          loadingDialogRef.close();
           this.router.navigate([`/home/${userId}`]);
         },
         error => {
-          // Close the loading dialog
           loadingDialogRef.close();
-  
-          // Handle login error
           console.error('Login failed', error);
           alert('Login failed. Please check your credentials and try again.');
         }
@@ -184,21 +61,5 @@ export class LoginComponent implements OnInit {
     } else {
       alert('Please fill out the form correctly.');
     }
-  }  
-
-  getFcmToken(): void {
-    const messaging = getMessaging();
-    getToken(messaging, { vapidKey: environment.firebaseConfig.vapidKey })
-      .then((currentToken) => {
-        if (currentToken) {
-          console.log('FCM Token:', currentToken);
-          this.fcmToken = currentToken;
-        } else {
-          console.log('No registration token available. Request permission to generate one.');
-        }
-      })
-      .catch((err) => {
-        console.log('An error occurred while retrieving token. ', err);
-      });
   }
 }

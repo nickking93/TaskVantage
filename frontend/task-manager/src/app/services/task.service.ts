@@ -64,7 +64,7 @@ export class TaskService {
     const url = `${this.tasksUrl}/user/${userId}`;
     return this.http.get<Task[]>(url, { headers }).pipe(
       map(response => {
-        console.log('Fetched tasks:', response);
+        // console.log('Fetched tasks:', response);
         return response.map(task => this.convertUTCToLocal(task));
       }),
       catchError(this.handleError)

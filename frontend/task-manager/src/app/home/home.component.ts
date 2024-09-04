@@ -3,6 +3,9 @@ import { AuthService } from '../services/auth.service';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
+import { FirebaseMessagingService } from '../services/firebase-messaging.service'; // Import the FirebaseMessagingService
+import { getMessaging, getToken } from 'firebase/messaging'; // Import Firebase messaging methods
+import { environment } from '../../environments/environment'; // Import environment configuration
 import { FormsModule } from '@angular/forms'; 
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common'; 
@@ -19,6 +22,7 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { getApp } from 'firebase/app';
 
 @Component({
   selector: 'app-home',
@@ -45,6 +49,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   username: string = '';
   userId: string = '';
   isSidebarCollapsed: boolean = false;
+  fcmToken: string | null = null; // Variable to hold the FCM token
 
   // Variables to hold the summary data
   totalTasks: number = 0;
@@ -68,6 +73,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
+    private firebaseMessagingService: FirebaseMessagingService, // Inject FirebaseMessagingService
     public router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog  // Ensure MatDialog is injected for dialog handling
@@ -77,13 +83,33 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Listen for changes in the route parameters
-    this.route.paramMap.subscribe(params => {
-      this.userId = params.get('userId') || '';
+    this.route.params.subscribe(params => {
+      console.log('Raw route parameters:', params);
+  
+      this.userId = params['userId'];  
+      console.log('Extracted userIdParam:', this.userId);
+  
+      if (typeof this.userId !== 'string' || !this.userId) {
+        console.error('Invalid userId, expected a string but got:', this.userId);
+        this.logout(); 
+        return;
+      }
+  
+      console.log('UserId from route:', this.userId);
+      console.log('Type of userId:', typeof this.userId);
+  
       this.authService.getUserDetails().subscribe(user => {
+        console.log('User details from authService:', user);
+  
         if (user.id.toString() === this.userId) {
           this.username = user.username;
           this.reloadData(); // Load all data initially
+          
+          // Initialize Firebase and send FCM token
+          this.initializeFirebase(); // <-- Add this line here
+  
         } else {
+          console.log('User ID mismatch or user not authenticated, logging out');
           this.logout();
         }
       }, err => {
@@ -91,16 +117,52 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       });
     });
-  
+    
     // Listen for route change events
     this.routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
+        console.log('NavigationEnd event:', event.urlAfterRedirects);
+        
         if (event.urlAfterRedirects === `/home/${this.userId}`) {
           this.reloadData();  // Reload all data when navigating back to /home
         }
       });
-  }
+  }             
+
+// Initialize Firebase and handle FCM token
+initializeFirebase(): void {
+  console.log('Initializing Firebase...');
+  const app = getApp(); // Get the already initialized Firebase app
+  const messaging = getMessaging(app);
+
+  getToken(messaging, { vapidKey: environment.firebaseConfig.vapidKey })
+    .then((currentToken) => {
+      if (currentToken) {
+        console.log('FCM Token:', currentToken);
+        this.fcmToken = currentToken;  // Assign the FCM token to this.fcmToken
+
+        // Get the auth token using the public method
+        const authToken = this.authService.getAuthToken();
+
+        // Ensure that both fcmToken and authToken are not null before making the API call
+        if (this.fcmToken && authToken) {
+          this.firebaseMessagingService.sendTokenToServer(this.userId, this.fcmToken, authToken)
+            .subscribe(
+              response => console.log('FCM token sent successfully'),
+              error => console.error('Error sending FCM token to server:', error)
+            );
+        } else {
+          console.error('FCM token or auth token is missing. Cannot send token to server.');
+        }
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+      }
+    })
+    .catch((err) => {
+      console.error('An error occurred while retrieving token: ', err);
+    });
+}
   
   // Helper method to reload all the data
   reloadData(): void {
@@ -188,12 +250,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   calculateTimeAgo(utcDate: Date): string {
-    console.log('Original UTC Date:', utcDate);
+    // console.log('Original UTC Date:', utcDate);
 
     // Convert the UTC date to local time
     const localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
 
-    console.log('Converted Local Date:', localDate);
+    // console.log('Converted Local Date:', localDate);
 
     const now = new Date();
     const diff = now.getTime() - localDate.getTime();

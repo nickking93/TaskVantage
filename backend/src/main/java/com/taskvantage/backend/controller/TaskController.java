@@ -2,7 +2,10 @@ package com.taskvantage.backend.controller;
 
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
+import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.service.TaskService;
+import com.taskvantage.backend.service.CustomUserDetailsService;
+import com.taskvantage.backend.Security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +21,14 @@ import java.util.Optional;
 public class TaskController {
 
     private final TaskService taskService;
+    private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService) {
         this.taskService = taskService;
+        this.jwtUtil = jwtUtil;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     // Create a new task
@@ -49,40 +56,14 @@ public class TaskController {
     // Get task summary for a specific user
     @GetMapping("/summary/{userId}")
     public ResponseEntity<Map<String, Object>> getTaskSummary(@PathVariable Long userId) {
-        List<TaskSummary> allTasks = taskService.getTasksByUserId(userId);
+        TaskSummary taskSummary = taskService.getTaskSummary(userId);
 
-        // Filter out completed tasks
-        List<TaskSummary> nonCompletedTasks = allTasks.stream()
-                .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
-                .toList();
-
-        // Calculations excluding completed tasks
-        long totalTasks = nonCompletedTasks.size();
-        long totalSubtasks = nonCompletedTasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
-        long pastDeadlineTasks = nonCompletedTasks.stream()
-                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDateTime.now()))
-                .count();
-
-        // Monthly tasks calculations including completed tasks
-        long completedTasksThisMonth = allTasks.stream()
-                .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
-                        task.getDueDate() != null &&
-                        task.getDueDate().getMonth() == LocalDateTime.now().getMonth() &&
-                        task.getDueDate().getYear() == LocalDateTime.now().getYear())
-                .count();
-        long totalTasksThisMonth = allTasks.stream()
-                .filter(task -> task.getDueDate() != null &&
-                        task.getDueDate().getMonth() == LocalDateTime.now().getMonth() &&
-                        task.getDueDate().getYear() == LocalDateTime.now().getYear())
-                .count();
-
-        // Prepare the summary response
         Map<String, Object> summary = new HashMap<>();
-        summary.put("totalTasks", totalTasks);
-        summary.put("totalSubtasks", totalSubtasks);
-        summary.put("pastDeadlineTasks", pastDeadlineTasks);
-        summary.put("completedTasksThisMonth", completedTasksThisMonth);
-        summary.put("totalTasksThisMonth", totalTasksThisMonth);
+        summary.put("totalTasks", taskSummary.getTotalTasks());
+        summary.put("totalSubtasks", taskSummary.getTotalSubtasks());
+        summary.put("pastDeadlineTasks", taskSummary.getPastDeadlineTasks());
+        summary.put("completedTasksThisMonth", taskSummary.getCompletedTasksThisMonth());
+        summary.put("totalTasksThisMonth", taskSummary.getTotalTasksThisMonth());
 
         return ResponseEntity.ok(summary);
     }
@@ -93,7 +74,6 @@ public class TaskController {
         taskService.startTask(id, LocalDateTime.now());
         return ResponseEntity.noContent().build();
     }
-
 
     // Mark a task as completed
     @PatchMapping("/{id}/complete")
@@ -107,11 +87,7 @@ public class TaskController {
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
         task.setId(id);
         Task updatedTask = taskService.updateTask(task);
-        if (updatedTask != null) {
-            return ResponseEntity.ok(updatedTask);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return updatedTask != null ? ResponseEntity.ok(updatedTask) : ResponseEntity.notFound().build();
     }
 
     // Delete a task by its ID
@@ -119,5 +95,46 @@ public class TaskController {
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Update FCM token
+    @PostMapping("/{userId}/update-token")
+    public ResponseEntity<Map<String, Object>> updateFcmToken(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> tokenRequest) {
+
+        // Add a log to see if this method is being called
+        System.out.println("Received request to update FCM token for user: " + userId);
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized: Invalid or missing Authorization header"));
+        }
+
+        String jwtToken = authorizationHeader.substring(7);
+        String username;
+        Long tokenUserId;
+        try {
+            // Extract username and userId from JWT
+            username = jwtUtil.getUsernameFromToken(jwtToken);
+            tokenUserId = jwtUtil.getUserIdFromToken(jwtToken);
+            System.out.println("Extracted username: " + username + ", token userId: " + tokenUserId);
+        } catch (Exception e) {
+            return ResponseEntity.status(403).body(Map.of("message", "Forbidden: Invalid JWT token"));
+        }
+
+        // Ensure that the userId from the JWT matches the userId from the path
+        if (!userId.equals(tokenUserId)) {
+            return ResponseEntity.status(403).body(Map.of("message", "Forbidden: User ID mismatch"));
+        }
+
+        String fcmToken = tokenRequest.get("fcmToken");
+        if (fcmToken == null || fcmToken.isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("message", "Invalid FCM token"));
+        }
+
+        // Update FCM token
+        customUserDetailsService.updateUserToken(username, fcmToken);
+        return ResponseEntity.ok(Map.of("message", "FCM Token updated successfully"));
     }
 }

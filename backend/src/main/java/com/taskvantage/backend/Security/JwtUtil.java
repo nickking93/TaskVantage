@@ -20,57 +20,59 @@ public class JwtUtil {
     private final Key SECRET_KEY;
 
     public JwtUtil() {
-        // Fetch the JWT_SECRET from the system environment variables
         String secret = System.getenv("JWT_SECRET");
 
         if (secret == null) {
             throw new IllegalArgumentException("JWT_SECRET environment variable is not set.");
         }
 
-        // Decode the Base64 encoded key if it's stored that way
+        // Decode the Base64 encoded key
         byte[] decodedKey = Base64.getDecoder().decode(secret);
         this.SECRET_KEY = Keys.hmacShaKeyFor(decodedKey);
+
+        // Debugging: Log the key (for non-production environments only)
+        System.out.println("Decoded JWT Secret Key: " + Base64.getEncoder().encodeToString(decodedKey));
     }
 
-    // Extract username from the JWT token
     public String getUsernameFromToken(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // New method to extract the username from the JWT token
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Long getUserIdFromToken(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Long.class));
     }
 
-    // Extract expiration date from the JWT token
     public Date getExpirationDateFromToken(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    // Extract a single claim from the JWT token
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
+        System.out.println("Extracted claims: " + claims);
         return claimsResolver.apply(claims);
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            System.out.println("Failed to extract claims: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid JWT token");
+        }
     }
 
     private Boolean isTokenExpired(String token) {
         return getExpirationDateFromToken(token).before(new Date());
     }
 
-    // Validate the token
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         boolean isValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 
-        // Log validation results
         if (!isValid) {
             System.out.println("Token validation failed for user: " + username);
             if (!username.equals(userDetails.getUsername())) {
@@ -86,11 +88,10 @@ public class JwtUtil {
         return isValid;
     }
 
-    // Generate a token for a user
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);  // Add userId to the claims
         String token = createToken(claims, userDetails.getUsername());
-        // Log the generated token
         System.out.println("Generated JWT Token: " + token);
         return token;
     }

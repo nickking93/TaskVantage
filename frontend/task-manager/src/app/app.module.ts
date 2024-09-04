@@ -10,7 +10,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { SharedModule } from './shared.module';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -30,7 +30,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
     SharedModule
   ],
   providers: [
-    provideHttpClient(withInterceptorsFromDi())
+    provideHttpClient()
   ],
   bootstrap: [AppComponent]
 })

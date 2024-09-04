@@ -46,48 +46,16 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findTaskSummariesByUserId(userId);
     }
 
+    // New method to get non-completed tasks by user ID
     @Override
-    public Task updateTask(Task updatedTask) {
-        Optional<Task> existingTaskOptional = taskRepository.findById(updatedTask.getId());
-
-        if (existingTaskOptional.isPresent()) {
-            Task existingTask = existingTaskOptional.get();
-
-            // Update the fields with the new values from updatedTask
-            existingTask.setTitle(updatedTask.getTitle());
-            existingTask.setDescription(updatedTask.getDescription());
-            existingTask.setPriority(updatedTask.getPriority());
-            existingTask.setStatus(updatedTask.getStatus());
-            existingTask.setDueDate(updatedTask.getDueDate());
-            existingTask.setLastModifiedDate(LocalDateTime.now());
-            existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Update scheduledStart
-            existingTask.setStartDate(updatedTask.getStartDate()); // Update startDate
-            existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Update completionDateTime
-            existingTask.setTags(updatedTask.getTags());
-            existingTask.setSubtasks(updatedTask.getSubtasks());
-            existingTask.setAttachments(updatedTask.getAttachments());
-            existingTask.setComments(updatedTask.getComments());
-            existingTask.setReminders(updatedTask.getReminders());
-            existingTask.setRecurring(updatedTask.isRecurring());
-            // Calculate the duration if completionDateTime and startDate are present
-            if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
-                Duration duration = Duration.between(updatedTask.getStartDate(), updatedTask.getCompletionDateTime());
-                existingTask.setDuration(duration);
-            }
-
-            return taskRepository.save(existingTask);
-        } else {
-            // Consider throwing an exception if the task is not found
-            throw new TaskNotFoundException("Task with id " + updatedTask.getId() + " not found.");
-        }
+    public List<TaskSummary> getNonCompletedTasksByUserId(Long userId) {
+        // Implement the logic here to fetch non-completed tasks
+        return taskRepository.findTaskSummariesByUserId(userId).stream()
+                .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
+                .toList();
     }
 
-
-    @Override
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
-    }
-
+    // Use the existing getTaskSummary method to provide a summary for all tasks, including monthly tasks
     @Override
     public TaskSummary getTaskSummary(Long userId) {
         List<TaskSummary> tasks = taskRepository.findTaskSummariesByUserId(userId);
@@ -121,6 +89,46 @@ public class TaskServiceImpl implements TaskService {
         return summary;
     }
 
+    @Override
+    public Task updateTask(Task updatedTask) {
+        Optional<Task> existingTaskOptional = taskRepository.findById(updatedTask.getId());
+
+        if (existingTaskOptional.isPresent()) {
+            Task existingTask = existingTaskOptional.get();
+
+            // Update the fields with the new values from updatedTask
+            existingTask.setTitle(updatedTask.getTitle());
+            existingTask.setDescription(updatedTask.getDescription());
+            existingTask.setPriority(updatedTask.getPriority());
+            existingTask.setStatus(updatedTask.getStatus());
+            existingTask.setDueDate(updatedTask.getDueDate());
+            existingTask.setLastModifiedDate(LocalDateTime.now());
+            existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Update scheduledStart
+            existingTask.setStartDate(updatedTask.getStartDate()); // Update startDate
+            existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Update completionDateTime
+            existingTask.setTags(updatedTask.getTags());
+            existingTask.setSubtasks(updatedTask.getSubtasks());
+            existingTask.setAttachments(updatedTask.getAttachments());
+            existingTask.setComments(updatedTask.getComments());
+            existingTask.setReminders(updatedTask.getReminders());
+            existingTask.setRecurring(updatedTask.isRecurring());
+            // Calculate the duration if completionDateTime and startDate are present
+            if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
+                Duration duration = Duration.between(updatedTask.getStartDate(), updatedTask.getCompletionDateTime());
+                existingTask.setDuration(duration);
+            }
+
+            return taskRepository.save(existingTask);
+        } else {
+            throw new TaskNotFoundException("Task with id " + updatedTask.getId() + " not found.");
+        }
+    }
+
+    @Override
+    public void deleteTask(Long id) {
+        taskRepository.deleteById(id);
+    }
+
     // New method to start a task
     @Override
     public void startTask(Long taskId, LocalDateTime startDate) {
@@ -139,5 +147,4 @@ public class TaskServiceImpl implements TaskService {
             throw new TaskNotFoundException("Task not found with id " + taskId);
         }
     }
-
 }

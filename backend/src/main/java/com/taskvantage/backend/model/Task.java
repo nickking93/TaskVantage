@@ -203,6 +203,11 @@ public class Task {
         this.subtasks = subtasks;
     }
 
+    // New method to calculate the total number of subtasks
+    public int getTotalSubtasks() {
+        return subtasks != null ? subtasks.size() : 0;
+    }
+
     public List<String> getAttachments() {
         return attachments;
     }
@@ -231,7 +236,6 @@ public class Task {
         return reminders;
     }
 
-    // Setter for reminders
     public void setReminders(List<LocalDateTime> reminders) {
         this.reminders = reminders;
     }
@@ -251,5 +255,4 @@ public class Task {
     public void setNotificationSent(Boolean notificationSent) {
         this.notificationSent = notificationSent;
     }
-
 }
