@@ -5,6 +5,8 @@ import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.service.TaskService;
 import com.taskvantage.backend.service.CustomUserDetailsService;
 import com.taskvantage.backend.Security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
 
     private final TaskService taskService;
     private final JwtUtil jwtUtil;
@@ -42,7 +46,21 @@ public class TaskController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        // Log the scheduled start time as received
+        if (task.getScheduledStart() != null) {
+            logger.info("Received task with scheduled start time: {}", task.getScheduledStart());
+        } else {
+            logger.warn("Received task with no scheduled start time.");
+        }
+
+        // Create and save the task
         Task createdTask = taskService.addTask(task);
+
+        // Log the scheduled start time before saving
+        if (createdTask.getScheduledStart() != null) {
+            logger.info("Task saved with scheduled start time: {}", createdTask.getScheduledStart());
+        }
+
         response.put("task", createdTask);
         return ResponseEntity.ok(response);
     }
