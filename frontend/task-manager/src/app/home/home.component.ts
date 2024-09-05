@@ -78,6 +78,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     private dialog: MatDialog // Inject MatDialog
   ) {
     Chart.register(...registerables);
+
+    // Attach the `beforeinstallprompt` event listener
+    window.addEventListener('beforeinstallprompt', (event: any) => {
+      event.preventDefault(); // Prevent the default prompt
+      this.deferredPrompt = event;
+      this.canPromptPwaInstall = true; // Enable the install button
+      console.log('beforeinstallprompt event fired');
+    });
+
+    // Handle app install success or failure
+    window.addEventListener('appinstalled', () => {
+      console.log('App installed');
+      this.canPromptPwaInstall = false; // Disable install button
+    });
   }
 
   ngOnInit(): void {
@@ -94,7 +108,6 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.username = user.username;
           this.reloadData(); 
           this.initializeFirebase();
-          this.checkIfPwaInstalled(); // Check if the app is already installed
         } else {
           this.logout();
         }
@@ -108,43 +121,21 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe((event: NavigationEnd) => {
         if (event.urlAfterRedirects === `/home/${this.userId}`) {
           this.reloadData();  
+          this.resetPwaPrompt(); // Reset prompt state on route change
         }
       });
-  
-    // Listen for PWA install prompt
-    window.addEventListener('beforeinstallprompt', (event: any) => {
-      event.preventDefault();
-      this.deferredPrompt = event;
-      this.canPromptPwaInstall = true; // Enable the button
-    });
   }
-  
-  // Check if the app is already installed and show dialog if so
-  checkIfPwaInstalled(): void {
-    const nav = navigator as any; // Cast navigator to any to prevent TypeScript error
-    if (nav.getInstalledRelatedApps) {
-      nav.getInstalledRelatedApps().then((relatedApps: any[]) => {
-        if (relatedApps.length > 0) {
-          console.log('PWA is already installed.');
-          this.canPromptPwaInstall = false; // Disable install button if already installed
-          
-          // Open dialog to show "PWA is already installed"
-          this.dialog.open(SuccessDialogComponent, {
-            width: '300px',
-            data: { title: 'Unavailable', message: 'TaskVantage is already installed on your device.' }
-          });
-        } else {
-          this.canPromptPwaInstall = true; // Enable install button if not installed
-        }
-      }).catch((err: any) => {
-        console.error('Error checking installed related apps: ', err);
-      });
-    }
+
+  // Reset PWA prompt state
+  resetPwaPrompt(): void {
+    this.deferredPrompt = null;
+    this.canPromptPwaInstall = false;
   }
 
   // PWA install prompt function
   promptPwaInstall(event: Event): void {
     event.preventDefault(); // Prevent the default anchor behavior
+
     if (this.deferredPrompt) {
       this.deferredPrompt.prompt();
       this.deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
@@ -154,16 +145,16 @@ export class HomeComponent implements OnInit, OnDestroy {
           console.log('User dismissed the A2HS prompt');
         }
         this.deferredPrompt = null; // Reset the deferredPrompt after use
+        this.canPromptPwaInstall = false; // Disable the install button after prompt
       });
     } else {
       console.log('Install prompt is not available');
-      // Open dialog when install prompt is not available
       this.dialog.open(SuccessDialogComponent, {
         width: '300px',
         data: { title: 'Unavailable', message: 'Install prompt is not available. Please check if TaskVantage is already installed.' }
       });
     }
-  }   
+  }
 
   initializeFirebase(): void {
     const app = getApp(); 
@@ -272,10 +263,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   convertUTCToLocal(dateTimeString: string | undefined): string {
     if (!dateTimeString) {
-      return ''; // or handle this case appropriately
+      return ''; 
     }
-    const date = new Date(dateTimeString + 'Z'); // Append 'Z' to indicate UTC
-    return date.toLocaleString(); // Convert to local string format
+    const date = new Date(dateTimeString + 'Z'); 
+    return date.toLocaleString(); 
   }
 
   calculateTimeAgo(lastModifiedDate: Date): string {
