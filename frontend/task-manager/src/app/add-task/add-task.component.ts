@@ -98,27 +98,30 @@ export class AddTaskComponent implements OnInit {
 
   createTask(): void {
     this.newTask.userId = this.userId;
-
+  
     if (this.dueDate && this.dueTime) {
       const dueDateObj = new Date(this.dueDate);
       const [hours, minutes] = this.dueTime.split(':').map(Number);
       dueDateObj.setHours(hours, minutes, 0);
       this.newTask.dueDate = dueDateObj.toISOString(); 
     }
-
+  
     if (this.scheduledStartDate && this.scheduledStartTime) {
       const scheduledStartObj = new Date(this.scheduledStartDate);
       const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
       scheduledStartObj.setHours(startHours, startMinutes, 0);
       this.newTask.scheduledStart = scheduledStartObj.toISOString();
     }
-
+  
     console.log('Task to be created:', this.newTask);
-
+  
     this.taskService.createTask(this.newTask).subscribe(
       response => {
         console.log('Task created successfully:', response);
-        this.dialog.open(SuccessDialogComponent, { data: { message: 'Task added successfully!' } });
+        this.dialog.open(SuccessDialogComponent, { 
+          width: '300px', 
+          data: { title: 'Success', message: 'Task added successfully!' } // Added title "Success"
+        });
         this.router.navigate(['/home', this.userId]);
       },
       error => {
@@ -126,13 +129,13 @@ export class AddTaskComponent implements OnInit {
       }
     );
   }
-
+  
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
-      data: { message: 'Task created successfully!' }
+      data: { title: 'Success', message: 'Task created successfully!' } // Added title "Success"
     }).afterClosed().subscribe(() => {
       this.router.navigate([`/home/${this.userId}`]);
     });
-  }
+  }  
 }

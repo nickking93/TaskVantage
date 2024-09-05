@@ -20,6 +20,7 @@
     "@angular/platform-browser": "^18.1.4",
     "@angular/platform-browser-dynamic": "^18.1.4",
     "@angular/router": "^18.1.4",
+    "@angular/service-worker": "^18.2.3",
     "@auth0/angular-jwt": "^5.2.0",
     "@types/gapi": "^0.0.47",
     "@types/gapi.auth2": "^0.0.60",

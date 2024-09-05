@@ -159,6 +159,7 @@ export class TaskService {
       () => {
         this.dialog.open(SuccessDialogComponent, {
           data: {
+            title: 'Success',
             message: 'Task has been marked as completed!'
           }
         }).afterClosed().subscribe(() => {

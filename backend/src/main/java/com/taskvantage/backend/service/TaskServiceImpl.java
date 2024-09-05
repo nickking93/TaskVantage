@@ -138,7 +138,7 @@ public class TaskServiceImpl implements TaskService {
             }
 
             if (updatedTask.getCompletionDateTime() != null) {
-                existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Assume completionDateTime is already in UTC
+                existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC));
             }
 
             // Update last modified date to current time in UTC
@@ -173,9 +173,9 @@ public class TaskServiceImpl implements TaskService {
             existingTask.setRecurring(updatedTask.isRecurring());
             existingTask.setNotificationSent(updatedTask.getNotificationSent());
 
-            // Calculate the duration if both startDate and completionDateTime are present
             if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
-                Duration duration = Duration.between(updatedTask.getStartDate(), updatedTask.getCompletionDateTime());
+                ZonedDateTime completionDateTimeUtc = updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC);
+                Duration duration = Duration.between(updatedTask.getStartDate(), completionDateTimeUtc);
                 existingTask.setDuration(duration);
             }
 
@@ -218,7 +218,9 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
+            task.setCompletionDateTime(ZonedDateTime.now(ZoneOffset.UTC)); // Set completionDateTime to now
+            task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC)); // Update lastModifiedDate
+
             taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);

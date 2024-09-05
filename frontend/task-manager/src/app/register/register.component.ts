@@ -111,7 +111,7 @@ export class RegisterComponent implements OnInit {
   openSuccessDialog(): void {
     const dialogRef = this.dialog.open(SuccessDialogComponent, {
       width: '300px',
-      data: { message: 'Account created successfully!' }
+      data: { title: 'Success', message: 'Account created successfully!' }
     });
 
     dialogRef.afterClosed().subscribe(() => {

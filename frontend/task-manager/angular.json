@@ -23,7 +23,12 @@
               "src/favicon.ico",
               "src/assets",
               "src/web.config",
-              "src/firebase-messaging-sw.js"
+              "src/firebase-messaging-sw.js",
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
+              }
             ],
             "styles": [
               "@angular/material/prebuilt-themes/deeppurple-amber.css",
@@ -52,7 +57,8 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,

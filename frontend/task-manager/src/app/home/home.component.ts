@@ -4,7 +4,7 @@ import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
 import { FirebaseMessagingService } from '../services/firebase-messaging.service'; 
-import { getMessaging, getToken, onMessage } from 'firebase/messaging'; 
+import { getMessaging, getToken } from 'firebase/messaging'; 
 import { environment } from '../../environments/environment'; 
 import { FormsModule } from '@angular/forms'; 
 import { RouterModule } from '@angular/router'; 
@@ -65,13 +65,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private routeSub: Subscription = new Subscription();
 
+  // PWA Install Prompt fields
+  deferredPrompt: any;
+  canPromptPwaInstall: boolean = false;
+
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
     private firebaseMessagingService: FirebaseMessagingService, 
     public router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog
+    private dialog: MatDialog // Inject MatDialog
   ) {
     Chart.register(...registerables);
   }
@@ -79,7 +83,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];  
-
+  
       if (typeof this.userId !== 'string' || !this.userId) {
         this.logout(); 
         return;
@@ -90,6 +94,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.username = user.username;
           this.reloadData(); 
           this.initializeFirebase();
+          this.checkIfPwaInstalled(); // Check if the app is already installed
         } else {
           this.logout();
         }
@@ -97,7 +102,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       });
     });
-    
+  
     this.routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -105,7 +110,60 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.reloadData();  
         }
       });
-  }             
+  
+    // Listen for PWA install prompt
+    window.addEventListener('beforeinstallprompt', (event: any) => {
+      event.preventDefault();
+      this.deferredPrompt = event;
+      this.canPromptPwaInstall = true; // Enable the button
+    });
+  }
+  
+  // Check if the app is already installed and show dialog if so
+  checkIfPwaInstalled(): void {
+    const nav = navigator as any; // Cast navigator to any to prevent TypeScript error
+    if (nav.getInstalledRelatedApps) {
+      nav.getInstalledRelatedApps().then((relatedApps: any[]) => {
+        if (relatedApps.length > 0) {
+          console.log('PWA is already installed.');
+          this.canPromptPwaInstall = false; // Disable install button if already installed
+          
+          // Open dialog to show "PWA is already installed"
+          this.dialog.open(SuccessDialogComponent, {
+            width: '300px',
+            data: { title: 'Unavailable', message: 'TaskVantage is already installed on your device.' }
+          });
+        } else {
+          this.canPromptPwaInstall = true; // Enable install button if not installed
+        }
+      }).catch((err: any) => {
+        console.error('Error checking installed related apps: ', err);
+      });
+    }
+  }
+
+  // PWA install prompt function
+  promptPwaInstall(event: Event): void {
+    event.preventDefault(); // Prevent the default anchor behavior
+    if (this.deferredPrompt) {
+      this.deferredPrompt.prompt();
+      this.deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        this.deferredPrompt = null; // Reset the deferredPrompt after use
+      });
+    } else {
+      console.log('Install prompt is not available');
+      // Open dialog when install prompt is not available
+      this.dialog.open(SuccessDialogComponent, {
+        width: '300px',
+        data: { title: 'Unavailable', message: 'Install prompt is not available. Please check if TaskVantage is already installed.' }
+      });
+    }
+  }   
 
   initializeFirebase(): void {
     const app = getApp(); 
@@ -133,7 +191,6 @@ export class HomeComponent implements OnInit, OnDestroy {
               );
           }
         } else {
-          // If no token is available, request permission
           console.log('No registration token available. Request permission to generate one.');
           this.requestNotificationPermission();
         }
@@ -147,68 +204,18 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       });
   }
-  
+
   requestNotificationPermission(): void {
     Notification.requestPermission().then((permission) => {
       if (permission === 'granted') {
-        this.initializeFirebase(); // Retry initialization after permission is granted
+        this.initializeFirebase();
       } else {
         console.log('User denied the notification permission');
       }
     }).catch((error) => {
       console.error('Failed to request notification permission', error);
     });
-  }  
-  
-  watchNotificationPermission(): void {
-    // Watch for changes in notification permission
-    if ('permissions' in navigator) {
-      navigator.permissions.query({ name: 'notifications' }).then((permissionStatus) => {
-        permissionStatus.onchange = () => {
-          console.log('Notification permission changed:', permissionStatus.state);
-          if (permissionStatus.state === 'denied') {
-            // Permission revoked - clear FCM token
-            this.authService.getUserDetails().subscribe(user => {
-              this.clearFcmToken(user.username); // Use username from user details
-            });
-          }
-        };
-      });
-    }
   }
-  
-  clearFcmToken(username: string): void {
-    const authToken = this.authService.getAuthToken(); 
-    if (this.fcmToken) {
-      this.firebaseMessagingService.clearTokenFromServer(username, authToken!).subscribe(
-        () => {
-          console.log('FCM token cleared successfully.');
-          this.removeTokenLocally(); // Only call removeTokenLocally if fcmToken exists
-        },
-        (error) => {
-          console.error('Error clearing FCM token from server:', error);
-        }
-      );
-    } else {
-      console.warn('No FCM token found to clear.');
-      this.removeTokenLocally(); // Optionally remove token locally even if server-side clearing isn't needed
-    }
-  }
-   
-  
-  removeTokenLocally(): void {
-    // Check if there's a token to remove
-    if (this.fcmToken) {
-      this.firebaseMessagingService.removeToken(this.fcmToken).then(() => {
-        console.log('Token removed locally.');
-        this.fcmToken = null; // Reset token in the component
-      }).catch((error) => {
-        console.error('Error removing token locally:', error);
-      });
-    } else {
-      console.warn('No FCM token found to remove.');
-    }
-  }  
 
   reloadData(): void {
     this.fetchTaskSummary();  

@@ -180,7 +180,11 @@ public class Task {
     }
 
     public void setCompletionDateTime(ZonedDateTime completionDateTime) {
-        this.completionDateTime = completionDateTime.withZoneSameInstant(ZoneOffset.UTC);
+        if (completionDateTime != null) {
+            this.completionDateTime = completionDateTime.withZoneSameInstant(ZoneOffset.UTC);
+        } else {
+            this.completionDateTime = null; // Explicitly set to null or handle default value if needed
+        }
     }
 
     public Duration getDuration() {
