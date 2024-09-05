@@ -26,7 +26,12 @@
               "src/firebase-messaging-sw.js",
               {
                 "glob": "**/*",
-                "input": "public",
+                "input": "src/assets/icons",
+                "output": "/assets/icons"
+              },
+              {
+                "glob": "manifest.webmanifest",
+                "input": "src/assets",
                 "output": "/"
               }
             ],
