@@ -23,17 +23,7 @@
               "src/favicon.ico",
               "src/assets",
               "src/web.config",
-              "src/firebase-messaging-sw.js",
-              {
-                "glob": "**/*",
-                "input": "src/assets/icons",
-                "output": "/assets/icons"
-              },
-              {
-                "glob": "manifest.webmanifest",
-                "input": "src/assets",
-                "output": "/"
-              }
+              "src/firebase-messaging-sw.js"
             ],
             "styles": [
               "@angular/material/prebuilt-themes/deeppurple-amber.css",
