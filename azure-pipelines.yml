@@ -111,6 +111,7 @@ stages:
                   "spring.datasource.url": "$(dbUrl)",
                   "spring.datasource.username": "$(dbUsername)",
                   "spring.datasource.password": "$(dbPassword)",
-                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)"
+                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
+                  "JAVA_OPTS": "-Duser.timezone=UTC"
                 }
             displayName: 'Deploy Spring Boot app to Azure App Service'
