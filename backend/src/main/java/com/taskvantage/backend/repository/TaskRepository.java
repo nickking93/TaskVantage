@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
@@ -38,8 +38,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Transactional
     @Modifying
     @Query("UPDATE Task t SET t.completionDateTime = :completionDateTime, t.duration = :duration, t.status = 'Completed' WHERE t.id = :taskId")
-    void completeTask(@Param("taskId") Long taskId, @Param("completionDateTime") LocalDateTime completionDateTime, @Param("duration") Duration duration);
+    void completeTask(@Param("taskId") Long taskId, @Param("completionDateTime") ZonedDateTime completionDateTime, @Param("duration") Duration duration);
 
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.scheduledStart >= :startTime AND t.scheduledStart <= :endTime")
-    List<Task> findTasksScheduledBetween(@Param("userId") Long userId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    List<Task> findTasksScheduledBetween(@Param("userId") Long userId, @Param("startTime") ZonedDateTime startTime, @Param("endTime") ZonedDateTime endTime);
 }

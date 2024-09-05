@@ -2,7 +2,8 @@ package com.taskvantage.backend.model;
 
 import jakarta.persistence.*;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,24 +31,24 @@ public class Task {
     @Column(nullable = false)
     private String status = "Pending";
 
-    // Store date and time as LocalDateTime (assume stored in UTC)
+    // Store date and time as ZonedDateTime (in UTC)
     @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    private ZonedDateTime dueDate;
 
     @Column(name = "creation_date", nullable = false)
-    private LocalDateTime creationDate;
+    private ZonedDateTime creationDate = ZonedDateTime.now(ZoneOffset.UTC); // Default to UTC
 
     @Column(name = "last_modified_date")
-    private LocalDateTime lastModifiedDate;
+    private ZonedDateTime lastModifiedDate;
 
     @Column(name = "actual_start")
-    private LocalDateTime startDate;
+    private ZonedDateTime startDate;
 
     @Column(name = "scheduled_start")
-    private LocalDateTime scheduledStart;
+    private ZonedDateTime scheduledStart;
 
     @Column(name = "completionDateTime")
-    private LocalDateTime completionDateTime;
+    private ZonedDateTime completionDateTime;
 
     @Column(name = "duration")
     private Duration duration;
@@ -73,7 +74,7 @@ public class Task {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_reminders", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "reminder")
-    private List<LocalDateTime> reminders;  // Store reminders as LocalDateTime
+    private List<ZonedDateTime> reminders;  // Store reminders as ZonedDateTime
 
     @Column(name = "is_recurring", nullable = false)
     private boolean recurring;
@@ -84,7 +85,7 @@ public class Task {
     @Column(name = "notification_sent")
     private Boolean notificationSent;
 
-    // Getters and Setters for LocalDateTime fields
+    // Getters and Setters for ZonedDateTime fields
 
     public Long getId() {
         return id;
@@ -134,52 +135,52 @@ public class Task {
         this.status = status;
     }
 
-    public LocalDateTime getDueDate() {
+    public ZonedDateTime getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
-        this.dueDate = dueDate;
+    public void setDueDate(ZonedDateTime dueDate) {
+        this.dueDate = dueDate.withZoneSameInstant(ZoneOffset.UTC);
     }
 
-    public LocalDateTime getCreationDate() {
+    public ZonedDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
+    public void setCreationDate(ZonedDateTime creationDate) {
+        this.creationDate = creationDate.withZoneSameInstant(ZoneOffset.UTC);
     }
 
-    public LocalDateTime getLastModifiedDate() {
+    public ZonedDateTime getLastModifiedDate() {
         return lastModifiedDate;
     }
 
-    public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
+    public void setLastModifiedDate(ZonedDateTime lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate.withZoneSameInstant(ZoneOffset.UTC);
     }
 
-    public LocalDateTime getStartDate() {
+    public ZonedDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
+    public void setStartDate(ZonedDateTime startDate) {
+        this.startDate = startDate.withZoneSameInstant(ZoneOffset.UTC);
     }
 
-    public LocalDateTime getScheduledStart() {
+    public ZonedDateTime getScheduledStart() {
         return scheduledStart;
     }
 
-    public void setScheduledStart(LocalDateTime scheduledStart) {
-        this.scheduledStart = scheduledStart;
+    public void setScheduledStart(ZonedDateTime scheduledStart) {
+        this.scheduledStart = scheduledStart.withZoneSameInstant(ZoneOffset.UTC);
     }
 
-    public LocalDateTime getCompletionDateTime() {
+    public ZonedDateTime getCompletionDateTime() {
         return completionDateTime;
     }
 
-    public void setCompletionDateTime(LocalDateTime completionDateTime) {
-        this.completionDateTime = completionDateTime;
+    public void setCompletionDateTime(ZonedDateTime completionDateTime) {
+        this.completionDateTime = completionDateTime.withZoneSameInstant(ZoneOffset.UTC);
     }
 
     public Duration getDuration() {
@@ -222,11 +223,11 @@ public class Task {
         this.comments = comments;
     }
 
-    public List<LocalDateTime> getReminders() {
+    public List<ZonedDateTime> getReminders() {
         return reminders;
     }
 
-    public void setReminders(List<LocalDateTime> reminders) {
+    public void setReminders(List<ZonedDateTime> reminders) {
         this.reminders = reminders;
     }
 

@@ -17,6 +17,8 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,17 +58,17 @@ public class DataLoader {
                         task.setPriority(TaskPriority.valueOf(record.get("priority")));
                         task.setStatus(record.get("status"));
 
-                        // Store LocalDateTime directly instead of converting to epoch
-                        task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter));
-                        task.setCreationDate(LocalDateTime.parse(record.get("creation_date"), formatter));
-                        task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter)); // Updated
-                        task.setStartDate(LocalDateTime.parse(record.get("actual_start"), formatter)); // Updated
-                        task.setScheduledStart(LocalDateTime.parse(record.get("scheduledStart"), formatter)); // Updated
+                        // Parse LocalDateTime and convert to ZonedDateTime in UTC
+                        task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter).atZone(ZoneOffset.UTC));
+                        task.setCreationDate(LocalDateTime.parse(record.get("creation_date"), formatter).atZone(ZoneOffset.UTC));
+                        task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter).atZone(ZoneOffset.UTC));
+                        task.setStartDate(LocalDateTime.parse(record.get("actual_start"), formatter).atZone(ZoneOffset.UTC));
+                        task.setScheduledStart(LocalDateTime.parse(record.get("scheduledStart"), formatter).atZone(ZoneOffset.UTC));
 
                         // Handle optional completionDateTime
                         String completionDateTime = record.get("completionDateTime");
                         if (completionDateTime != null && !completionDateTime.isEmpty()) {
-                            task.setCompletionDateTime(LocalDateTime.parse(completionDateTime, formatter));
+                            task.setCompletionDateTime(LocalDateTime.parse(completionDateTime, formatter).atZone(ZoneOffset.UTC));
                         }
 
                         // Set the userId for the task

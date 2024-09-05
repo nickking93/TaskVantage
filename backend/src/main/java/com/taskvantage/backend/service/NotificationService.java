@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -32,8 +33,8 @@ public class NotificationService {
     @Scheduled(fixedRate = 60000) // Runs every minute
     public void checkAndSendNotifications() {
         // Current time in UTC
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime end = now.plusMinutes(15); // Time window of 15 minutes
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime end = now.plusMinutes(15); // Time window of 15 minutes
 
         logger.info("Checking for tasks with scheduled_start between {} and {}", now, end);
 

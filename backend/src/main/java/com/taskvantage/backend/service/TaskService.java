@@ -3,7 +3,7 @@ package com.taskvantage.backend.service;
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,8 +33,8 @@ public interface TaskService {
     // Retrieves a summary of tasks for a specific user ID
     TaskSummary getTaskSummary(Long userId);
 
-    // Starts a task with startDate as LocalDateTime
-    void startTask(Long taskId, LocalDateTime startDate);
+    // Starts a task with startDate as ZonedDateTime
+    void startTask(Long taskId, ZonedDateTime startDate);
 
     // Marks a task as completed
     void markTaskAsCompleted(Long taskId);

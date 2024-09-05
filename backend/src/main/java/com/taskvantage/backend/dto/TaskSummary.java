@@ -3,7 +3,7 @@ package com.taskvantage.backend.dto;
 import com.taskvantage.backend.model.TaskPriority;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public class TaskSummary {
 
@@ -19,19 +19,19 @@ public class TaskSummary {
     private String description;
     private TaskPriority priority; // Changed to TaskPriority enum
     private String status;
-    private LocalDateTime dueDate;
-    private LocalDateTime creationDate;
-    private LocalDateTime lastModifiedDate;
-    private LocalDateTime scheduledStart;
-    private LocalDateTime completionDateTime;
+    private ZonedDateTime dueDate;  // Changed from LocalDateTime to ZonedDateTime
+    private ZonedDateTime creationDate;  // Changed from LocalDateTime to ZonedDateTime
+    private ZonedDateTime lastModifiedDate;  // Changed from LocalDateTime to ZonedDateTime
+    private ZonedDateTime scheduledStart;  // Changed from LocalDateTime to ZonedDateTime
+    private ZonedDateTime completionDateTime;  // Changed from LocalDateTime to ZonedDateTime
     private Duration duration;
     private int totalSubtasks; // Changed to int to match SIZE(t.subtasks)
 
     // Full constructor including all parameters
     public TaskSummary(long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
                        Long id, String title, String description, TaskPriority priority, String status,
-                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate,
-                       LocalDateTime scheduledStart, LocalDateTime completionDateTime, Duration duration,
+                       ZonedDateTime dueDate, ZonedDateTime creationDate, ZonedDateTime lastModifiedDate,
+                       ZonedDateTime scheduledStart, ZonedDateTime completionDateTime, Duration duration,
                        int totalSubtasks) {
         this.totalTasks = totalTasks;
         this.pastDeadlineTasks = pastDeadlineTasks;
@@ -129,43 +129,43 @@ public class TaskSummary {
         this.status = status;
     }
 
-    public LocalDateTime getDueDate() {
+    public ZonedDateTime getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
+    public void setDueDate(ZonedDateTime dueDate) {
         this.dueDate = dueDate;
     }
 
-    public LocalDateTime getCreationDate() {
+    public ZonedDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDateTime creationDate) {
+    public void setCreationDate(ZonedDateTime creationDate) {
         this.creationDate = creationDate;
     }
 
-    public LocalDateTime getLastModifiedDate() {
+    public ZonedDateTime getLastModifiedDate() {
         return lastModifiedDate;
     }
 
-    public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+    public void setLastModifiedDate(ZonedDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getScheduledStart() {
+    public ZonedDateTime getScheduledStart() {
         return scheduledStart;
     }
 
-    public void setScheduledStart(LocalDateTime scheduledStart) {
+    public void setScheduledStart(ZonedDateTime scheduledStart) {
         this.scheduledStart = scheduledStart;
     }
 
-    public LocalDateTime getCompletionDateTime() {
+    public ZonedDateTime getCompletionDateTime() {
         return completionDateTime;
     }
 
-    public void setCompletionDateTime(LocalDateTime completionDateTime) {
+    public void setCompletionDateTime(ZonedDateTime completionDateTime) {
         this.completionDateTime = completionDateTime;
     }
 

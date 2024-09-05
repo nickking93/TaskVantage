@@ -10,8 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,11 +28,20 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task addTask(Task task) {
-        // Set the creation and last modified dates to the current time in UTC
-        task.setCreationDate(LocalDateTime.now());
-        task.setLastModifiedDate(LocalDateTime.now());
+        // Set creation and last modified dates to current time in UTC
+        task.setCreationDate(ZonedDateTime.now(ZoneOffset.UTC));
+        task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
-        // Save the task in the repository
+        // Ensure that dueDate and scheduledStart remain in UTC
+        if (task.getDueDate() != null) {
+            task.setDueDate(task.getDueDate().withZoneSameInstant(ZoneOffset.UTC)); // Convert to UTC
+        }
+
+        if (task.getScheduledStart() != null) {
+            task.setScheduledStart(task.getScheduledStart().withZoneSameInstant(ZoneOffset.UTC)); // Convert to UTC
+        }
+
+        // Save task
         return taskRepository.save(task);
     }
 
@@ -65,11 +75,11 @@ public class TaskServiceImpl implements TaskService {
         long totalSubtasks = tasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
         long pastDeadlineTasks = tasks.stream()
                 .filter(task -> task.getDueDate() != null &&
-                        task.getDueDate().isBefore(LocalDateTime.now()) && // Compare directly with LocalDateTime
+                        task.getDueDate().isBefore(ZonedDateTime.now(ZoneOffset.UTC)) && // Compare with ZonedDateTime in UTC
                         !"Completed".equalsIgnoreCase(task.getStatus()))
                 .count();
 
-        YearMonth currentMonth = YearMonth.now(); // Use current time in UTC
+        YearMonth currentMonth = YearMonth.now(ZoneOffset.UTC); // Use current time in UTC
         long completedTasksThisMonth = tasks.stream()
                 .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
                         task.getDueDate() != null &&
@@ -112,26 +122,27 @@ public class TaskServiceImpl implements TaskService {
                 existingTask.setStatus(updatedTask.getStatus());
             }
 
-            // Update optional fields
+            // Update dueDate if provided, ensure it's treated as UTC
             if (updatedTask.getDueDate() != null) {
-                existingTask.setDueDate(updatedTask.getDueDate());
+                existingTask.setDueDate(updatedTask.getDueDate()); // Assume dueDate is already in UTC
+            }
+
+            // Update scheduledStart if provided, ensure it's treated as UTC
+            if (updatedTask.getScheduledStart() != null) {
+                existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Assume scheduledStart is already in UTC
             }
 
             // Update startDate and other time-based fields
             if (updatedTask.getStartDate() != null) {
-                existingTask.setStartDate(updatedTask.getStartDate());
-            }
-
-            if (updatedTask.getScheduledStart() != null) {
-                existingTask.setScheduledStart(updatedTask.getScheduledStart());
+                existingTask.setStartDate(updatedTask.getStartDate()); // Assume startDate is already in UTC
             }
 
             if (updatedTask.getCompletionDateTime() != null) {
-                existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime());
+                existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime()); // Assume completionDateTime is already in UTC
             }
 
-            // Update last modified date to current time
-            existingTask.setLastModifiedDate(LocalDateTime.now());
+            // Update last modified date to current time in UTC
+            existingTask.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
             // Handle subtasks
             if (updatedTask.getSubtasks() != null) {
@@ -168,6 +179,7 @@ public class TaskServiceImpl implements TaskService {
                 existingTask.setDuration(duration);
             }
 
+            // Save the updated task
             return taskRepository.save(existingTask);
         } else {
             throw new TaskNotFoundException("Task with id " + updatedTask.getId() + " not found.");
@@ -180,7 +192,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void startTask(Long taskId, LocalDateTime startDate) {
+    public void startTask(Long taskId, ZonedDateTime startDate) {
         Optional<Task> taskOptional = taskRepository.findById(taskId);
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
@@ -192,7 +204,7 @@ public class TaskServiceImpl implements TaskService {
 
             task.setStartDate(startDate);
             task.setStatus("In Progress"); // Set task status to "In Progress"
-            task.setLastModifiedDate(LocalDateTime.now());
+            task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
             taskRepository.save(task);
         } else {
@@ -206,7 +218,7 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setLastModifiedDate(LocalDateTime.now());
+            task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
             taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);

@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,20 +44,27 @@ public class TaskController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        // Log the scheduled start time as received
+        // Convert dueDate to UTC if it's provided
+        if (task.getDueDate() != null) {
+            ZonedDateTime localDueDate = task.getDueDate();
+            ZonedDateTime utcDueDate = localDueDate.withZoneSameInstant(ZoneOffset.UTC);  // Convert to UTC
+            task.setDueDate(utcDueDate);
+            logger.info("Converted Due Date to UTC: {}", utcDueDate);
+        }
+
+        // Convert scheduledStart to UTC if it's provided
         if (task.getScheduledStart() != null) {
-            logger.info("Received task with scheduled start time: {}", task.getScheduledStart());
-        } else {
-            logger.warn("Received task with no scheduled start time.");
+            ZonedDateTime localScheduledStart = task.getScheduledStart();
+            ZonedDateTime utcScheduledStart = localScheduledStart.withZoneSameInstant(ZoneOffset.UTC);  // Convert to UTC
+            task.setScheduledStart(utcScheduledStart);
+            logger.info("Converted Scheduled Start to UTC: {}", utcScheduledStart);
         }
 
         // Create and save the task
         Task createdTask = taskService.addTask(task);
 
-        // Log the scheduled start time before saving
-        if (createdTask.getScheduledStart() != null) {
-            logger.info("Task saved with scheduled start time: {}", createdTask.getScheduledStart());
-        }
+        logger.info("Task created successfully with due date: {} and scheduled start: {}",
+                createdTask.getDueDate(), createdTask.getScheduledStart());
 
         response.put("task", createdTask);
         return ResponseEntity.ok(response);
@@ -113,9 +118,9 @@ public class TaskController {
         Task task = taskOptional.get();
 
         // Update the task with the new start date and status
-        task.setStartDate(updatedTask.getStartDate() != null ? updatedTask.getStartDate() : LocalDateTime.now());
+        task.setStartDate(updatedTask.getStartDate() != null ? updatedTask.getStartDate().withZoneSameInstant(ZoneOffset.UTC) : ZonedDateTime.now(ZoneOffset.UTC));
         task.setStatus("In Progress");
-        task.setLastModifiedDate(LocalDateTime.now());
+        task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
         // Save the updated task
         taskService.updateTask(task);
