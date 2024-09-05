@@ -3,6 +3,7 @@ package com.taskvantage.backend.model;
 import jakarta.persistence.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,12 +23,14 @@ public class Task {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String priority;
+    private TaskPriority priority;
 
     @Column(nullable = false)
     private String status = "Pending";
 
+    // Store date and time as LocalDateTime (assume stored in UTC)
     @Column(name = "due_date")
     private LocalDateTime dueDate;
 
@@ -40,7 +43,7 @@ public class Task {
     @Column(name = "actual_start")
     private LocalDateTime startDate;
 
-    @Column(name = "scheduledStart")
+    @Column(name = "scheduled_start")
     private LocalDateTime scheduledStart;
 
     @Column(name = "completionDateTime")
@@ -56,7 +59,7 @@ public class Task {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
-    private List<Subtask> subtasks;
+    private List<Subtask> subtasks = new ArrayList<>();  // Initialize with an empty list
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "task_attachments", joinColumns = @JoinColumn(name = "task_id"))
@@ -65,12 +68,12 @@ public class Task {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();  // Initialize with an empty list
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_reminders", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "reminder")
-    private List<LocalDateTime> reminders;
+    private List<LocalDateTime> reminders;  // Store reminders as LocalDateTime
 
     @Column(name = "is_recurring", nullable = false)
     private boolean recurring;
@@ -81,7 +84,7 @@ public class Task {
     @Column(name = "notification_sent")
     private Boolean notificationSent;
 
-    // Getters and Setters
+    // Getters and Setters for LocalDateTime fields
 
     public Long getId() {
         return id;
@@ -115,11 +118,11 @@ public class Task {
         this.description = description;
     }
 
-    public String getPriority() {
+    public TaskPriority getPriority() {
         return priority;
     }
 
-    public void setPriority(String priority) {
+    public void setPriority(TaskPriority priority) {
         this.priority = priority;
     }
 
@@ -203,11 +206,6 @@ public class Task {
         this.subtasks = subtasks;
     }
 
-    // New method to calculate the total number of subtasks
-    public int getTotalSubtasks() {
-        return subtasks != null ? subtasks.size() : 0;
-    }
-
     public List<String> getAttachments() {
         return attachments;
     }
@@ -224,20 +222,20 @@ public class Task {
         this.comments = comments;
     }
 
-    public boolean isRecurring() {
-        return recurring;
-    }
-
-    public void setRecurring(boolean recurring) {
-        this.recurring = recurring;
-    }
-
     public List<LocalDateTime> getReminders() {
         return reminders;
     }
 
     public void setReminders(List<LocalDateTime> reminders) {
         this.reminders = reminders;
+    }
+
+    public boolean isRecurring() {
+        return recurring;
+    }
+
+    public void setRecurring(boolean recurring) {
+        this.recurring = recurring;
     }
 
     public boolean isNotifyBeforeStart() {

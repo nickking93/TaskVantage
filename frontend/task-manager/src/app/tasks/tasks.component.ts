@@ -18,7 +18,6 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     RouterModule,
     FormsModule,
     MatPaginatorModule
-    
   ],
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css']
@@ -31,7 +30,7 @@ export class TasksComponent implements OnInit {
   paginatedTasks: Task[] = [];
   selectedFilter: string = 'today';
   currentPage: number = 1;
-  tasksPerPage: number = 10;  // This will be updated based on the paginator settings
+  tasksPerPage: number = 10; 
   totalPages: number = 0;
 
   constructor(private taskService: TaskService, private dialog: MatDialog) {}
@@ -45,7 +44,6 @@ export class TasksComponent implements OnInit {
     this.taskService.fetchTasks(this.userId, (tasks) => {
       this.tasks = tasks;
       this.filterTasks(this.selectedFilter);
-      // console.log('Fetched tasks:', this.tasks);
     });
   }
 
@@ -59,7 +57,7 @@ export class TasksComponent implements OnInit {
       description: task.description,
     };
 
-    this.taskService.editTask(task.id!, updatedTask).subscribe(
+    this.taskService.editTask(task).subscribe(
       (updatedTask: Task) => {
         const index = this.tasks.findIndex(t => t.id === task.id);
         if (index !== -1) {
@@ -95,22 +93,24 @@ export class TasksComponent implements OnInit {
 
   filterTasks(filter: string): void {
     this.selectedFilter = filter;
+  
     const now = new Date();
-    const nowLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000); // Convert UTC to local
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
   
     switch (filter) {
       case 'today':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          const dueDateLocal = dueDate ? new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000) : null;
-          return dueDateLocal && dueDateLocal.toDateString() === nowLocal.toDateString() && task.status !== 'Complete';
+          if (!dueDate || isNaN(dueDate.getTime()) || task.status === 'Complete') return false;
+          
+          return dueDate >= startOfToday && dueDate <= endOfToday;
         });
         break;
       case 'overdue':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          const dueDateLocal = dueDate ? new Date(dueDate.getTime() - dueDate.getTimezoneOffset() * 60000) : null;
-          return dueDateLocal && dueDateLocal < nowLocal && task.status !== 'Complete';
+          return dueDate && !isNaN(dueDate.getTime()) && dueDate < startOfToday && task.status !== 'Complete';
         });
         break;
       case 'inProgress':
@@ -126,13 +126,18 @@ export class TasksComponent implements OnInit {
         this.filteredTasks = this.tasks.filter(task => task.status !== 'Complete');
     }
   
-    this.currentPage = 1; // Reset to first page after filtering
+    this.currentPage = 1;
     this.updatePagination();
   }  
+  
+  convertUTCToLocal(date: Date): Date {
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    return localDate;
+  }
 
   setPage(event: PageEvent): void {
-    this.currentPage = event.pageIndex + 1; // Angular Material uses zero-based indexing
-    this.tasksPerPage = event.pageSize; // Update the tasksPerPage based on the selected page size
+    this.currentPage = event.pageIndex + 1;
+    this.tasksPerPage = event.pageSize; 
     this.updatePagination();
   }
 

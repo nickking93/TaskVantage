@@ -1,40 +1,42 @@
 package com.taskvantage.backend.dto;
 
+import com.taskvantage.backend.model.TaskPriority;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class TaskSummary {
+
+    // Fields for summary data
     private long totalTasks;
-    private long totalSubtasks;
     private long pastDeadlineTasks;
     private long completedTasksThisMonth;
     private long totalTasksThisMonth;
 
+    // Fields for detailed task data
     private Long id;
     private String title;
     private String description;
-    private String priority;
+    private TaskPriority priority; // Changed to TaskPriority enum
     private String status;
     private LocalDateTime dueDate;
     private LocalDateTime creationDate;
     private LocalDateTime lastModifiedDate;
-    private LocalDateTime startDate;  // Updated field
-    private LocalDateTime completionDateTime;  // New field
-    private Duration duration;  // New field
+    private LocalDateTime scheduledStart;
+    private LocalDateTime completionDateTime;
+    private Duration duration;
+    private int totalSubtasks; // Changed to int to match SIZE(t.subtasks)
 
-    // 5-argument constructor for the monthly task summary
-    public TaskSummary(long totalTasks, long totalSubtasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth) {
+    // Full constructor including all parameters
+    public TaskSummary(long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
+                       Long id, String title, String description, TaskPriority priority, String status,
+                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate,
+                       LocalDateTime scheduledStart, LocalDateTime completionDateTime, Duration duration,
+                       int totalSubtasks) {
         this.totalTasks = totalTasks;
-        this.totalSubtasks = totalSubtasks;
         this.pastDeadlineTasks = pastDeadlineTasks;
         this.completedTasksThisMonth = completedTasksThisMonth;
         this.totalTasksThisMonth = totalTasksThisMonth;
-    }
-
-    // 11-argument constructor (Updated to include startDate, completionDateTime, and duration)
-    public TaskSummary(Long id, String title, String description, String priority, String status,
-                       LocalDateTime dueDate, LocalDateTime creationDate, LocalDateTime lastModifiedDate,
-                       LocalDateTime startDate, LocalDateTime completionDateTime, Duration duration) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -43,16 +45,50 @@ public class TaskSummary {
         this.dueDate = dueDate;
         this.creationDate = creationDate;
         this.lastModifiedDate = lastModifiedDate;
-        this.startDate = startDate;  // Set the startDate
-        this.completionDateTime = completionDateTime;  // Set the completionDateTime
-        this.duration = duration;  // Set the duration
+        this.scheduledStart = scheduledStart;
+        this.completionDateTime = completionDateTime;
+        this.duration = duration;
+        this.totalSubtasks = totalSubtasks;
     }
 
     // No-argument constructor
     public TaskSummary() {
     }
 
-    // Getters and setters
+    // Getters and setters for summary data
+    public long getTotalTasks() {
+        return totalTasks;
+    }
+
+    public void setTotalTasks(long totalTasks) {
+        this.totalTasks = totalTasks;
+    }
+
+    public long getPastDeadlineTasks() {
+        return pastDeadlineTasks;
+    }
+
+    public void setPastDeadlineTasks(long pastDeadlineTasks) {
+        this.pastDeadlineTasks = pastDeadlineTasks;
+    }
+
+    public long getCompletedTasksThisMonth() {
+        return completedTasksThisMonth;
+    }
+
+    public void setCompletedTasksThisMonth(long completedTasksThisMonth) {
+        this.completedTasksThisMonth = completedTasksThisMonth;
+    }
+
+    public long getTotalTasksThisMonth() {
+        return totalTasksThisMonth;
+    }
+
+    public void setTotalTasksThisMonth(long totalTasksThisMonth) {
+        this.totalTasksThisMonth = totalTasksThisMonth;
+    }
+
+    // Getters and setters for detailed task data
     public Long getId() {
         return id;
     }
@@ -77,11 +113,11 @@ public class TaskSummary {
         this.description = description;
     }
 
-    public String getPriority() {
+    public TaskPriority getPriority() {
         return priority;
     }
 
-    public void setPriority(String priority) {
+    public void setPriority(TaskPriority priority) {
         this.priority = priority;
     }
 
@@ -117,67 +153,35 @@ public class TaskSummary {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;  // Updated getter
+    public LocalDateTime getScheduledStart() {
+        return scheduledStart;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;  // Updated setter
+    public void setScheduledStart(LocalDateTime scheduledStart) {
+        this.scheduledStart = scheduledStart;
     }
 
     public LocalDateTime getCompletionDateTime() {
-        return completionDateTime;  // New getter
+        return completionDateTime;
     }
 
     public void setCompletionDateTime(LocalDateTime completionDateTime) {
-        this.completionDateTime = completionDateTime;  // New setter
+        this.completionDateTime = completionDateTime;
     }
 
     public Duration getDuration() {
-        return duration;  // New getter
+        return duration;
     }
 
     public void setDuration(Duration duration) {
-        this.duration = duration;  // New setter
+        this.duration = duration;
     }
 
-    public long getTotalTasks() {
-        return totalTasks;
-    }
-
-    public void setTotalTasks(long totalTasks) {
-        this.totalTasks = totalTasks;
-    }
-
-    public long getTotalSubtasks() {
+    public int getTotalSubtasks() {
         return totalSubtasks;
     }
 
-    public void setTotalSubtasks(long totalSubtasks) {
+    public void setTotalSubtasks(int totalSubtasks) {
         this.totalSubtasks = totalSubtasks;
-    }
-
-    public long getPastDeadlineTasks() {
-        return pastDeadlineTasks;
-    }
-
-    public void setPastDeadlineTasks(long pastDeadlineTasks) {
-        this.pastDeadlineTasks = pastDeadlineTasks;
-    }
-
-    public long getCompletedTasksThisMonth() {
-        return completedTasksThisMonth;
-    }
-
-    public void setCompletedTasksThisMonth(long completedTasksThisMonth) {
-        this.completedTasksThisMonth = completedTasksThisMonth;
-    }
-
-    public long getTotalTasksThisMonth() {
-        return totalTasksThisMonth;
-    }
-
-    public void setTotalTasksThisMonth(long totalTasksThisMonth) {
-        this.totalTasksThisMonth = totalTasksThisMonth;
     }
 }

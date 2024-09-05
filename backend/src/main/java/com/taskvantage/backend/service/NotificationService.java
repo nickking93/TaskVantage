@@ -11,8 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -33,33 +31,47 @@ public class NotificationService {
 
     @Scheduled(fixedRate = 60000) // Runs every minute
     public void checkAndSendNotifications() {
-        LocalDateTime nowUTC = LocalDateTime.now(ZoneOffset.UTC).withNano(0); // Truncate milliseconds
-        LocalDateTime endUTC = nowUTC.plusMinutes(15).withNano(0);
+        // Current time in UTC
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime end = now.plusMinutes(15); // Time window of 15 minutes
 
-        String nowUTCString = nowUTC.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String endUTCString = endUTC.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        logger.info("Checking for tasks with scheduled_start between {} and {}", now, end);
 
-        logger.info("Querying for tasks with scheduled_start between {} and {}", nowUTC, endUTC);
+        // Retrieve all users from the repository
+        List<User> users = userRepository.findAll();
 
-        List<Task> tasks = taskRepository.findTasksToNotify(nowUTC, endUTC);
+        for (User user : users) {
+            logger.info("Processing user: {}", user.getUsername());
 
-        logger.info("Found {} tasks within the time range", tasks.size());
+            // Get all tasks scheduled to start in the next 15 minutes
+            List<Task> tasksToNotify = taskRepository.findTasksScheduledBetween(user.getId(), now, end);
 
-        for (Task task : tasks) {
-            // Check if the task's notification has not been sent
-            if (task.getNotificationSent() == null || !task.getNotificationSent()) {
-                User user = userRepository.findById(task.getUserId()).orElse(null);
-                if (user != null && user.getToken() != null) {
-                    String message = "Your task '" + task.getTitle() + "' is starting in less than 15 minutes.";
-                    firebaseNotificationService.sendNotification(user.getToken(), task.getTitle(), message);
-
-                    // Update the task to mark notification as sent
-                    task.setNotificationSent(true);
-                    taskRepository.save(task);
-                } else {
-                    logger.warn("User with ID {} does not have an FCM token.", task.getUserId());
-                }
+            if (tasksToNotify.isEmpty()) {
+                logger.info("No tasks found for user {} in the scheduled time range.", user.getUsername());
             }
+
+            tasksToNotify.forEach(task -> {
+                // Log the scheduled_start time for each task
+                logger.info("Checking task '{}', scheduled_start: {}", task.getTitle(), task.getScheduledStart());
+
+                // Check if the task's notification has not been sent
+                if (task.getNotificationSent() == null || !task.getNotificationSent()) {
+                    if (user.getToken() != null) {
+                        String message = "Your task '" + task.getTitle() + "' is starting in less than 15 minutes.";
+                        firebaseNotificationService.sendNotification(user.getToken(), task.getTitle(), message);
+
+                        // Mark the notification as sent
+                        task.setNotificationSent(true);
+                        taskRepository.save(task); // Update the task in the database
+
+                        logger.info("Notification sent for task '{}' to user '{}'", task.getTitle(), user.getUsername());
+                    } else {
+                        logger.warn("User with ID {} does not have an FCM token.", user.getId());
+                    }
+                } else {
+                    logger.info("Notification already sent for task '{}'", task.getTitle());
+                }
+            });
         }
 
         logger.info("Notification check completed.");

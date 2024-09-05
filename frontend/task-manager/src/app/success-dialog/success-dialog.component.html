@@ -3,5 +3,8 @@
   <p>{{ data.message }}</p>
 </div>
 <div mat-dialog-actions>
-  <button mat-button (click)="onClose()">OK</button>
+  <!-- Ok Button to close dialog -->
+  <button mat-raised-button color="primary" (click)="onClose()" aria-label="Close the success dialog">
+    OK
+  </button>
 </div>

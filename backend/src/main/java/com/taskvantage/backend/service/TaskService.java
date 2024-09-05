@@ -9,25 +9,33 @@ import java.util.Optional;
 
 public interface TaskService {
 
+    // Adds a new task
     Task addTask(Task task);
 
+    // Retrieves a task by its ID
     Optional<Task> getTaskById(Long id);
 
+    // Retrieves all tasks
     List<Task> getAllTasks();
 
+    // Retrieves tasks by a specific user ID
     List<TaskSummary> getTasksByUserId(Long userId);
 
-    // New method to get non-completed tasks by user ID
+    // Retrieves non-completed tasks for a specific user ID
     List<TaskSummary> getNonCompletedTasksByUserId(Long userId);
 
+    // Updates an existing task
     Task updateTask(Task task);
 
+    // Deletes a task by its ID
     void deleteTask(Long id);
 
-    // Existing method to get task summary
+    // Retrieves a summary of tasks for a specific user ID
     TaskSummary getTaskSummary(Long userId);
 
+    // Starts a task with startDate as LocalDateTime
     void startTask(Long taskId, LocalDateTime startDate);
 
+    // Marks a task as completed
     void markTaskAsCompleted(Long taskId);
 }

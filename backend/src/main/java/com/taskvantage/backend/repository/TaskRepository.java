@@ -16,37 +16,30 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(t.id, t.title, t.description, t.priority, t.status, t.dueDate, t.creationDate, t.lastModifiedDate, t.startDate, t.completionDateTime, t.duration) " +
+    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +  // Placeholder values for summary fields
+            "t.id, t.title, t.description, t.priority, t.status, " +
+            "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, " +
+            "SIZE(t.subtasks)) " +
             "FROM Task t WHERE t.userId = :userId")
-    List<TaskSummary> findTaskSummariesByUserId(Long userId);
+    List<TaskSummary> findTaskSummariesByUserId(@Param("userId") Long userId);
 
-    // New Query to Fetch Non-Completed Tasks
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(t.id, t.title, t.description, t.priority, t.status, t.dueDate, t.creationDate, t.lastModifiedDate, t.startDate, t.completionDateTime, t.duration) " +
+    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +  // Placeholder values for summary fields
+            "t.id, t.title, t.description, t.priority, t.status, " +
+            "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, " +
+            "SIZE(t.subtasks)) " +
             "FROM Task t WHERE t.userId = :userId AND t.status != 'Completed'")
     List<TaskSummary> findNonCompletedTaskSummariesByUserId(@Param("userId") Long userId);
 
-    // Updated Query to Fetch Monthly Task Summary with Subtask Count
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(" +
-            "SUM(t.id), " +
-            "SUM(CASE WHEN t.subtasks IS NOT EMPTY THEN SIZE(t.subtasks) ELSE 0 END), " +
-            "COUNT(t) FILTER (WHERE t.dueDate < CURRENT_DATE AND t.status != 'Completed'), " +
-            "COUNT(t) FILTER (WHERE t.status = 'Completed' AND YEAR(t.dueDate) = YEAR(CURRENT_DATE) AND MONTH(t.dueDate) = MONTH(CURRENT_DATE)), " +
-            "COUNT(t) FILTER (WHERE YEAR(t.dueDate) = YEAR(CURRENT_DATE) AND MONTH(t.dueDate) = MONTH(CURRENT_DATE))" +
-            ") FROM Task t WHERE t.userId = :userId")
-    TaskSummary findMonthlyTaskSummaryByUserId(@Param("userId") Long userId);
 
-    @Transactional
     @Modifying
-    @Query("UPDATE Task t SET t.startDate = :startDate, t.status = 'In Progress' WHERE t.id = :taskId")
-    void startTask(@Param("taskId") Long taskId, @Param("startDate") LocalDateTime startDate);
+    @Query("UPDATE Task t SET t.status = :status WHERE t.userId = :userId AND t.id = :taskId")
+    void updateTaskStatus(@Param("status") String status, @Param("userId") Long userId, @Param("taskId") Long taskId);
 
     @Transactional
     @Modifying
     @Query("UPDATE Task t SET t.completionDateTime = :completionDateTime, t.duration = :duration, t.status = 'Completed' WHERE t.id = :taskId")
     void completeTask(@Param("taskId") Long taskId, @Param("completionDateTime") LocalDateTime completionDateTime, @Param("duration") Duration duration);
 
-    // Query to Fetch Tasks that Need Notification
-    // Update to use LocalDateTime directly instead of strings
-    @Query(value = "SELECT * FROM taskvantage.tasks WHERE scheduled_start BETWEEN :start AND :end", nativeQuery = true)
-    List<Task> findTasksToNotify(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.scheduledStart >= :startTime AND t.scheduledStart <= :endTime")
+    List<Task> findTasksScheduledBetween(@Param("userId") Long userId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 }

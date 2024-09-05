@@ -17,9 +17,10 @@
       <!-- Due Date -->
       <mat-form-field appearance="fill" class="form-field">
         <mat-label>Due Date</mat-label>
-        <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required>
+        <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #dueDatePicker></mat-datepicker>
+        <mat-error *ngIf="dueDateInvalid">Due date must be in the future and after the scheduled start date.</mat-error>
       </mat-form-field>
 
       <!-- Due Time -->
@@ -31,9 +32,10 @@
       <!-- Scheduled Start Date -->
       <mat-form-field appearance="fill" class="form-field">
         <mat-label>Scheduled Start Date</mat-label>
-        <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required>
+        <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
+        <mat-error *ngIf="scheduledStartDateInvalid">Scheduled start date must be in the future.</mat-error>
       </mat-form-field>
 
       <!-- Scheduled Start Time -->
@@ -60,7 +62,7 @@
 
       <!-- Submit Button -->
       <div class="button-container">
-        <button mat-raised-button color="primary" type="submit">Create Task</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="formInvalid">Create Task</button>
       </div>
     </div>
   </form>

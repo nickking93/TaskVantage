@@ -1,6 +1,7 @@
 package com.taskvantage.backend.config;
 
 import com.taskvantage.backend.model.Task;
+import com.taskvantage.backend.model.TaskPriority;
 import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.repository.TaskRepository;
 import com.taskvantage.backend.repository.UserRepository;
@@ -52,8 +53,10 @@ public class DataLoader {
                         Task task = new Task();
                         task.setTitle(record.get("title"));
                         task.setDescription(record.get("description"));
-                        task.setPriority(record.get("priority"));
+                        task.setPriority(TaskPriority.valueOf(record.get("priority")));
                         task.setStatus(record.get("status"));
+
+                        // Store LocalDateTime directly instead of converting to epoch
                         task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter));
                         task.setCreationDate(LocalDateTime.parse(record.get("creation_date"), formatter));
                         task.setLastModifiedDate(LocalDateTime.parse(record.get("last_modified_date"), formatter)); // Updated

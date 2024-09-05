@@ -2,7 +2,9 @@ package com.taskvantage.backend.service;
 
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.exception.TaskNotFoundException;
+import com.taskvantage.backend.model.Subtask;
 import com.taskvantage.backend.model.Task;
+import com.taskvantage.backend.model.TaskPriority;
 import com.taskvantage.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,11 +27,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task addTask(Task task) {
-        // Ensure that creation and modification dates are set in UTC
-        task.setCreationDate(LocalDateTime.now(ZoneOffset.UTC));
-        task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC));
+        // Set the creation and last modified dates to the current time in UTC
+        task.setCreationDate(LocalDateTime.now());
+        task.setLastModifiedDate(LocalDateTime.now());
 
-        // The dueDate, scheduledStart, etc. should already be in UTC from the frontend.
+        // Save the task in the repository
         return taskRepository.save(task);
     }
 
@@ -64,11 +65,11 @@ public class TaskServiceImpl implements TaskService {
         long totalSubtasks = tasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
         long pastDeadlineTasks = tasks.stream()
                 .filter(task -> task.getDueDate() != null &&
-                        task.getDueDate().isBefore(LocalDateTime.now()) &&
+                        task.getDueDate().isBefore(LocalDateTime.now()) && // Compare directly with LocalDateTime
                         !"Completed".equalsIgnoreCase(task.getStatus()))
                 .count();
 
-        YearMonth currentMonth = YearMonth.now();
+        YearMonth currentMonth = YearMonth.now(); // Use current time in UTC
         long completedTasksThisMonth = tasks.stream()
                 .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
                         task.getDueDate() != null &&
@@ -76,12 +77,13 @@ public class TaskServiceImpl implements TaskService {
                 .count();
 
         long totalTasksThisMonth = tasks.stream()
-                .filter(task -> task.getDueDate() != null && YearMonth.from(task.getDueDate()).equals(currentMonth))
+                .filter(task -> task.getDueDate() != null &&
+                        YearMonth.from(task.getDueDate()).equals(currentMonth))
                 .count();
 
         TaskSummary summary = new TaskSummary();
         summary.setTotalTasks(totalTasks);
-        summary.setTotalSubtasks(totalSubtasks);
+        summary.setTotalSubtasks((int) totalSubtasks);
         summary.setPastDeadlineTasks(pastDeadlineTasks);
         summary.setCompletedTasksThisMonth(completedTasksThisMonth);
         summary.setTotalTasksThisMonth(totalTasksThisMonth);
@@ -96,23 +98,71 @@ public class TaskServiceImpl implements TaskService {
         if (existingTaskOptional.isPresent()) {
             Task existingTask = existingTaskOptional.get();
 
-            // Update the fields with the new values from updatedTask
+            // Update fields with new values from updatedTask
             existingTask.setTitle(updatedTask.getTitle());
             existingTask.setDescription(updatedTask.getDescription());
-            existingTask.setPriority(updatedTask.getPriority());
-            existingTask.setStatus(updatedTask.getStatus());
-            existingTask.setDueDate(updatedTask.getDueDate());
-            existingTask.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC));
-            existingTask.setScheduledStart(updatedTask.getScheduledStart());
-            existingTask.setStartDate(updatedTask.getStartDate());
-            existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime());
+
+            // Ensure priority is set (default if null)
+            if (updatedTask.getPriority() != null) {
+                existingTask.setPriority(updatedTask.getPriority());
+            }
+
+            // Only update the status if provided in the updated task
+            if (updatedTask.getStatus() != null) {
+                existingTask.setStatus(updatedTask.getStatus());
+            }
+
+            // Update optional fields
+            if (updatedTask.getDueDate() != null) {
+                existingTask.setDueDate(updatedTask.getDueDate());
+            }
+
+            // Update startDate and other time-based fields
+            if (updatedTask.getStartDate() != null) {
+                existingTask.setStartDate(updatedTask.getStartDate());
+            }
+
+            if (updatedTask.getScheduledStart() != null) {
+                existingTask.setScheduledStart(updatedTask.getScheduledStart());
+            }
+
+            if (updatedTask.getCompletionDateTime() != null) {
+                existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime());
+            }
+
+            // Update last modified date to current time
+            existingTask.setLastModifiedDate(LocalDateTime.now());
+
+            // Handle subtasks
+            if (updatedTask.getSubtasks() != null) {
+                List<Subtask> existingSubtasks = existingTask.getSubtasks();
+
+                // Remove subtasks that are no longer present in the updatedTask
+                existingSubtasks.removeIf(subtask -> !updatedTask.getSubtasks().contains(subtask));
+
+                // Add new subtasks that aren't already in the existing collection
+                for (Subtask newSubtask : updatedTask.getSubtasks()) {
+                    if (!existingSubtasks.contains(newSubtask)) {
+                        existingSubtasks.add(newSubtask);
+                        newSubtask.setTask(existingTask);  // Set reference to the parent task
+                    }
+                }
+            }
+
+            // Handle comments as before
+            if (updatedTask.getComments() != null) {
+                existingTask.getComments().clear();  // Clear existing comments
+                existingTask.getComments().addAll(updatedTask.getComments());  // Add new/updated comments
+            }
+
+            // Handle other fields
             existingTask.setTags(updatedTask.getTags());
-            existingTask.setSubtasks(updatedTask.getSubtasks());
             existingTask.setAttachments(updatedTask.getAttachments());
-            existingTask.setComments(updatedTask.getComments());
             existingTask.setReminders(updatedTask.getReminders());
             existingTask.setRecurring(updatedTask.isRecurring());
+            existingTask.setNotificationSent(updatedTask.getNotificationSent());
 
+            // Calculate the duration if both startDate and completionDateTime are present
             if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
                 Duration duration = Duration.between(updatedTask.getStartDate(), updatedTask.getCompletionDateTime());
                 existingTask.setDuration(duration);
@@ -131,8 +181,23 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void startTask(Long taskId, LocalDateTime startDate) {
-        // Ensure the start date is saved in UTC
-        taskRepository.startTask(taskId, startDate.atOffset(ZoneOffset.UTC).toLocalDateTime());
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+
+            // Set default priority if not set
+            if (task.getPriority() == null) {
+                task.setPriority(TaskPriority.MEDIUM); // Default priority
+            }
+
+            task.setStartDate(startDate);
+            task.setStatus("In Progress"); // Set task status to "In Progress"
+            task.setLastModifiedDate(LocalDateTime.now());
+
+            taskRepository.save(task);
+        } else {
+            throw new TaskNotFoundException("Task not found with id " + taskId);
+        }
     }
 
     @Override
@@ -141,7 +206,7 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setLastModifiedDate(LocalDateTime.now(ZoneOffset.UTC));
+            task.setLastModifiedDate(LocalDateTime.now());
             taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);

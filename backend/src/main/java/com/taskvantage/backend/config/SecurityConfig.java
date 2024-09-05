@@ -34,7 +34,11 @@ public class SecurityConfig {
                     CorsConfiguration corsConfig = new CorsConfiguration();
                     corsConfig.addAllowedOrigin("http://localhost:4200");
                     corsConfig.addAllowedOrigin("https://taskvantage-frontend-cbaab3e2bxcpbyb8.eastus-01.azurewebsites.net");
-                    corsConfig.addAllowedMethod("*");
+                    corsConfig.addAllowedMethod("GET");
+                    corsConfig.addAllowedMethod("POST");
+                    corsConfig.addAllowedMethod("PUT");
+                    corsConfig.addAllowedMethod("PATCH");  // Explicitly allow PATCH
+                    corsConfig.addAllowedMethod("DELETE");
                     corsConfig.addAllowedHeader("*");
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
@@ -42,7 +46,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/login", "/api/register").permitAll()
-                        .requestMatchers("api/tasks/**").authenticated()  // Ensure /home/** endpoints are accessible for authenticated users
+                        .requestMatchers("/api/tasks/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

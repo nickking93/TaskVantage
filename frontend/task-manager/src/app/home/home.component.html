@@ -77,7 +77,7 @@
                 style="margin-left: 8px; margin-right: 8px;">
                 {{ task.status }}
               </span> 
-              - Due by {{ task.dueDate | date: 'shortTime' }}
+              - Due by {{ task.dueDate | date: 'shortTime' }} <!-- Directly using human-readable dueDate -->
               
               <!-- Button for marking task completed -->
               <button 

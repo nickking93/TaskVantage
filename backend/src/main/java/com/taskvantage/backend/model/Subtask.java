@@ -19,6 +19,11 @@ public class Subtask {
     @Column(nullable = false)
     private String status;
 
+    // Many-to-one relationship with Task
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id", nullable = false)  // Foreign key column
+    private Task task;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -50,5 +55,14 @@ public class Subtask {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    // Getter and setter for task
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
     }
 }

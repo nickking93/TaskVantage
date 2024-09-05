@@ -34,26 +34,29 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 export class AddTaskComponent implements OnInit {
 
   userId: string = ''; // The user ID will be retrieved from the route parameters
-  dueDate: string = '';
-  dueTime: string = '';
-  scheduledStartDate: string = '';
-  scheduledStartTime: string = '';
+  dueDate: string = ''; // Holds the due date as an ISO string
+  dueTime: string = ''; // Holds the due time in HH:mm format
+  scheduledStartDate: string = ''; // Holds the scheduled start date as an ISO string
+  scheduledStartTime: string = ''; // Holds the scheduled start time in HH:mm format
+
+  dueDateInvalid: boolean = false;
+  scheduledStartDateInvalid: boolean = false;
+  formInvalid: boolean = false;
 
   // Instantiate the Task object using the constructor
   newTask: Task = new Task(
-    '', // title
-    '', // description
-    '', // dueDate
-    'Medium', // priority
-    false, // recurring
-    this.userId, // userId will be set later
-    'Pending', // status
-    '', // scheduledStart
-    '', // completion_date_time
-    '', // duration
-    '', // lastModifiedDate
-    '',  // start_date
-    false // notifyBeforeStart - initialize to false
+    '',               // title
+    '',               // description
+    'Medium',         // priority
+    false,            // recurring
+    undefined,        // dueDate (optional, will be updated later)
+    '',               // userId (will be set later)
+    'Pending',        // status
+    undefined,        // scheduledStart (optional, will be updated later)
+    undefined,        // completionDateTime (optional, will be updated later)
+    undefined,        // duration (optional, will be updated later)
+    undefined,        // lastModifiedDate (optional, will be updated later)
+    undefined         // startDate (optional, will be updated later)
   );
 
   constructor(
@@ -71,62 +74,145 @@ export class AddTaskComponent implements OnInit {
     });
   }
 
-  createTask(): void {
-    // Ensure the userId is correctly set before creating the task
-    this.newTask.userId = this.userId;
+  validateDates(): void {
+    const now = new Date();
   
-    // Combine date and time into a full datetime string for dueDate
-    this.newTask.dueDate = this.combineDateAndTime(this.dueDate, this.dueTime);
+    // Combine scheduled start date and time
+    const scheduledStart = new Date(`${this.scheduledStartDate}T${this.scheduledStartTime}`);
+    this.scheduledStartDateInvalid = scheduledStart <= now;
   
-    // Combine date and time into a full datetime string for scheduledStart
-    this.newTask.scheduledStart = this.combineDateAndTime(this.scheduledStartDate, this.scheduledStartTime);
+    // Combine due date and time
+    const due = new Date(`${this.dueDate}T${this.dueTime}`);
+    this.dueDateInvalid = due <= now || due <= scheduledStart;
   
-    // Log the task before sending to the backend
-    console.log('Task before sending to backend:', this.newTask);
-    console.log('Due Date in UTC:', this.newTask.dueDate);
-    console.log('Scheduled Start in UTC:', this.newTask.scheduledStart);
-  
-    // Send the task to the backend
-    this.taskService.createTask(this.newTask).subscribe(
-      () => {
-        this.openSuccessDialog();
-      },
-      error => {
-        console.error('Failed to create task:', error);
-      }
-    );
+    // Disable form submission if there are any errors
+    this.formInvalid = this.dueDateInvalid || this.scheduledStartDateInvalid;
   }  
 
-  // Helper method to combine date and time into a full datetime string
-  combineDateAndTime(date: any, time: string): string {
-    let year, month, day;
-
-    // Check if the date is a string or Date object and extract the components
-    if (typeof date === 'string') {
-      [year, month, day] = date.split('-').map(Number);
-    } else if (date instanceof Date) {
-      year = date.getFullYear();
-      month = date.getMonth() + 1;
-      day = date.getDate();
-    } else {
-      throw new Error('Invalid date format');
-    }
-
-    // Ensure month and day are two digits
-    const formattedMonth = month < 10 ? `0${month}` : `${month}`;
-    const formattedDay = day < 10 ? `0${day}` : `${day}`;
-
-    // Create a Date object with the provided date and time in local time
-    const localDateTime = new Date(`${year}-${formattedMonth}-${formattedDay}T${time}:00`);
-
-    // Convert to UTC and return the ISO string
-    const utcDateTime = new Date(localDateTime.getTime() - (localDateTime.getTimezoneOffset() * 60000));
-
-    console.log("Local date/time:", localDateTime.toISOString());
-    console.log("UTC date/time:", utcDateTime.toISOString()); // Log to check in production
-
-    return utcDateTime.toISOString(); // Returning the UTC datetime string
-}
+    createTask(): void {
+      this.newTask.userId = this.userId;
+    
+      // Log the input values to debug their format
+      console.log('Due Date:', this.dueDate);
+      console.log('Due Time:', this.dueTime);
+    
+      // Ensure dueDate and dueTime are valid before creating the Date object
+      if (this.dueDate && this.dueTime) {
+        try {
+          // Parse the dueDate and dueTime separately
+          const dueDateObj = new Date(this.dueDate);  // DueDate comes as a Date object
+    
+          if (isNaN(dueDateObj.getTime())) {
+            console.error('Invalid Due Date:', this.dueDate);
+            throw new Error('Invalid due date');
+          }
+    
+          // Split the dueTime string into hours and minutes
+          const [hours, minutes] = this.dueTime.split(':').map(Number);
+    
+          if (isNaN(hours) || isNaN(minutes)) {
+            console.error('Invalid Due Time:', this.dueTime);
+            throw new Error('Invalid due time');
+          }
+    
+          // Combine date and time in UTC
+          const dueDateTime = new Date(Date.UTC(
+            dueDateObj.getFullYear(),
+            dueDateObj.getMonth(),
+            dueDateObj.getDate(),
+            hours,
+            minutes
+          ));
+    
+          if (isNaN(dueDateTime.getTime())) {
+            console.error('Parsed Due Date and Time is invalid:', dueDateTime);
+            throw new Error('Invalid due date or time');
+          }
+    
+          // Convert the Date object to ISO string for backend use in UTC
+          this.newTask.dueDate = dueDateTime.toISOString();
+          console.log('Converted Due Date ISO:', this.newTask.dueDate);
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error('Invalid Due Date or Time:', error.message);
+          } else {
+            console.error('Unexpected error:', error);
+          }
+          return;
+        }
+      } else {
+        console.warn('Due date or time is missing');
+        return;
+      }
+    
+      // Log the input values to debug their format for the scheduled start
+      console.log('Scheduled Start Date:', this.scheduledStartDate);
+      console.log('Scheduled Start Time:', this.scheduledStartTime);
+    
+      // Ensure scheduledStartDate and scheduledStartTime are valid before creating the Date object
+      if (this.scheduledStartDate && this.scheduledStartTime) {
+        try {
+          // Parse the scheduledStartDate and scheduledStartTime separately
+          const scheduledStartDateObj = new Date(this.scheduledStartDate);
+    
+          if (isNaN(scheduledStartDateObj.getTime())) {
+            console.error('Invalid Scheduled Start Date:', this.scheduledStartDate);
+            throw new Error('Invalid scheduled start date');
+          }
+    
+          // Split the scheduledStartTime into hours and minutes
+          const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
+    
+          if (isNaN(startHours) || isNaN(startMinutes)) {
+            console.error('Invalid Scheduled Start Time:', this.scheduledStartTime);
+            throw new Error('Invalid scheduled start time');
+          }
+    
+          // Combine date and time in UTC
+          const scheduledStartDateTime = new Date(Date.UTC(
+            scheduledStartDateObj.getFullYear(),
+            scheduledStartDateObj.getMonth(),
+            scheduledStartDateObj.getDate(),
+            startHours,
+            startMinutes
+          ));
+    
+          if (isNaN(scheduledStartDateTime.getTime())) {
+            console.error('Parsed Scheduled Start Date and Time is invalid:', scheduledStartDateTime);
+            throw new Error('Invalid scheduled start date or time');
+          }
+    
+          // Convert the Date object to ISO string for backend use in UTC
+          this.newTask.scheduledStart = scheduledStartDateTime.toISOString();
+          console.log('Converted Scheduled Start Date ISO:', this.newTask.scheduledStart);
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error('Invalid Scheduled Start Date or Time:', error.message);
+          } else {
+            console.error('Unexpected error:', error);
+          }
+          return;
+        }
+      } else {
+        console.warn('Scheduled start date or time is missing');
+        return;
+      }
+    
+      // Log the task object before sending to backend
+      console.log('Task to be created:', this.newTask);
+    
+      // Call the service to add the task
+      this.taskService.createTask(this.newTask).subscribe(
+        response => {
+          console.log('Task created successfully:', response);
+          this.dialog.open(SuccessDialogComponent, { data: { message: 'Task added successfully!' } });
+          this.router.navigate(['/home', this.userId]);
+        },
+        error => {
+          console.error('Error adding task:', error);
+        }
+      );
+    }                
 
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {

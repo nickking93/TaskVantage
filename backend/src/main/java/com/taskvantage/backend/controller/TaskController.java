@@ -2,7 +2,6 @@ package com.taskvantage.backend.controller;
 
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
-import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.service.TaskService;
 import com.taskvantage.backend.service.CustomUserDetailsService;
 import com.taskvantage.backend.Security.JwtUtil;
@@ -10,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,29 +33,40 @@ public class TaskController {
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    // Create a new task
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task task) {
+    public ResponseEntity<Map<String, Object>> createTask(@RequestBody Task task) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (task.getTitle() == null || task.getTitle().isEmpty()) {
+            response.put("message", "Title is required");
+            return ResponseEntity.badRequest().body(response);
+        }
+
         Task createdTask = taskService.addTask(task);
-        return ResponseEntity.ok(createdTask);
+        response.put("task", createdTask);
+        return ResponseEntity.ok(response);
     }
 
-    // Get a task by its ID
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> getTaskById(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
         Optional<Task> taskOptional = taskService.getTaskById(id);
-        return taskOptional.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+
+        if (taskOptional.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        response.put("task", taskOptional.get());
+        return ResponseEntity.ok(response);
     }
 
-    // Get all tasks for a specific user by userId
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TaskSummary>> getTasksByUserId(@PathVariable Long userId) {
         List<TaskSummary> tasks = taskService.getTasksByUserId(userId);
         return ResponseEntity.ok(tasks);
     }
 
-    // Get task summary for a specific user
     @GetMapping("/summary/{userId}")
     public ResponseEntity<Map<String, Object>> getTaskSummary(@PathVariable Long userId) {
         TaskSummary taskSummary = taskService.getTaskSummary(userId);
@@ -68,47 +81,91 @@ public class TaskController {
         return ResponseEntity.ok(summary);
     }
 
-    // Start a task by setting its start date and changing its status to 'In Progress'
-    @PatchMapping("/{id}/start")
-    public ResponseEntity<Void> startTask(@PathVariable Long id) {
-        taskService.startTask(id, LocalDateTime.now());
-        return ResponseEntity.noContent().build();
+    @PutMapping("/{id}/start")
+    public ResponseEntity<Map<String, Object>> startTask(@PathVariable Long id, @RequestBody Task updatedTask) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Retrieve the existing task
+        Optional<Task> taskOptional = taskService.getTaskById(id);
+        if (taskOptional.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskOptional.get();
+
+        // Update the task with the new start date and status
+        task.setStartDate(updatedTask.getStartDate() != null ? updatedTask.getStartDate() : LocalDateTime.now());
+        task.setStatus("In Progress");
+        task.setLastModifiedDate(LocalDateTime.now());
+
+        // Save the updated task
+        taskService.updateTask(task);
+        response.put("message", "Task started successfully");
+        response.put("task", task);
+        return ResponseEntity.ok(response);
     }
 
-    // Mark a task as completed
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<Void> markTaskAsCompleted(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> markTaskAsCompleted(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Task> taskOptional = taskService.getTaskById(id);
+        if (taskOptional.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
         taskService.markTaskAsCompleted(id);
-        return ResponseEntity.noContent().build();
+        response.put("message", "Task marked as completed");
+        return ResponseEntity.ok(response);
     }
 
-    // Update an existing task
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
-        task.setId(id);
+    public ResponseEntity<Map<String, Object>> updateTask(@PathVariable Long id, @RequestBody Task task) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (task.getId() == null || !task.getId().equals(id)) {
+            response.put("message", "Task ID mismatch");
+            return ResponseEntity.badRequest().body(response);
+        }
+
         Task updatedTask = taskService.updateTask(task);
-        return updatedTask != null ? ResponseEntity.ok(updatedTask) : ResponseEntity.notFound().build();
+        if (updatedTask == null) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        response.put("task", updatedTask);
+        return ResponseEntity.ok(response);
     }
 
-    // Delete a task by its ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteTask(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Task> taskOptional = taskService.getTaskById(id);
+        if (taskOptional.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
         taskService.deleteTask(id);
-        return ResponseEntity.noContent().build();
+        response.put("message", "Task deleted successfully");
+        return ResponseEntity.ok(response);
     }
 
-    // Update FCM token
     @PostMapping("/{userId}/update-token")
     public ResponseEntity<Map<String, Object>> updateFcmToken(
             @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long userId,
             @RequestBody Map<String, String> tokenRequest) {
 
-        // Add a log to see if this method is being called
-        System.out.println("Received request to update FCM token for user: " + userId);
+        Map<String, Object> response = new HashMap<>();
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized: Invalid or missing Authorization header"));
+            response.put("message", "Unauthorized: Invalid or missing Authorization header");
+            return ResponseEntity.status(401).body(response);
         }
 
         String jwtToken = authorizationHeader.substring(7);
@@ -118,23 +175,26 @@ public class TaskController {
             // Extract username and userId from JWT
             username = jwtUtil.getUsernameFromToken(jwtToken);
             tokenUserId = jwtUtil.getUserIdFromToken(jwtToken);
-            System.out.println("Extracted username: " + username + ", token userId: " + tokenUserId);
         } catch (Exception e) {
-            return ResponseEntity.status(403).body(Map.of("message", "Forbidden: Invalid JWT token"));
+            response.put("message", "Forbidden: Invalid JWT token");
+            return ResponseEntity.status(403).body(response);
         }
 
         // Ensure that the userId from the JWT matches the userId from the path
         if (!userId.equals(tokenUserId)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Forbidden: User ID mismatch"));
+            response.put("message", "Forbidden: User ID mismatch");
+            return ResponseEntity.status(403).body(response);
         }
 
         String fcmToken = tokenRequest.get("fcmToken");
         if (fcmToken == null || fcmToken.isEmpty()) {
-            return ResponseEntity.status(400).body(Map.of("message", "Invalid FCM token"));
+            response.put("message", "Invalid FCM token");
+            return ResponseEntity.status(400).body(response);
         }
 
         // Update FCM token
         customUserDetailsService.updateUserToken(username, fcmToken);
-        return ResponseEntity.ok(Map.of("message", "FCM Token updated successfully"));
+        response.put("message", "FCM Token updated successfully");
+        return ResponseEntity.ok(response);
     }
 }
