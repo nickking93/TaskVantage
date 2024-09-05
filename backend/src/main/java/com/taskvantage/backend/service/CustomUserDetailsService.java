@@ -79,4 +79,20 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         logger.info("FCM Token updated successfully for user: {}", username);
     }
+
+    public void clearUserToken(String username) {
+        logger.info("Received request to clear FCM token for user: {}", username);
+
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            logger.error("User not found with username: {}", username);
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
+
+        logger.info("Clearing FCM token for user: {}", username);
+        user.setToken(null); // Set the token to null
+        userRepository.save(user); // Save the updated user entity
+
+        logger.info("FCM Token cleared successfully for user: {}", username);
+    }
 }

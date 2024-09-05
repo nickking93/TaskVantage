@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -86,4 +87,13 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/users/{username}/clear-fcm-token")
+    public ResponseEntity<?> clearFcmToken(@PathVariable("username") String username) {
+        try {
+            customUserDetailsService.clearUserToken(username); // Clear token using the username
+            return ResponseEntity.ok("FCM Token cleared successfully.");
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + username);
+        }
+    }
 }

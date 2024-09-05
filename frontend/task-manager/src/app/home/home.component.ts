@@ -4,7 +4,7 @@ import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
 import { FirebaseMessagingService } from '../services/firebase-messaging.service'; 
-import { getMessaging, getToken } from 'firebase/messaging'; 
+import { getMessaging, getToken, onMessage } from 'firebase/messaging'; 
 import { environment } from '../../environments/environment'; 
 import { FormsModule } from '@angular/forms'; 
 import { RouterModule } from '@angular/router'; 
@@ -110,12 +110,21 @@ export class HomeComponent implements OnInit, OnDestroy {
   initializeFirebase(): void {
     const app = getApp(); 
     const messaging = getMessaging(app);
-
+  
+    // Check notification permission status
+    if (Notification.permission === 'denied') {
+      console.log('Notifications are blocked. Please enable them in your browser settings.');
+      return;
+    }
+  
+    // Request FCM token
     getToken(messaging, { vapidKey: environment.firebaseConfig.vapidKey })
       .then((currentToken) => {
         if (currentToken) {
-          this.fcmToken = currentToken;  
+          this.fcmToken = currentToken;
           const authToken = this.authService.getAuthToken();
+          
+          // Check if fcmToken and authToken exist
           if (this.fcmToken && authToken) {
             this.firebaseMessagingService.sendTokenToServer(this.userId, this.fcmToken, authToken)
               .subscribe(
@@ -123,12 +132,83 @@ export class HomeComponent implements OnInit, OnDestroy {
                 error => console.error('Error sending FCM token to server:', error)
               );
           }
+        } else {
+          // If no token is available, request permission
+          console.log('No registration token available. Request permission to generate one.');
+          this.requestNotificationPermission();
         }
       })
       .catch((err) => {
-        console.error('An error occurred while retrieving token: ', err);
+        if (err.code === 'messaging/permission-blocked') {
+          console.warn('Notifications are blocked. Please enable them in your browser settings.');
+          alert('Notifications are blocked. Please enable them in your browser settings.');
+        } else {
+          console.error('An error occurred while retrieving token: ', err);
+        }
       });
   }
+  
+  requestNotificationPermission(): void {
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        this.initializeFirebase(); // Retry initialization after permission is granted
+      } else {
+        console.log('User denied the notification permission');
+      }
+    }).catch((error) => {
+      console.error('Failed to request notification permission', error);
+    });
+  }  
+  
+  watchNotificationPermission(): void {
+    // Watch for changes in notification permission
+    if ('permissions' in navigator) {
+      navigator.permissions.query({ name: 'notifications' }).then((permissionStatus) => {
+        permissionStatus.onchange = () => {
+          console.log('Notification permission changed:', permissionStatus.state);
+          if (permissionStatus.state === 'denied') {
+            // Permission revoked - clear FCM token
+            this.authService.getUserDetails().subscribe(user => {
+              this.clearFcmToken(user.username); // Use username from user details
+            });
+          }
+        };
+      });
+    }
+  }
+  
+  clearFcmToken(username: string): void {
+    const authToken = this.authService.getAuthToken(); 
+    if (this.fcmToken) {
+      this.firebaseMessagingService.clearTokenFromServer(username, authToken!).subscribe(
+        () => {
+          console.log('FCM token cleared successfully.');
+          this.removeTokenLocally(); // Only call removeTokenLocally if fcmToken exists
+        },
+        (error) => {
+          console.error('Error clearing FCM token from server:', error);
+        }
+      );
+    } else {
+      console.warn('No FCM token found to clear.');
+      this.removeTokenLocally(); // Optionally remove token locally even if server-side clearing isn't needed
+    }
+  }
+   
+  
+  removeTokenLocally(): void {
+    // Check if there's a token to remove
+    if (this.fcmToken) {
+      this.firebaseMessagingService.removeToken(this.fcmToken).then(() => {
+        console.log('Token removed locally.');
+        this.fcmToken = null; // Reset token in the component
+      }).catch((error) => {
+        console.error('Error removing token locally:', error);
+      });
+    } else {
+      console.warn('No FCM token found to remove.');
+    }
+  }  
 
   reloadData(): void {
     this.fetchTaskSummary();  
