@@ -20,8 +20,7 @@
       "updateMode": "prefetch",
       "resources": {
         "files": [
-          "/assets/**",
-          "/assets/manifest.webmanifest"
+          "/assets/**"
         ]
       }
     }
