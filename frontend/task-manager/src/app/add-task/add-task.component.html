@@ -1,65 +1,69 @@
 <div class="add-task-container">
-    <h2>Add New Task</h2>
-    <form (ngSubmit)="createTask()" class="task-form">
-      <div fxLayout="column" fxLayoutGap="20px">
-        <!-- Title Field -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Title</mat-label>
-          <input matInput [(ngModel)]="newTask.title" name="title" required>
-        </mat-form-field>
-  
-        <!-- Description Field -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Description</mat-label>
-          <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
-        </mat-form-field>
-  
-        <!-- Due Date -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Due Date</mat-label>
-          <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required>
-          <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #dueDatePicker></mat-datepicker>
-        </mat-form-field>
-  
-        <!-- Due Time -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Due Time</mat-label>
-          <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
-        </mat-form-field>
-  
-        <!-- Scheduled Start Date -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Scheduled Start Date</mat-label>
-          <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required>
-          <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
-        </mat-form-field>
-  
-        <!-- Scheduled Start Time -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Scheduled Start Time</mat-label>
-          <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
-        </mat-form-field>
-  
-        <!-- Priority Field -->
-        <mat-form-field appearance="fill" class="form-field">
-          <mat-label>Priority</mat-label>
-          <mat-select [(ngModel)]="newTask.priority" name="priority" required>
-            <mat-option value="High">High</mat-option>
-            <mat-option value="Medium">Medium</mat-option>
-            <mat-option value="Low">Low</mat-option>
-          </mat-select>
-        </mat-form-field>
-  
-        <!-- Recurring Checkbox -->
-        <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
-  
-        <!-- Submit Button -->
-        <div class="button-container">
-          <button mat-raised-button color="primary" type="submit">Create Task</button>
-        </div>
+  <h2>Add New Task</h2>
+  <form (ngSubmit)="createTask()" class="task-form">
+    <div fxLayout="column" fxLayoutGap="20px">
+      <!-- Title Field -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Title</mat-label>
+        <input matInput [(ngModel)]="newTask.title" name="title" required>
+      </mat-form-field>
+
+      <!-- Description Field -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="newTask.description" name="description"></textarea>
+      </mat-form-field>
+
+      <!-- Due Date -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Due Date</mat-label>
+        <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required (dateChange)="validateDates()">
+        <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #dueDatePicker></mat-datepicker>
+        <mat-error *ngIf="dueDateInvalid">Due date must be in the future and after the scheduled start date.</mat-error>
+      </mat-form-field>
+
+      <!-- Due Time -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Due Time</mat-label>
+        <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
+      </mat-form-field>
+
+      <!-- Scheduled Start Date -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Scheduled Start Date</mat-label>
+        <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required (dateChange)="validateDates()">
+        <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
+        <mat-error *ngIf="scheduledStartDateInvalid">Scheduled start date must be in the future.</mat-error>
+      </mat-form-field>
+
+      <!-- Scheduled Start Time -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Scheduled Start Time</mat-label>
+        <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
+      </mat-form-field>
+
+      <!-- Priority Field -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Priority</mat-label>
+        <mat-select [(ngModel)]="newTask.priority" name="priority" required>
+          <mat-option value="High">High</mat-option>
+          <mat-option value="Medium">Medium</mat-option>
+          <mat-option value="Low">Low</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Recurring Checkbox -->
+      <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
+
+      <!-- Notify Before Start Checkbox -->
+      <mat-checkbox [(ngModel)]="newTask.notifyBeforeStart" name="notifyBeforeStart">Push Notifications</mat-checkbox>
+
+      <!-- Submit Button -->
+      <div class="button-container">
+        <button mat-raised-button color="primary" type="submit" [disabled]="formInvalid">Create Task</button>
       </div>
-    </form>
-  </div>
-  
+    </div>
+  </form>
+</div>

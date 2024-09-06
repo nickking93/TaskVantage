@@ -24,8 +24,7 @@ export class TaskService {
   fetchTasks(userId: string, filterCallback: (tasks: Task[]) => void): void {
     this.getTasks(userId).subscribe(
       (tasks: Task[]) => {
-        const localTasks = tasks.map(task => this.convertUTCToLocal(task));
-        filterCallback(localTasks);
+        filterCallback(tasks); // Pass the tasks directly without conversions
       },
       (error) => {
         console.error('Failed to fetch tasks:', error);
@@ -36,8 +35,7 @@ export class TaskService {
   // Method to create a new task
   createTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
-    const utcTask = this.convertLocalToUTC(task);
-    return this.http.post<Task>(this.tasksUrl, utcTask, { headers }).pipe(
+    return this.http.post<Task>(this.tasksUrl, task, { headers }).pipe(
       map(response => {
         console.log('Task created successfully:', response);
         return response;
@@ -64,47 +62,10 @@ export class TaskService {
     const url = `${this.tasksUrl}/user/${userId}`;
     return this.http.get<Task[]>(url, { headers }).pipe(
       map(response => {
-        console.log('Fetched tasks:', response);
-        return response.map(task => this.convertUTCToLocal(task));
+        return response;
       }),
       catchError(this.handleError)
     );
-  }
-
-  private convertUTCToLocal(task: Task): Task {
-    if (task.dueDate) {
-      task.dueDate = this.convertUTCStringToLocal(task.dueDate);
-    }
-    if (task.scheduledStart) {
-      task.scheduledStart = this.convertUTCStringToLocal(task.scheduledStart);
-    }
-    if (task.lastModifiedDate) {
-      task.lastModifiedDate = this.convertUTCStringToLocal(task.lastModifiedDate);
-    }
-    return task;
-  }
-
-  // Convert task date properties from local time to UTC
-  private convertLocalToUTC(task: Task): Task {
-    if (task.dueDate) {
-      task.dueDate = this.convertLocalStringToUTC(task.dueDate);
-    }
-    if (task.scheduledStart) {
-      task.scheduledStart = this.convertLocalStringToUTC(task.scheduledStart);
-    }
-    return task;
-  }
-
-  // Convert a UTC string to local date-time string
-  private convertUTCStringToLocal(utcString: string): string {
-    const localDate = new Date(utcString);
-    return localDate.toLocaleString();
-  }
-
-  // Convert a local date-time string to UTC string
-  private convertLocalStringToUTC(localString: string): string {
-    const localDate = new Date(localString);
-    return localDate.toISOString();
   }
 
   // Handle error response
@@ -113,55 +74,70 @@ export class TaskService {
     return throwError(() => new Error('TaskService Error: ' + error.message));
   }
 
-  // Method to start a task (change status to 'In Progress')
-  startTask(taskId: string): Observable<Task> {
+  startTask(task: Task): void {
+    if (!task || !task.id) {
+      console.error('Task or Task ID is undefined. Cannot start task.');
+      return;
+    }
+  
+    const taskId = task.id;
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}/start`;
-
-    // Include current datetime as startDate
-    const startDate = new Date().toISOString();
-    const body = { startDate };
-
-    return this.http.patch<Task>(url, body, { headers }).pipe(
-      map(response => {
+  
+    // Updating task status and start date before sending
+    task.status = 'In Progress';
+    task.startDate = new Date().toISOString();
+  
+    // Send the full Task object as the body for the PUT request
+    this.http.put<Task>(url, task, { headers }).subscribe(
+      (response) => {
         console.log('Task started successfully:', response);
-        return response;
-      }),
-      catchError(this.handleError)
-    );
-  }
-
-  // Shared method to handle the starting of a task and show a dialog
-  handleStartTask(task: Task, refreshCallback: () => void): void {
-    this.startTask(task.id!).subscribe(
-      () => {
-        this.dialog.open(SuccessDialogComponent, {
-          data: {
-            message: 'Task has been started successfully!'
-          }
-        }).afterClosed().subscribe(() => {
-          refreshCallback(); // Call the refresh function passed by the component
-        });
       },
       (error) => {
-        console.error('Failed to start task:', error);
+        if (error.status === 400) {
+          console.error('Bad Request: ', error.error.message);
+        } else if (error.status === 404) {
+          console.error('Task not found (404): ', error.error.message);
+        } else {
+          console.error('An unexpected error occurred:', error);
+        }
       }
     );
-  }
+  }   
 
-  // Method to update/edit a task
-  editTask(taskId: string, updatedTask: Partial<Task>): Observable<Task> {
+  handleStartTask(task: Task, callback: () => void): void {
+    // Update task status to 'In Progress' and set the actual start date
+    task.status = 'In Progress';
+    task.startDate = new Date().toISOString();
+  
+    this.editTask(task).subscribe(
+      (response: Task | null) => {
+        if (response) {
+          console.log('Task started successfully:', response);
+          callback(); // Reload data after successful update
+        } else {
+          console.error('Failed to start task. Response was null.');
+        }
+      },
+      (error) => {
+        console.error('Error starting task:', error);
+      }
+    );
+  }   
+
+  editTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
-    const url = `${this.tasksUrl}/${taskId}`;
-
-    return this.http.put<Task>(url, updatedTask, { headers }).pipe(
+    const url = `${this.tasksUrl}/${task.id}`;
+  
+    // Use PUT for full update
+    return this.http.put<Task>(url, task, { headers }).pipe(
       map(response => {
         console.log('Task updated successfully:', response);
         return response;
       }),
       catchError(this.handleError)
     );
-  }
+  }  
 
   // Method to mark a task as completed
   markTaskAsCompleted(taskId: string): Observable<void> {
@@ -183,6 +159,7 @@ export class TaskService {
       () => {
         this.dialog.open(SuccessDialogComponent, {
           data: {
+            title: 'Success',
             message: 'Task has been marked as completed!'
           }
         }).afterClosed().subscribe(() => {
@@ -203,6 +180,19 @@ export class TaskService {
     return this.http.delete<void>(url, { headers }).pipe(
       map(response => {
         console.log('Task deleted successfully');
+        return response;
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // Save FCM token
+  saveToken(token: string): Observable<any> {
+    const url = `${this.tasksUrl}/save-token`;  
+    const headers = this.authService.getAuthHeaders();
+    return this.http.post(url, { token }, { headers }).pipe(
+      map(response => {
+        console.log('Token saved successfully:', response);
         return response;
       }),
       catchError(this.handleError)

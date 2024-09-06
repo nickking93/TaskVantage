@@ -1,0 +1,55 @@
+# Ignore the Firebase service account JSON file
+backend/src/main/resources/taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json
+backend/logs/spring-boot-logger.log
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.iws
+
+# Eclipse files
+.project
+.classpath
+.settings/
+
+# Maven target directory
+/target/
+
+# Gradle build directory
+/build/
+
+# Node.js files
+node_modules/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore build artifacts
+/build/
+/dist/
+/out/

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router'; // Import Router
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,9 +9,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { TaskService } from '../services/task.service'; // Adjust the import path as necessary
+import { TaskService } from '../services/task.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Task } from '../models/task.model'; // Adjust the import path as necessary
+import { Task } from '../models/task.model';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 @Component({
@@ -31,101 +31,111 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
   templateUrl: './add-task.component.html',
   styleUrls: ['./add-task.component.css']
 })
-export class AddTaskComponent implements OnInit { // Implement OnInit to handle initialization logic
+export class AddTaskComponent implements OnInit {
 
-  userId: string = ''; // The user ID will be retrieved from the route parameters
-  dueDate: string = '';
-  dueTime: string = '';
-  scheduledStartDate: string = '';
-  scheduledStartTime: string = '';
+  userId: string = ''; 
+  dueDate: Date | null = null; 
+  dueTime: string = ''; 
+  scheduledStartDate: Date | null = null; 
+  scheduledStartTime: string = ''; 
 
-  // Instantiate the Task object using the constructor
+  dueDateInvalid: boolean = false;
+  scheduledStartDateInvalid: boolean = false;
+  formInvalid: boolean = false;
+
   newTask: Task = new Task(
-    '', // title
-    '', // description
-    '', // dueDate
-    'Medium', // priority
-    false, // recurring
-    this.userId, // userId will be set later
-    'Pending', // status
-    '', // scheduledStart
-    '', // completion_date_time
-    '', // duration
-    '', // lastModifiedDate
-    ''  // start_date
+    '',               
+    '',               
+    'Medium',         
+    false,            
+    undefined,        
+    '',               
+    'Pending',        
+    undefined,        
+    undefined,        
+    undefined,        
+    undefined,        
+    undefined         
   );
 
   constructor(
-    private route: ActivatedRoute, // Inject ActivatedRoute to access route parameters
-    private router: Router, // Inject Router to navigate after task creation
+    private route: ActivatedRoute, 
+    private router: Router, 
     private taskService: TaskService,
     private dialog: MatDialog  
   ) {}
 
   ngOnInit(): void {
-    // Retrieve the userId from the parent route parameters
     this.route.parent?.paramMap.subscribe(params => {
       this.userId = params.get('userId') || '';
-      this.newTask.userId = this.userId; // Assign userId to the newTask object
+      this.newTask.userId = this.userId;
     });
+  }
+
+  validateDates(): void {
+    const now = new Date();
+  
+    if (this.scheduledStartDate && this.scheduledStartTime) {
+      const scheduledStart = new Date(this.scheduledStartDate);
+      const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
+      scheduledStart.setHours(startHours, startMinutes, 0);
+      this.scheduledStartDateInvalid = scheduledStart <= now ? true : false;  // Ensure only boolean values are assigned
+    } else {
+      this.scheduledStartDateInvalid = false;  // Default to false if no start date
+    }
+  
+    if (this.dueDate && this.dueTime) {
+      const due = new Date(this.dueDate);
+      const [dueHours, dueMinutes] = this.dueTime.split(':').map(Number);
+      due.setHours(dueHours, dueMinutes, 0);
+      this.dueDateInvalid = due <= now || (this.scheduledStartDate && due <= this.scheduledStartDate) ? true : false;  // Ensure only boolean values are assigned
+    } else {
+      this.dueDateInvalid = false;  // Default to false if no due date
+    }
+  
+    this.formInvalid = this.dueDateInvalid || this.scheduledStartDateInvalid;
   }
 
   createTask(): void {
-    // Ensure the userId is correctly set before creating the task
     this.newTask.userId = this.userId;
-
-    // Combine date and time into a full datetime string for dueDate
-    this.newTask.dueDate = this.combineDateAndTime(this.dueDate, this.dueTime);
-
-    // Combine date and time into a full datetime string for scheduledStart
-    this.newTask.scheduledStart = this.combineDateAndTime(this.scheduledStartDate, this.scheduledStartTime);
-
-    // Send the task to the backend
+  
+    if (this.dueDate && this.dueTime) {
+      const dueDateObj = new Date(this.dueDate);
+      const [hours, minutes] = this.dueTime.split(':').map(Number);
+      dueDateObj.setHours(hours, minutes, 0);
+      this.newTask.dueDate = dueDateObj.toISOString(); 
+    }
+  
+    if (this.scheduledStartDate && this.scheduledStartTime) {
+      const scheduledStartObj = new Date(this.scheduledStartDate);
+      const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
+      scheduledStartObj.setHours(startHours, startMinutes, 0);
+      this.newTask.scheduledStart = scheduledStartObj.toISOString();
+    }
+  
+    console.log('Task to be created:', this.newTask);
+  
     this.taskService.createTask(this.newTask).subscribe(
-      () => {
-        this.openSuccessDialog();
+      response => {
+        console.log('Task created successfully:', response);
+        this.dialog.open(SuccessDialogComponent, { 
+          width: '300px', 
+          data: { title: 'Success', message: 'Task added successfully!' } // Added title "Success"
+        });
+        this.router.navigate(['/home', this.userId]);
       },
       error => {
-        console.error('Failed to create task:', error);
+        console.error('Error adding task:', error);
       }
     );
   }
-
-  // Helper method to combine date and time into a full datetime string
-  combineDateAndTime(date: any, time: string): string {
-    let year, month, day;
-
-    // Check if the date is a string or Date object and extract the components
-    if (typeof date === 'string') {
-      [year, month, day] = date.split('-').map(Number);
-    } else if (date instanceof Date) {
-      year = date.getFullYear();
-      month = date.getMonth() + 1;
-      day = date.getDate();
-    } else {
-      throw new Error('Invalid date format');
-    }
-
-    // Ensure month and day are two digits
-    const formattedMonth = month < 10 ? `0${month}` : `${month}`;
-    const formattedDay = day < 10 ? `0${day}` : `${day}`;
-
-    // Create a Date object with the provided date and time in local time
-    const localDateTime = new Date(`${year}-${formattedMonth}-${formattedDay}T${time}:00`);
-
-    // Convert to UTC and return the ISO string
-    const utcDateTime = new Date(localDateTime.getTime() - (localDateTime.getTimezoneOffset() * 60000));
-
-    return utcDateTime.toISOString(); // Returning the UTC datetime string
-  }
-
+  
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
-      data: { message: 'Task created successfully!' }
+      data: { title: 'Success', message: 'Task created successfully!' } // Added title "Success"
     }).afterClosed().subscribe(() => {
-      // Navigate back to the main home page after the dialog is closed
       this.router.navigate([`/home/${this.userId}`]);
     });
-  }
+  }  
 }

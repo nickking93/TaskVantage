@@ -10,7 +10,7 @@ export class SuccessDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<SuccessDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { message: string }
+    @Inject(MAT_DIALOG_DATA) public data: { title: string, message: string } // Added title to the data
   ) {}
 
   onClose(): void {

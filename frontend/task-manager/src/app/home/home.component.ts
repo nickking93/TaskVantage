@@ -3,6 +3,9 @@ import { AuthService } from '../services/auth.service';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
+import { FirebaseMessagingService } from '../services/firebase-messaging.service'; 
+import { getMessaging, getToken } from 'firebase/messaging'; 
+import { environment } from '../../environments/environment'; 
 import { FormsModule } from '@angular/forms'; 
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common'; 
@@ -19,6 +22,7 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { getApp } from 'firebase/app';
 
 @Component({
   selector: 'app-home',
@@ -45,73 +49,173 @@ export class HomeComponent implements OnInit, OnDestroy {
   username: string = '';
   userId: string = '';
   isSidebarCollapsed: boolean = false;
+  fcmToken: string | null = null; 
 
-  // Variables to hold the summary data
   totalTasks: number = 0;
   totalSubtasks: number = 0;
   pastDeadlineTasks: number = 0;
   completedTasksThisMonth: number = 0;
   totalTasksThisMonth: number = 0;
 
-  // Variable to hold tasks due today
   tasksDueToday: Task[] = [];
 
-  // Variable to hold recent completed tasks for the Activity section
-  recentCompletedTasks: { title: string, timeAgo: string }[] = [];
+  recentCompletedTasks: { title: string, timeAgo: string, lastModifiedDate: string }[] = [];
 
-  // Variable to hold chart instance
   taskStatusChart: Chart | undefined;
 
-  // Subscription to track route changes
   private routeSub: Subscription = new Subscription();
+
+  // PWA Install Prompt fields
+  deferredPrompt: any;
+  canPromptPwaInstall: boolean = false;
 
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
+    private firebaseMessagingService: FirebaseMessagingService, 
     public router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog  // Ensure MatDialog is injected for dialog handling
+    private dialog: MatDialog // Inject MatDialog
   ) {
     Chart.register(...registerables);
+
+    // Attach the `beforeinstallprompt` event listener
+    window.addEventListener('beforeinstallprompt', (event: any) => {
+      event.preventDefault(); // Prevent the default prompt
+      this.deferredPrompt = event;
+      this.canPromptPwaInstall = true; // Enable the install button
+      console.log('beforeinstallprompt event fired');
+    });
+
+    // Handle app install success or failure
+    window.addEventListener('appinstalled', () => {
+      console.log('App installed');
+      this.canPromptPwaInstall = false; // Disable install button
+    });
   }
 
   ngOnInit(): void {
-    // Listen for changes in the route parameters
-    this.route.paramMap.subscribe(params => {
-      this.userId = params.get('userId') || '';
+    this.route.params.subscribe(params => {
+      this.userId = params['userId'];  
+  
+      if (typeof this.userId !== 'string' || !this.userId) {
+        this.logout(); 
+        return;
+      }
+  
       this.authService.getUserDetails().subscribe(user => {
         if (user.id.toString() === this.userId) {
           this.username = user.username;
-          this.reloadData(); // Load all data initially
+          this.reloadData(); 
+          this.initializeFirebase();
         } else {
           this.logout();
         }
       }, err => {
-        console.error('Error fetching user details:', err);
         this.router.navigate(['/login']);
       });
     });
   
-    // Listen for route change events
     this.routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         if (event.urlAfterRedirects === `/home/${this.userId}`) {
-          this.reloadData();  // Reload all data when navigating back to /home
+          this.reloadData();  
+          this.resetPwaPrompt(); // Reset prompt state on route change
         }
       });
   }
+
+  // Reset PWA prompt state
+  resetPwaPrompt(): void {
+    this.deferredPrompt = null;
+    this.canPromptPwaInstall = false;
+  }
+
+  // PWA install prompt function
+  promptPwaInstall(event: Event): void {
+    event.preventDefault(); // Prevent the default anchor behavior
+
+    if (this.deferredPrompt) {
+      this.deferredPrompt.prompt();
+      this.deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        this.deferredPrompt = null; // Reset the deferredPrompt after use
+        this.canPromptPwaInstall = false; // Disable the install button after prompt
+      });
+    } else {
+      console.log('Install prompt is not available');
+      this.dialog.open(SuccessDialogComponent, {
+        width: '300px',
+        data: { title: 'Unavailable', message: 'Install prompt is not available. Please check if TaskVantage is already installed.' }
+      });
+    }
+  }
+
+  initializeFirebase(): void {
+    const app = getApp(); 
+    const messaging = getMessaging(app);
   
-  // Helper method to reload all the data
+    // Check notification permission status
+    if (Notification.permission === 'denied') {
+      console.log('Notifications are blocked. Please enable them in your browser settings.');
+      return;
+    }
+  
+    // Request FCM token
+    getToken(messaging, { vapidKey: environment.firebaseConfig.vapidKey })
+      .then((currentToken) => {
+        if (currentToken) {
+          this.fcmToken = currentToken;
+          const authToken = this.authService.getAuthToken();
+          
+          // Check if fcmToken and authToken exist
+          if (this.fcmToken && authToken) {
+            this.firebaseMessagingService.sendTokenToServer(this.userId, this.fcmToken, authToken)
+              .subscribe(
+                response => console.log('FCM token sent successfully'),
+                error => console.error('Error sending FCM token to server:', error)
+              );
+          }
+        } else {
+          console.log('No registration token available. Request permission to generate one.');
+          this.requestNotificationPermission();
+        }
+      })
+      .catch((err) => {
+        if (err.code === 'messaging/permission-blocked') {
+          console.warn('Notifications are blocked. Please enable them in your browser settings.');
+          alert('Notifications are blocked. Please enable them in your browser settings.');
+        } else {
+          console.error('An error occurred while retrieving token: ', err);
+        }
+      });
+  }
+
+  requestNotificationPermission(): void {
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        this.initializeFirebase();
+      } else {
+        console.log('User denied the notification permission');
+      }
+    }).catch((error) => {
+      console.error('Failed to request notification permission', error);
+    });
+  }
+
   reloadData(): void {
     this.fetchTaskSummary();  
-    this.fetchTasksDueToday(); // Fetch tasks due today
-    this.fetchRecentCompletedTasks();  // Fetch recent completed tasks
-    this.loadWeeklyTaskStatusChart();  // Load the weekly task status chart
+    this.fetchTasksDueToday(); 
+    this.fetchRecentCompletedTasks();  
+    this.loadWeeklyTaskStatusChart();  
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe from routeSub to prevent memory leaks
     if (this.routeSub) {
       this.routeSub.unsubscribe();
     }
@@ -119,43 +223,18 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   fetchTasksDueToday(): void {
     this.taskService.fetchTasks(this.userId, (tasks) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset to start of the day
-
-        this.tasksDueToday = tasks.filter(task => {
-            const taskDueDate = task.dueDate ? new Date(task.dueDate) : null;
-            if (!taskDueDate || task.status === 'Complete') return false;
-            
-            // Reset task due date time to midnight for comparison
-            taskDueDate.setHours(0, 0, 0, 0);
-
-            return taskDueDate.getTime() === today.getTime();
-        });
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  
+      this.tasksDueToday = tasks.filter(task => {
+        if (!task.dueDate || task.status === 'Complete') return false;
+  
+        const dueDate = new Date(task.dueDate);
+        return dueDate >= startOfToday && dueDate <= endOfToday;
+      });
     });
-  }
-
-  isTasksRoute(): boolean {
-    return this.router.url === `/home/${this.userId}/tasks`;
-  }
-
-  navigateToAddTask(): void {
-    this.router.navigate([`/home/${this.userId}/add-task`]);
-  }
-
-  toggleSidebar(): void {
-    this.isSidebarCollapsed = !this.isSidebarCollapsed;
-  }
-
-  openSuccessDialog(): void {
-    this.dialog.open(SuccessDialogComponent, {
-      width: '300px',
-      data: { message: 'Task created successfully!' }
-    });
-  }
-
-  startTask(task: Task): void {
-    this.taskService.handleStartTask(task, () => this.fetchTasksDueToday());
-  }
+  }   
 
   fetchTaskSummary(): void {
     this.taskService.getTaskSummary(this.userId).subscribe(summary => {
@@ -164,8 +243,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.pastDeadlineTasks = summary.pastDeadlineTasks;
       this.completedTasksThisMonth = summary.completedTasksThisMonth;
       this.totalTasksThisMonth = summary.totalTasksThisMonth;
-    }, error => {
-      console.error('Failed to fetch task summary:', error);
     });
   }
 
@@ -173,30 +250,28 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.taskService.fetchTasks(this.userId, (tasks) => {
       const completedTasks = tasks
         .filter(task => task.status === 'Complete')
-        .sort((a, b) => {
-          const dateA = a.lastModifiedDate ? new Date(a.lastModifiedDate) : new Date();
-          const dateB = b.lastModifiedDate ? new Date(b.lastModifiedDate) : new Date();
-          return dateB.getTime() - dateA.getTime();
-        })
+        .sort((a, b) => new Date(b.lastModifiedDate!).getTime() - new Date(a.lastModifiedDate!).getTime())
         .slice(0, 10);
-  
+
       this.recentCompletedTasks = completedTasks.map(task => ({
         title: task.title,
-        timeAgo: this.calculateTimeAgo(task.lastModifiedDate ? new Date(task.lastModifiedDate) : new Date())
+        timeAgo: this.calculateTimeAgo(new Date(task.lastModifiedDate!)),
+        lastModifiedDate: this.convertUTCToLocal(task.lastModifiedDate!)
       }));
     });
   }
 
-  calculateTimeAgo(utcDate: Date): string {
-    console.log('Original UTC Date:', utcDate);
+  convertUTCToLocal(dateTimeString: string | undefined): string {
+    if (!dateTimeString) {
+      return ''; 
+    }
+    const date = new Date(dateTimeString + 'Z'); 
+    return date.toLocaleString(); 
+  }
 
-    // Convert the UTC date to local time
-    const localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
-
-    console.log('Converted Local Date:', localDate);
-
+  calculateTimeAgo(lastModifiedDate: Date): string {
     const now = new Date();
-    const diff = now.getTime() - localDate.getTime();
+    const diff = now.getTime() - lastModifiedDate.getTime();
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -211,52 +286,44 @@ export class HomeComponent implements OnInit, OnDestroy {
     } else {
         return days === 1 ? '1 day ago' : `${days} days ago`;
     }    
-}
+  }
 
   loadWeeklyTaskStatusChart(): void {
     this.taskService.fetchTasks(this.userId, (tasks) => {
       const startOfWeek = this.startOfWeek();
       const endOfWeek = this.endOfWeek();
-  
+
       const completed = tasks.filter(
-        (task) =>
-          task.status === 'Complete' &&
-          task.dueDate &&
-          new Date(task.dueDate).getTime() >= startOfWeek &&
-          new Date(task.dueDate).getTime() <= endOfWeek
-      ).length;
-  
+        (task) => task.status === 'Complete' && task.dueDate
+          && new Date(task.dueDate).getTime() >= startOfWeek
+          && new Date(task.dueDate).getTime() <= endOfWeek
+      );
+
       const inProgress = tasks.filter(
-        (task) =>
-          task.status === 'In Progress' &&
-          task.dueDate &&
-          new Date(task.dueDate).getTime() >= startOfWeek &&
-          new Date(task.dueDate).getTime() <= endOfWeek
-      ).length;
-  
+        (task) => task.status === 'In Progress' && task.dueDate
+          && new Date(task.dueDate).getTime() >= startOfWeek
+          && new Date(task.dueDate).getTime() <= endOfWeek
+      );
+
       const pending = tasks.filter(
-        (task) =>
-          task.status === 'Pending' &&
-          task.dueDate &&
-          new Date(task.dueDate).getTime() >= startOfWeek &&
-          new Date(task.dueDate).getTime() <= endOfWeek
-      ).length;
-  
-      const totalTasksForWeek = completed + inProgress + pending;
-  
-      // Destroy the existing chart if it exists
+        (task) => task.status === 'Pending' && task.dueDate
+          && new Date(task.dueDate).getTime() >= startOfWeek
+          && new Date(task.dueDate).getTime() <= endOfWeek
+      );
+
+      const totalTasksForWeek = completed.length + inProgress.length + pending.length;
+
       if (this.taskStatusChart) {
         this.taskStatusChart.destroy();
       }
-  
-      // Recreate the chart
+
       this.taskStatusChart = new Chart('taskStatusChart', {
         type: 'bar',
         data: {
           labels: ['Complete', 'In Progress', 'Pending'],
           datasets: [
             {
-              data: [completed, inProgress, pending],
+              data: [completed.length, inProgress.length, pending.length],
               backgroundColor: ['#4caf50', '#ffeb3b', '#f44336'],
             },
           ],
@@ -316,5 +383,13 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   markTaskAsCompleted(task: Task): void {
     this.taskService.handleMarkTaskAsCompleted(task, () => this.reloadData());
+  }
+
+  startTask(task: Task): void {
+    this.taskService.handleStartTask(task, () => this.fetchTasksDueToday());
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 }

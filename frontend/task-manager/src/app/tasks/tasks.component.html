@@ -51,7 +51,7 @@
         <p><strong>Status:</strong> {{ task.status }}</p>
 
         <!-- Conditionally display the start date if the task is in progress -->
-        <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.start_date | date: 'short' }}</p>
+        <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.startDate | date: 'short' }}</p>
   
         <!-- Hide all buttons if the 'complete' filter is selected -->
         <ng-container *ngIf="selectedFilter !== 'complete'">
@@ -65,12 +65,12 @@
           </button>
           <!-- "Start Task" button -->
           <button 
-              mat-raised-button 
-              class="task-action-button start-task-button" 
-              *ngIf="task.status !== 'In Progress'" 
-              (click)="startTask(task)">
-            Start Task
-          </button>
+          mat-raised-button 
+          class="task-action-button start-task-button" 
+          *ngIf="task.status !== 'In Progress' && task.id" 
+          (click)="startTask(task)">
+          Start Task
+      </button>          
           <!-- Edit and Delete buttons -->
           <button 
               mat-raised-button 

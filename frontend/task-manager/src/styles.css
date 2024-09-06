@@ -1,20 +1,19 @@
 /* Global styles */
 html, body {
-    height: 100%;
-  }
-  
-  body {
-    margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-  }
-  
-  /* Custom styles for Angular Material buttons */
-  button.mat-raised-button.custom-button {
-    background-color: #2365B2 !important;
-    color: white !important;
-  }
-  
-  button.mat-raised-button.custom-button:hover {
-    background-color: #1d4a7d !important;
-  }
-  
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* Custom styles for Angular Material buttons */
+button.mat-raised-button.custom-button {
+  background-color: #2365B2 !important;
+  color: white !important;
+}
+
+button.mat-raised-button.custom-button:hover {
+  background-color: #1d4a7d !important;
+}

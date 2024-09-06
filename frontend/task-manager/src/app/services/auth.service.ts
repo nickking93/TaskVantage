@@ -4,23 +4,22 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { environment } from '../../environments/environment';
-import { JwtHelperService } from '@auth0/angular-jwt'; // Import JwtHelperService
+import { JwtHelperService } from '@auth0/angular-jwt'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private apiUrl = environment.apiUrl;  // Use the environment variable for the API URL
-  private socialLoginUrl = `${this.apiUrl}/api/social-login`;  // Backend endpoint for social login verification
-  private loginUrl = `${this.apiUrl}/api/login`;  // Backend endpoint for manual login
-  private registerUrl = `${this.apiUrl}/api/register`;  // Backend endpoint for registration
+  private apiUrl = environment.apiUrl;
+  private socialLoginUrl = `${this.apiUrl}/api/social-login`;
+  private loginUrl = `${this.apiUrl}/api/login`;
+  private registerUrl = `${this.apiUrl}/api/register`;
   private userDetails: User | null = null;
-  private jwtHelper = new JwtHelperService();  // Instance of JwtHelperService
+  private jwtHelper = new JwtHelperService();
 
   constructor(private http: HttpClient) {}
 
-  // Social login verification method
   verifySocialLogin(authCode: string, provider: string): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = { authCode, provider };
@@ -33,8 +32,7 @@ export class AuthService {
     );
   }
 
-  // Manual login method
-  login(credentials: { username: string; password: string }): Observable<User> {
+  login(credentials: { username: string; password: string; fcmToken?: string }): Observable<User> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
       map((response: any) => {
@@ -58,7 +56,6 @@ export class AuthService {
     );
   }
 
-  // Registration method
   register(credentials: { username: string; password: string }): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(this.registerUrl, credentials, { headers }).pipe(
@@ -70,47 +67,49 @@ export class AuthService {
     );
   }
 
-  // Method to get the JWT token from localStorage
   private getToken(): string | null {
-    return localStorage.getItem('jwtToken');
+    return localStorage.getItem('jwtToken'); // Ensure consistency with key name
   }
 
-  // Check token retrieval
-  private debugToken(): void {
-    const token = this.getToken();
-    console.log('JWT Token from localStorage:', token);
+  public getAuthToken(): string | null {
+    return this.getToken();
   }
 
-  // Include the token in the headers for authenticated requests
   public getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
-    const headers = new HttpHeaders({
+    return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
-    return headers;
   }
 
-  // Handle error response
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('Error:', error.message);
     return throwError(() => new Error('Error: ' + error.message));
   }
 
-  // Check if the user is authenticated
   isAuthenticated(): boolean {
     const token = this.getToken();
-    
-    // Check if there is a token and if it is not expired
-    if (token && !this.jwtHelper.isTokenExpired(token)) {
-      return true;
+    console.log('isAuthenticated: Retrieved token:', token);
+  
+    if (token) {
+      const isExpired = this.jwtHelper.isTokenExpired(token);
+      console.log('isAuthenticated: Is token expired?', isExpired);
+  
+      if (!isExpired) {
+        console.log('isAuthenticated: Token is valid and not expired.');
+        return true;
+      } else {
+        console.log('isAuthenticated: Token is expired, logging out.');
+      }
     } else {
-      this.logout();  // Automatically logout the user if the token is expired or invalid
-      return false;
+      console.log('isAuthenticated: No token found, user is not authenticated.');
     }
-  }
+  
+    this.logout();  
+    return false;
+  }  
 
-  // Get user details
   getUserDetails(): Observable<User> {
     if (!this.userDetails) {
       const storedUser = localStorage.getItem('user');
@@ -127,13 +126,11 @@ export class AuthService {
     });
   }
 
-  // Set user details manually (if needed)
   setUserDetails(user: User): void {
     this.userDetails = user;
     localStorage.setItem('user', JSON.stringify(this.userDetails));
   }
 
-  // Logout method
   logout(): Observable<any> {
     this.userDetails = null;
     localStorage.removeItem('user');
@@ -141,7 +138,6 @@ export class AuthService {
     return new Observable((observer) => observer.next(true));
   }
 
-  // Method for authenticated requests (example: fetching tasks)
   getTasks(): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.get(`${this.apiUrl}/tasks`, { headers }).pipe(
