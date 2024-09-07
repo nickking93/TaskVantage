@@ -140,7 +140,11 @@ public class Task {
     }
 
     public void setDueDate(ZonedDateTime dueDate) {
-        this.dueDate = dueDate.withZoneSameInstant(ZoneOffset.UTC);
+        if (dueDate != null) {
+            this.dueDate = dueDate.withZoneSameInstant(ZoneOffset.UTC);
+        } else {
+            this.dueDate = null;  // Handle null case explicitly
+        }
     }
 
     public ZonedDateTime getCreationDate() {
@@ -164,7 +168,11 @@ public class Task {
     }
 
     public void setStartDate(ZonedDateTime startDate) {
-        this.startDate = startDate.withZoneSameInstant(ZoneOffset.UTC);
+        if (startDate != null) {
+            this.startDate = startDate.withZoneSameInstant(ZoneOffset.UTC);
+        } else {
+            this.startDate = null;  // Handle null case explicitly
+        }
     }
 
     public ZonedDateTime getScheduledStart() {
@@ -172,7 +180,11 @@ public class Task {
     }
 
     public void setScheduledStart(ZonedDateTime scheduledStart) {
-        this.scheduledStart = scheduledStart.withZoneSameInstant(ZoneOffset.UTC);
+        if (scheduledStart != null) {
+            this.scheduledStart = scheduledStart.withZoneSameInstant(ZoneOffset.UTC);
+        } else {
+            this.scheduledStart = null;  // Handle null case explicitly
+        }
     }
 
     public ZonedDateTime getCompletionDateTime() {
@@ -183,7 +195,7 @@ public class Task {
         if (completionDateTime != null) {
             this.completionDateTime = completionDateTime.withZoneSameInstant(ZoneOffset.UTC);
         } else {
-            this.completionDateTime = null; // Explicitly set to null or handle default value if needed
+            this.completionDateTime = null;  // Handle null case explicitly
         }
     }
 

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';  // Import Router
 import { FormsModule } from '@angular/forms';
 import { TaskService } from '../services/task.service'; 
 import { Task } from '../models/task.model'; 
@@ -33,7 +33,7 @@ export class TasksComponent implements OnInit {
   tasksPerPage: number = 10; 
   totalPages: number = 0;
 
-  constructor(private taskService: TaskService, private dialog: MatDialog) {}
+  constructor(private taskService: TaskService, private dialog: MatDialog, private router: Router) {}  // Inject Router
 
   ngOnInit(): void {
     console.log('TasksComponent initialized with userId:', this.userId);
@@ -51,13 +51,23 @@ export class TasksComponent implements OnInit {
     this.taskService.handleStartTask(task, () => this.loadTasks());
   }
 
+  // Now renamed to updateTask (previously editTask)
+  updateTask(task: Task): void {
+    // Navigate to the update-task route with the task ID
+    this.router.navigate(['/home', this.userId, 'update-task', task.id]);
+  }
+
+  // Now renamed to editTask (previously updateTask)
   editTask(task: Task): void {
     const updatedTask: Partial<Task> = {
       title: task.title,
       description: task.description,
+      priority: task.priority,
+      status: task.status,
+      dueDate: task.dueDate
     };
 
-    this.taskService.editTask(task).subscribe(
+    this.taskService.updateTask(task).subscribe(
       (updatedTask: Task) => {
         const index = this.tasks.findIndex(t => t.id === task.id);
         if (index !== -1) {

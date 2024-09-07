@@ -1,0 +1,86 @@
+<div class="add-task-container">
+    <h2>Update Task</h2>
+    <form [formGroup]="taskForm" (ngSubmit)="updateTask()" class="task-form">
+      <div fxLayout="column" fxLayoutGap="20px">
+  
+        <!-- Title Field -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Title</mat-label>
+          <input matInput formControlName="title" required>
+          <mat-error *ngIf="taskForm.get('title')?.hasError('required')">
+            Title is required
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Description Field -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description"></textarea>
+        </mat-form-field>
+  
+        <!-- Due Date -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Due Date</mat-label>
+          <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate" required>
+          <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #dueDatePicker></mat-datepicker>
+          <mat-error *ngIf="taskForm.get('dueDate')?.hasError('required')">
+            Due Date is required
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Due Time -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Due Time</mat-label>
+          <input matInput formControlName="dueTime" type="time" required>
+          <mat-error *ngIf="taskForm.get('dueTime')?.hasError('required')">
+            Due Time is required
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Scheduled Start Date -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Scheduled Start Date</mat-label>
+          <input matInput [matDatepicker]="scheduledStartDatePicker" formControlName="scheduledStart" required>
+          <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
+          <mat-error *ngIf="taskForm.get('scheduledStart')?.hasError('required')">
+            Scheduled Start Date is required
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Scheduled Start Time -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Scheduled Start Time</mat-label>
+          <input matInput formControlName="scheduledStartTime" type="time" required>
+          <mat-error *ngIf="taskForm.get('scheduledStartTime')?.hasError('required')">
+            Scheduled Start Time is required
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Priority Field -->
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Priority</mat-label>
+          <mat-select formControlName="priority" required>
+            <mat-option value="HIGH">High</mat-option>
+            <mat-option value="MEDIUM">Medium</mat-option>
+            <mat-option value="LOW">Low</mat-option>
+          </mat-select>
+          <mat-error *ngIf="taskForm.get('priority')?.hasError('required')">
+            Priority is required
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Recurring Checkbox -->
+        <mat-checkbox formControlName="recurring">Recurring</mat-checkbox>
+  
+        <!-- Notify Before Start Checkbox -->
+        <mat-checkbox formControlName="notifyBeforeStart">Push Notifications</mat-checkbox>
+  
+        <!-- Submit Button -->
+        <div class="button-container">
+          <button mat-raised-button color="primary" type="submit" [disabled]="taskForm.invalid">Update Task</button>
+        </div>
+      </div>
+    </form>
+  </div>  

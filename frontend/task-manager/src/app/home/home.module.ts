@@ -9,6 +9,7 @@ import { TasksComponent } from '../tasks/tasks.component';
 import { SettingsComponent } from '../settings/settings.component';
 import { HelpPageComponent } from '../help-page/help-page.component';
 import { AddTaskComponent } from '../add-task/add-task.component';
+import { UpdateTaskComponent } from '../update-task/update-task.component'; // Import the new UpdateTaskComponent
 
 @NgModule({
   imports: [
@@ -34,6 +35,10 @@ import { AddTaskComponent } from '../add-task/add-task.component';
           {
             path: 'add-task',
             component: AddTaskComponent,
+          },
+          {
+            path: 'update-task/:taskId',  // New route for updating tasks
+            component: UpdateTaskComponent,
           },
         ],
       },
