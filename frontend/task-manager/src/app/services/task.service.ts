@@ -12,7 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
   providedIn: 'root'
 })
 export class TaskService {
-  private tasksUrl = `${environment.apiUrl}/api/tasks`;  
+  private tasksUrl = `${environment.apiUrl}/api/tasks`;  // API URL for tasks
 
   constructor(
     private http: HttpClient,
@@ -29,6 +29,19 @@ export class TaskService {
       (error) => {
         console.error('Failed to fetch tasks:', error);
       }
+    );
+  }
+
+  // Method to fetch a single task by ID
+  getTaskById(taskId: string): Observable<Task> {
+    const headers = this.authService.getAuthHeaders();
+    const url = `${this.tasksUrl}/${taskId}`;
+    return this.http.get<Task>(url, { headers }).pipe(
+      map(response => {
+        console.log('Task fetched successfully:', response);
+        return response;
+      }),
+      catchError(this.handleError)
     );
   }
 
@@ -74,6 +87,7 @@ export class TaskService {
     return throwError(() => new Error('TaskService Error: ' + error.message));
   }
 
+  // Method to start a task by updating its status and start date
   startTask(task: Task): void {
     if (!task || !task.id) {
       console.error('Task or Task ID is undefined. Cannot start task.');
@@ -103,14 +117,15 @@ export class TaskService {
         }
       }
     );
-  }   
+  }
 
+  // Method to handle starting a task and reloading the data after success
   handleStartTask(task: Task, callback: () => void): void {
     // Update task status to 'In Progress' and set the actual start date
     task.status = 'In Progress';
     task.startDate = new Date().toISOString();
   
-    this.editTask(task).subscribe(
+    this.updateTask(task).subscribe(
       (response: Task | null) => {
         if (response) {
           console.log('Task started successfully:', response);
@@ -123,9 +138,10 @@ export class TaskService {
         console.error('Error starting task:', error);
       }
     );
-  }   
+  }
 
-  editTask(task: Task): Observable<Task> {
+  // Method to update an existing task
+  updateTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${task.id}`;
   
@@ -137,7 +153,7 @@ export class TaskService {
       }),
       catchError(this.handleError)
     );
-  }  
+  }
 
   // Method to mark a task as completed
   markTaskAsCompleted(taskId: string): Observable<void> {

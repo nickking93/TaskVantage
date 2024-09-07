@@ -71,16 +71,28 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getTaskById(@PathVariable Long id) {
+    public ResponseEntity<?> getTaskById(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
+
+        // Logging the received ID for debugging
+        System.out.println("Fetching task with ID: " + id);
+
+        // Fetch the task by ID
         Optional<Task> taskOptional = taskService.getTaskById(id);
 
+        // Check if the task exists
         if (taskOptional.isEmpty()) {
-            response.put("message", "Task not found");
-            return ResponseEntity.notFound().build();
+            response.put("message", "Task not found with ID: " + id);
+            System.out.println("Task not found with ID: " + id);  // Log if task is not found
+            return ResponseEntity.status(404).body(response);  // Return 404 if task is not found
         }
 
-        response.put("task", taskOptional.get());
+        // Log the task details for debugging
+        Task task = taskOptional.get();
+        System.out.println("Fetched Task: " + task);
+
+        // Add task to the response
+        response.put("task", task);
         return ResponseEntity.ok(response);
     }
 

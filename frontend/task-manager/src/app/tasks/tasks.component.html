@@ -70,14 +70,14 @@
           *ngIf="task.status !== 'In Progress' && task.id" 
           (click)="startTask(task)">
           Start Task
-      </button>          
-          <!-- Edit and Delete buttons -->
-          <button 
+          </button>          
+              <!-- Edit and Delete buttons -->
+              <button 
               mat-raised-button 
               class="task-action-button edit-button" 
-              (click)="editTask(task)">
+              (click)="updateTask(task)">
             Edit
-          </button>
+          </button>      
           <button 
               mat-raised-button 
               class="task-action-button delete-button" 
