@@ -4,8 +4,8 @@ import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
+import { LoadingDialogComponent } from '../loading-dialog.component'; // Import the LoadingDialogComponent
 
-// Strong Password Validator
 // Strong Password Validator
 export function strongPasswordValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -45,9 +45,6 @@ export function strongPasswordValidator(): ValidatorFn {
   };
 }
 
-
-
-
 // Password Match Validator
 export function passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
   const password = control.get('password');
@@ -85,17 +82,27 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(): void {
     if (this.registerForm.valid && !this.passwordMatchError) {
+      const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
+        disableClose: true,
+        data: {
+          message: 'Creating your account...' // Dynamic message for creating account
+        }
+      });
+
       const email = this.registerForm.get('email')?.value;
       const password = this.registerForm.get('password')?.value;
       this.authService.register({ username: email, password }).subscribe(
         response => {
+          loadingDialogRef.close();
           if (response) {
+            // Inform the user to check their email for confirmation
             this.openSuccessDialog();
           } else {
             console.log('Registration failed');
           }
         },
         error => {
+          loadingDialogRef.close();
           console.error('Registration error', error);
         }
       );
@@ -111,11 +118,11 @@ export class RegisterComponent implements OnInit {
   openSuccessDialog(): void {
     const dialogRef = this.dialog.open(SuccessDialogComponent, {
       width: '300px',
-      data: { title: 'Success', message: 'Account created successfully!' }
+      data: { title: 'Success', message: 'Account created! Before you can log in, please check your email and click on the verification link.' }
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/login']); // Redirect to login page after dialog closes
     });
   }
 

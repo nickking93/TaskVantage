@@ -29,7 +29,8 @@ public class JwtFilter extends OncePerRequestFilter {
         System.out.println("JwtFilter is being executed for request: " + request.getRequestURI());
 
         String requestPath = request.getRequestURI();
-        if (requestPath.equals("/api/login") || requestPath.equals("/api/register")) {
+        // Skip the JWT filter for login, register, and verify-email
+        if (requestPath.equals("/api/login") || requestPath.equals("/api/register") || requestPath.equals("/api/verify-email")) {
             chain.doFilter(request, response);
             return;
         }

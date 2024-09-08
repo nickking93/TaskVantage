@@ -22,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class DataLoader {
@@ -35,6 +36,8 @@ public class DataLoader {
                 user = new User();
                 user.setUsername("pat@example.com");
                 user.setPassword(passwordEncoder.encode("password"));
+                user.setEmailVerified(true);  // Set emailVerified to true for test user
+                user.setVerificationToken(UUID.randomUUID().toString());  // Optional: Generate a token
                 userRepository.save(user);
                 System.out.println("Test user created: username=pat@example.com, password=password");
             } else {
