@@ -60,12 +60,17 @@ export class AuthService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post(this.registerUrl, credentials, { headers }).pipe(
       map((response: any) => {
-        console.log('Registration successful', response);
-        return response;
+        if (response && response.message && response.message.includes('Registration successful')) {
+          console.log('Registration successful, email verification sent', response);
+          return response; // Return the response directly as the success case
+        } else {
+          console.error('Registration failed', response);
+          throw new Error(response.message || 'Registration failed.');
+        }
       }),
       catchError(this.handleError)
     );
-  }
+  }   
 
   private getToken(): string | null {
     return localStorage.getItem('jwtToken'); // Ensure consistency with key name

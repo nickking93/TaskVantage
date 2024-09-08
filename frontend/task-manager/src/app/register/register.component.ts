@@ -6,7 +6,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 // Strong Password Validator
-// Strong Password Validator
 export function strongPasswordValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const password = control.value;
@@ -44,9 +43,6 @@ export function strongPasswordValidator(): ValidatorFn {
     return Object.keys(errors).length > 0 ? errors : null;
   };
 }
-
-
-
 
 // Password Match Validator
 export function passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
@@ -90,6 +86,7 @@ export class RegisterComponent implements OnInit {
       this.authService.register({ username: email, password }).subscribe(
         response => {
           if (response) {
+            // Inform the user to check their email for confirmation
             this.openSuccessDialog();
           } else {
             console.log('Registration failed');
@@ -111,11 +108,11 @@ export class RegisterComponent implements OnInit {
   openSuccessDialog(): void {
     const dialogRef = this.dialog.open(SuccessDialogComponent, {
       width: '300px',
-      data: { title: 'Success', message: 'Account created successfully!' }
+      data: { title: 'Success', message: 'Account created! Before you can log in, please check your email and click on the verification link.' }
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/login']); // Redirect to login page after dialog closes
     });
   }
 

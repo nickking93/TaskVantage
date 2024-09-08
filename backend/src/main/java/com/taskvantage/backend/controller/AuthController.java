@@ -78,12 +78,12 @@ public class AuthController {
         String result = customUserDetailsService.registerUser(authRequest);
 
         Map<String, Object> response = new HashMap<>();
-        if (result.equals("User registered successfully.")) {
+        if (result.equals("Registration successful. Please check your email to verify your account.")) {
             response.put("message", result);
             return ResponseEntity.ok(response);
         } else {
             response.put("message", result);
-            return ResponseEntity.status(400).body(response);
+            return ResponseEntity.status(400).body(response);  // Return 400 if registration fails due to email issues
         }
     }
 
