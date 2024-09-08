@@ -36,23 +36,24 @@ export class AuthService {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
       map((response: any) => {
+        // If the login was successful, store user details and token
         const userId = response.userId;
         const username = response.username;
         const token = response.token;
-
+  
         this.userDetails = {
           id: userId,
           username: username,
           password: '',
           token: token
         };
-
+  
         localStorage.setItem('user', JSON.stringify(this.userDetails));
         localStorage.setItem('jwtToken', token);
-
+  
         return this.userDetails;
       }),
-      catchError(this.handleError)
+      catchError(this.handleError) // Pass the error to the centralized handler
     );
   }
 
@@ -90,7 +91,15 @@ export class AuthService {
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('Error:', error.message);
-    return throwError(() => new Error('Error: ' + error.message));
+  
+    // Custom error handling for specific cases
+    if (error.status === 401 && error.error.message === "Your email is not verified. Please verify your email before logging in.") {
+      return throwError(() => new Error('Email not verified. Please check your inbox and verify your email.'));
+    } else if (error.status === 401) {
+      return throwError(() => new Error('Login failed. Please check your credentials and try again.'));
+    }
+  
+    return throwError(() => new Error('An unexpected error occurred. Please try again.'));
   }
 
   isAuthenticated(): boolean {
@@ -149,4 +158,15 @@ export class AuthService {
       catchError(this.handleError)
     );
   }
+
+  verifyEmail(token: string): Observable<any> {
+    const url = `${this.apiUrl}/api/verify-email?token=${token}`;
+    return this.http.get(url, { responseType: 'text' }).pipe( // responseType 'text' to capture string messages
+      map(response => {
+        console.log('Email verification response:', response);
+        return response;  // Return the backend message
+      }),
+      catchError(this.handleError)
+    );
+  }   
 }

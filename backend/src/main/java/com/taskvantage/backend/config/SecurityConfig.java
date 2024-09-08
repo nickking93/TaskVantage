@@ -45,7 +45,9 @@ public class SecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/login", "/api/register").permitAll()
+                        // Allow access to login, registration, and email verification without authentication
+                        .requestMatchers("/api/login", "/api/register", "/api/verify-email").permitAll()
+                        // Protect other API routes
                         .requestMatchers("/api/tasks/**").authenticated()
                         .anyRequest().authenticated()
                 )

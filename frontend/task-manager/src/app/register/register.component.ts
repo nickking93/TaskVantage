@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
+import { LoadingDialogComponent } from '../loading-dialog.component'; // Import the LoadingDialogComponent
 
 // Strong Password Validator
 export function strongPasswordValidator(): ValidatorFn {
@@ -81,10 +82,18 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(): void {
     if (this.registerForm.valid && !this.passwordMatchError) {
+      const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
+        disableClose: true,
+        data: {
+          message: 'Creating your account...' // Dynamic message for creating account
+        }
+      });
+
       const email = this.registerForm.get('email')?.value;
       const password = this.registerForm.get('password')?.value;
       this.authService.register({ username: email, password }).subscribe(
         response => {
+          loadingDialogRef.close();
           if (response) {
             // Inform the user to check their email for confirmation
             this.openSuccessDialog();
@@ -93,6 +102,7 @@ export class RegisterComponent implements OnInit {
           }
         },
         error => {
+          loadingDialogRef.close();
           console.error('Registration error', error);
         }
       );

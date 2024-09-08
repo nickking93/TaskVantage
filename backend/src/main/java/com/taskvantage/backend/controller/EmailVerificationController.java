@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+
 import java.util.Optional;
 
 @RestController
@@ -24,8 +26,10 @@ public class EmailVerificationController {
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
+
+            // Check if email is already verified
             if (user.isEmailVerified()) {
-                return ResponseEntity.badRequest().body("Email already verified.");
+                return new ResponseEntity<>("Email already verified.", HttpStatus.CONFLICT);
             }
 
             // Verify the user's email and clear the token
@@ -33,9 +37,10 @@ public class EmailVerificationController {
             user.setVerificationToken(null);
             userRepository.save(user);
 
-            return ResponseEntity.ok("Email verified successfully.");
+            return new ResponseEntity<>("Email verified successfully.", HttpStatus.OK);
         } else {
-            return ResponseEntity.badRequest().body("Invalid or expired verification token.");
+            // Handle invalid or expired token case
+            return new ResponseEntity<>("Invalid or expired verification token.", HttpStatus.BAD_REQUEST);
         }
     }
 }

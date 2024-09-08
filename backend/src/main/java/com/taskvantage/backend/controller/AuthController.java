@@ -40,14 +40,24 @@ public class AuthController {
         System.out.println("Login request received for user: " + authRequest.getUsername());
 
         try {
+            // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
 
+            // Fetch user details and verify email
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(authRequest.getUsername());
             User user = customUserDetailsService.findUserByUsername(authRequest.getUsername());
 
-            String token = jwtUtil.generateToken(userDetails, user.getId()); // Pass userId to generateToken
+            // Check if the user has verified their email
+            if (!user.isEmailVerified()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Your email is not verified. Please verify your email before logging in.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);  // 401 for unverified email
+            }
+
+            // Generate JWT token if email is verified
+            String token = jwtUtil.generateToken(userDetails, user.getId());
             System.out.println("Generated Token: " + token);
 
             if (authRequest.getFcmToken() != null && !authRequest.getFcmToken().isEmpty()) {
@@ -55,6 +65,7 @@ public class AuthController {
                 System.out.println("Updated FCM Token for user: " + user.getUsername());
             }
 
+            // Prepare successful login response
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login successful");
             response.put("username", user.getUsername());
@@ -64,12 +75,13 @@ public class AuthController {
             System.out.println("Login successful for user: " + user.getUsername());
 
             return ResponseEntity.ok(response);
+
         } catch (AuthenticationException e) {
             System.out.println("Login failed for user: " + authRequest.getUsername() + ". Error: " + e.getMessage());
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", "Login failed: " + e.getMessage());
-            return ResponseEntity.status(401).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 
@@ -83,7 +95,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } else {
             response.put("message", result);
-            return ResponseEntity.status(400).body(response);  // Return 400 if registration fails due to email issues
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);  // Return 400 if registration fails due to email issues
         }
     }
 
@@ -94,6 +106,37 @@ public class AuthController {
             return ResponseEntity.ok("FCM Token cleared successfully.");
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found: " + username);
+        }
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
+        try {
+            // Find the user by the verification token
+            User user = customUserDetailsService.findUserByVerificationToken(token);
+
+            if (user == null) {
+                // Return error response if the token is invalid
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Invalid verification token.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+
+            // Set email_verified to true and clear the verification token
+            user.setEmailVerified(true);
+            user.setVerificationToken(null); // Remove the token after successful verification
+            customUserDetailsService.saveUser(user); // Save the updated user
+
+            // Return a success response
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Email successfully verified.");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            // Handle any unexpected errors
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "An error occurred while verifying the email.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 }
