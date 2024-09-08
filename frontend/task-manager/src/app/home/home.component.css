@@ -166,11 +166,11 @@
 
 /* Task Properties Styles */
 .status-pending {
-  color: #ffeb3b;
+  color: #ff0000;
 }
 
 .status-in-progress {
-  color: green;
+  color: #ffeb3b;
 }
 
 /* Activity Section */
