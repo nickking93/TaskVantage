@@ -17,17 +17,29 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true) // Optional field
-    private String token; // FCM Token for Push Notifications
+    // Field for storing FCM token for push notifications
+    @Column(nullable = true)
+    private String token;
 
-    @Column(nullable = false) // New field for email verification status
+    // Field to track if the user's email is verified
+    @Column(nullable = false)
     private boolean emailVerified = false;
 
-    @Column(nullable = true, unique = true) // New field for email verification token
+    // Token used for email verification
+    @Column(nullable = true, unique = true)
     private String verificationToken;
 
-    @Column(nullable = true) // Optional field to track the token expiry time
+    // Expiry time for the verification token
+    @Column(nullable = true)
     private LocalDateTime tokenExpiry;
+
+    // Field for storing password reset token
+    @Column(nullable = true, unique = true)
+    private String passwordResetToken;
+
+    // Expiry time for the password reset token
+    @Column(nullable = true)
+    private LocalDateTime passwordResetTokenExpiry;
 
     // Getter and Setter for id
     public Long getId() {
@@ -56,7 +68,7 @@ public class User {
         this.password = password;
     }
 
-    // Getter and Setter for token (FCM)
+    // Getter and Setter for FCM token
     public String getToken() {
         return token;
     }
@@ -90,5 +102,23 @@ public class User {
 
     public void setTokenExpiry(LocalDateTime tokenExpiry) {
         this.tokenExpiry = tokenExpiry;
+    }
+
+    // Getter and Setter for passwordResetToken
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    // Getter and Setter for passwordResetTokenExpiry
+    public LocalDateTime getPasswordResetTokenExpiry() {
+        return passwordResetTokenExpiry;
+    }
+
+    public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
+        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
     }
 }

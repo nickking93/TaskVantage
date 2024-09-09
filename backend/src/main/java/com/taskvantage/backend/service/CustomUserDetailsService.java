@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,11 +25,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${TASKVANTAGE_FRONTEND}")  // Inject frontend URL from application properties
+    @Value("${TASKVANTAGE_FRONTEND}")
     private String frontendUrl;
 
     @Autowired
-    private EmailService emailService; // Email service to send confirmation emails
+    private EmailService emailService;
 
     public CustomUserDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -41,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             logger.error("User not found with username: {}", username);
             throw new UsernameNotFoundException("User not found");
         }
-        return new CustomUserDetails(user); // Return the custom UserDetails
+        return new CustomUserDetails(user);
     }
 
     public User findUserByUsername(String username) throws UsernameNotFoundException {
@@ -53,19 +55,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         return user;
     }
 
-    // New method to find a user by their verification token
     public User findUserByVerificationToken(String token) {
         return userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid verification token"));
     }
 
-    // New method to verify the user's email
     public boolean verifyUserEmail(String token) {
         User user = findUserByVerificationToken(token);
         if (user != null && !user.isEmailVerified()) {
             user.setEmailVerified(true);
-            user.setVerificationToken(null); // Clear the token after verification
-            saveUser(user);  // Use the saveUser method
+            user.setVerificationToken(null);
+            saveUser(user);
             logger.info("Email verified for user: {}", user.getUsername());
             return true;
         } else {
@@ -74,7 +74,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
     }
 
-    // New saveUser method to save a user entity
     public User saveUser(User user) {
         return userRepository.save(user);
     }
@@ -85,81 +84,124 @@ public class CustomUserDetailsService implements UserDetailsService {
             return "Username is already taken.";
         }
 
-        // Create new user and encode the password
         User user = new User();
         user.setUsername(authRequest.getUsername());
         user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
 
-        // Generate a verification token
         String verificationToken = UUID.randomUUID().toString();
         user.setVerificationToken(verificationToken);
-        user.setEmailVerified(false); // Set emailVerified to false initially
+        user.setEmailVerified(false);
 
-        // Set the frontend URL where the user will verify their email
         String verificationLink = frontendUrl + "/verify-email?token=" + verificationToken;
 
-        // Customize the email content
         String emailContent = "<html><body>"
                 + "<h2>Email Verification</h2>"
                 + "<p>Please verify your email by clicking the link below:</p>"
                 + "<p><a href=\"" + verificationLink + "\" style=\"color: #1a73e8; text-decoration: none;\">Verify your email</a></p>"
-                + "<br>"
-                + "<p>If the above link doesn't work, you can copy and paste this URL into your browser:</p>"
-                + "<p><a href=\"" + verificationLink + "\" style=\"color: #1a73e8; text-decoration: none;\">" + verificationLink + "</a></p>"
                 + "</body></html>";
 
         try {
-            // Attempt to send the verification email with HTML format
-            emailService.sendEmail(user.getUsername(), "Email Verification", emailContent, true);  // true for HTML
-
-            // Save the user only if the email was successfully sent
-            saveUser(user);  // Use the saveUser method
-
+            emailService.sendEmail(user.getUsername(), "Email Verification", emailContent, true);
+            saveUser(user);
             logger.info("User registered successfully with username: {}", authRequest.getUsername());
             return "Registration successful. Please check your email to verify your account.";
-
         } catch (Exception e) {
-            // Handle email sending failure
             logger.error("Failed to send verification email to user: {}", authRequest.getUsername(), e);
             return "Failed to send verification email. Please try again.";
         }
     }
 
     public void updateUserToken(String username, String token) {
-        logger.info("Received request to update FCM token for user: {}", username);
-
         if (token == null || token.isEmpty()) {
-            logger.warn("Received an invalid FCM token for user: {}", username);
-            return; // Avoid saving an empty or null token
+            logger.warn("Invalid FCM token for user: {}", username);
+            return;
         }
 
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            logger.error("User not found with username: {}", username);
-            throw new UsernameNotFoundException("User not found with username: " + username);
-        }
-
-        logger.info("Updating FCM token for user: {} with token: {}", username, token);
-
-        user.setToken(token); // Set the new FCM token
-        userRepository.save(user); // Save the updated user entity
-
+        User user = findUserByUsername(username);
+        user.setToken(token);
+        saveUser(user);
         logger.info("FCM Token updated successfully for user: {}", username);
     }
 
     public void clearUserToken(String username) {
-        logger.info("Received request to clear FCM token for user: {}", username);
+        User user = findUserByUsername(username);
+        user.setToken(null);
+        saveUser(user);
+        logger.info("FCM Token cleared successfully for user: {}", username);
+    }
 
-        User user = userRepository.findByUsername(username);
+    /**
+     * Sends a password reset link to the user's email.
+     *
+     * @param email The user's email address.
+     * @return True if the reset link was sent successfully, false otherwise.
+     */
+    public boolean sendPasswordResetLink(String email) {
+        User user = userRepository.findByUsername(email);
         if (user == null) {
-            logger.error("User not found with username: {}", username);
-            throw new UsernameNotFoundException("User not found with username: " + username);
+            logger.warn("User not found with email: {}", email);
+            return false;
         }
 
-        logger.info("Clearing FCM token for user: {}", username);
-        user.setToken(null); // Set the token to null
-        userRepository.save(user); // Save the updated user entity
+        String resetToken = UUID.randomUUID().toString();
+        user.setPasswordResetToken(resetToken);
+        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(1));  // Token valid for 1 hour
+        saveUser(user);
 
-        logger.info("FCM Token cleared successfully for user: {}", username);
+        String resetLink = frontendUrl + "/reset-password?token=" + resetToken;
+
+        String emailContent = "<html><body>"
+                + "<h2>Password Reset</h2>"
+                + "<p>Please reset your password by clicking the link below:</p>"
+                + "<p><a href=\"" + resetLink + "\" style=\"color: #1a73e8; text-decoration: none;\">Reset your password</a></p>"
+                + "</body></html>";
+
+        try {
+            emailService.sendEmail(user.getUsername(), "Password Reset", emailContent, true);
+            logger.info("Password reset email sent to user: {}", user.getUsername());
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to send password reset email to user: {}", user.getUsername(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Validates the password reset token and checks if it has expired.
+     *
+     * @param token The reset token.
+     * @return The associated user if the token is valid and not expired.
+     * @throws UsernameNotFoundException If the token is invalid or expired.
+     */
+    public User validatePasswordResetToken(String token) {
+        Optional<User> optionalUser = userRepository.findByPasswordResetToken(token);
+        User user = optionalUser.orElseThrow(() -> new UsernameNotFoundException("Invalid password reset token"));
+
+        if (user.getPasswordResetTokenExpiry() == null || user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            logger.warn("Password reset token expired for user: {}", user.getUsername());
+            throw new UsernameNotFoundException("Password reset token expired");
+        }
+
+        return user;
+    }
+
+    /**
+     * Updates the user's password after verifying the reset token.
+     *
+     * @param token The password reset token.
+     * @param newPassword The new password to be set.
+     * @return True if the password was updated successfully, false otherwise.
+     */
+    public boolean updatePassword(String token, String newPassword) {
+        User user = validatePasswordResetToken(token);
+
+        // Encrypt and set the new password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);  // Invalidate the token after successful reset
+        user.setPasswordResetTokenExpiry(null);
+        saveUser(user);
+
+        logger.info("Password updated successfully for user: {}", user.getUsername());
+        return true;
     }
 }

@@ -386,8 +386,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   startTask(task: Task): void {
-    this.taskService.handleStartTask(task, () => this.fetchTasksDueToday());
-  }
+    this.taskService.handleStartTask(task, () => this.reloadData());
+  }  
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
