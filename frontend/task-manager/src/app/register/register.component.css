@@ -13,8 +13,8 @@
   align-items: center;
 }
 
-.logo-h1{
-  font-size: 250%;
+.logo-h1 {
+  font-size: 2.5rem; /* Use rem for better scalability */
   color: #2365B2;
   font-weight: bold;
 }
@@ -26,6 +26,7 @@
 
 mat-form-field {
   width: 75%;
+  margin-bottom: 16px;
   position: relative;
 }
 
@@ -34,14 +35,10 @@ mat-form-field {
   margin-bottom: 8px;
 }
 
-.mat-form-field {
-  margin-bottom: 16px; 
-}
-
 .error-container {
   display: flex;
   flex-direction: column;
-  margin-bottom: 8px; 
+  margin-bottom: 8px;
 }
 
 img {
@@ -49,20 +46,10 @@ img {
   height: auto;
 }
 
-.appleid-signin {
-  width: 360px;
-  height: 40px;
-  padding-top: 10px;
-}
-
 .logo-img {
   padding-top: 15px;
   padding-bottom: 100px;
   width: 120px;
-}
-
-.fb-login-button {
-  padding-top: 15px;
 }
 
 .clipboard-img {
@@ -74,7 +61,8 @@ img {
 }
 
 .google-signin-button,
-.facebook-signin-button {
+.facebook-signin-button,
+.appleid-signin {
   width: 360px;
   height: 40px;
   background-color: white;
@@ -84,8 +72,8 @@ img {
   cursor: pointer;
   border-radius: 5px;
   font-family: Arial, sans-serif;
-  font-size: 14px;
-  border: 1px solid #dcdcdc; 
+  font-size: 0.875rem; /* Use rem for better scalability */
+  border: 1px solid #dcdcdc;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +81,7 @@ img {
 }
 
 .google-signin-button {
-  margin-bottom: 15px; 
+  margin-bottom: 15px;
 }
 
 .google-icon,
@@ -104,14 +92,16 @@ img {
 }
 
 .google-signin-button:hover,
-.facebook-signin-button:hover {
+.facebook-signin-button:hover,
+.appleid-signin:hover {
   background-color: #f7f7f7;
 }
 
-.login-button {
+.login-button,
+.register-button {
   width: 75%;
   height: 40px;
-  background-color: #2365B2; 
+  background-color: #2365B2;
   color: white;
   text-align: center;
   line-height: 40px;
@@ -124,31 +114,9 @@ img {
   margin: 15px 0;
 }
 
-.login-button:hover {
-  background-color: #1f5599; 
-}
-
-.appleid-signin {
-  width: 360px;
-  height: 40px;
-  background-color: black;
-  color: black;
-  text-align: center;
-  line-height: 40px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  border: 1px solid #dcdcdc; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
-  margin-top: 15px; 
-}
-
-.appleid-signin:hover {
-  background-color: black;
+.login-button:hover,
+.register-button:hover {
+  background-color: #1f5599;
 }
 
 .centered-link {
@@ -159,25 +127,10 @@ img {
   display: inline-block;
 }
 
-.register-heading{
+.register-heading {
   padding-top: 20px;
   padding-bottom: 20px;
   color: #2365B2;
-}
-
-.register-button {
-  background-color: #2365B2;
-  color: white;
-  width: 360px;
-  height: 40px;
-  font-size: 16px;
-  line-height: 40px;
-  border-radius: 4px;
-  text-transform: none; 
-}
-
-.register-button:hover {
-  background-color: #1f5aa0;
 }
 
 /* Mobile Optimization */
@@ -203,12 +156,12 @@ img {
   }
 
   .logo-h1 {
-    font-size: 200%;
+    font-size: 2rem;
     text-align: center;
     padding-bottom: 20px;
   }
 
-  .register-form, mat-form-field {
+  mat-form-field {
     width: 100%;
   }
 
@@ -228,12 +181,12 @@ img {
   .designed-by {
     padding-left: 0;
     text-align: center;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
   .centered-link {
     padding-left: 0;
     text-align: center;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }
