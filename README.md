@@ -13,6 +13,30 @@ TaskVantage is a comprehensive task management web application designed to help 
 - **Activity Tracking**: View recent completed tasks in the activity feed.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
 
+## Showcase
+
+Here are some screenshots showcasing the key features of the TaskVantage application:
+
+### Secure User Authentication
+The login page provides a secure authentication system where users can log in with their credentials.
+![Secure User Authentication](./Assets/Images/Screenshots/0_login.png)
+
+### Intuitive Home Dashboard
+The home page offers a clean, user-friendly dashboard where users can view a quick overview of their tasks and progress.
+![Intuitive Home Dashboard](./Assets/Images/Screenshots/1_home.png)
+
+### Task Creation and Management
+The "Add Task" interface allows users to easily create tasks with details such as title, description, due date, and priority.
+![Task Creation and Management](./Assets/Images/Screenshots/2_AddTask.png)
+
+### Organized Task List and Filtering
+Users can manage and filter tasks based on their status, such as pending, in-progress, and completed, providing a clear view of their workload.
+![Organized Task List and Filtering](./Assets/Images/Screenshots/3_tasks.png)
+
+### Real-Time Push Notifications
+TaskVantage features push notifications, ensuring users are alerted about upcoming deadlines and important reminders in real time.
+![Real-Time Push Notifications](./Assets/Images/Screenshots/4_pushNotifications.png)
+
 ## Technologies Used
 
 - **Frontend**:
