@@ -2,6 +2,7 @@ package com.taskvantage.backend.service;
 
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.exception.TaskNotFoundException;
+import com.taskvantage.backend.model.Comment;
 import com.taskvantage.backend.model.Subtask;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.model.TaskPriority;
@@ -108,82 +109,92 @@ public class TaskServiceImpl implements TaskService {
         if (existingTaskOptional.isPresent()) {
             Task existingTask = existingTaskOptional.get();
 
-            // Update fields with new values from updatedTask
-            existingTask.setTitle(updatedTask.getTitle());
-            existingTask.setDescription(updatedTask.getDescription());
-
-            // Ensure priority is set (default if null)
-            if (updatedTask.getPriority() != null) {
-                existingTask.setPriority(updatedTask.getPriority());
-            }
-
-            // Only update the status if provided in the updated task
-            if (updatedTask.getStatus() != null) {
-                existingTask.setStatus(updatedTask.getStatus());
-            }
-
-            // Update dueDate if provided, ensure it's treated as UTC
-            if (updatedTask.getDueDate() != null) {
-                existingTask.setDueDate(updatedTask.getDueDate()); // Assume dueDate is already in UTC
-            }
-
-            // Update scheduledStart if provided, ensure it's treated as UTC
-            if (updatedTask.getScheduledStart() != null) {
-                existingTask.setScheduledStart(updatedTask.getScheduledStart()); // Assume scheduledStart is already in UTC
-            }
-
-            // Update startDate and other time-based fields
-            if (updatedTask.getStartDate() != null) {
-                existingTask.setStartDate(updatedTask.getStartDate()); // Assume startDate is already in UTC
-            }
-
-            if (updatedTask.getCompletionDateTime() != null) {
-                existingTask.setCompletionDateTime(updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC));
-            }
-
-            // Update last modified date to current time in UTC
-            existingTask.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
-
-            // Handle subtasks
-            if (updatedTask.getSubtasks() != null) {
-                List<Subtask> existingSubtasks = existingTask.getSubtasks();
-
-                // Remove subtasks that are no longer present in the updatedTask
-                existingSubtasks.removeIf(subtask -> !updatedTask.getSubtasks().contains(subtask));
-
-                // Add new subtasks that aren't already in the existing collection
-                for (Subtask newSubtask : updatedTask.getSubtasks()) {
-                    if (!existingSubtasks.contains(newSubtask)) {
-                        existingSubtasks.add(newSubtask);
-                        newSubtask.setTask(existingTask);  // Set reference to the parent task
-                    }
-                }
-            }
-
-            // Handle comments as before
-            if (updatedTask.getComments() != null) {
-                existingTask.getComments().clear();  // Clear existing comments
-                existingTask.getComments().addAll(updatedTask.getComments());  // Add new/updated comments
-            }
-
-            // Handle other fields
-            existingTask.setTags(updatedTask.getTags());
-            existingTask.setAttachments(updatedTask.getAttachments());
-            existingTask.setReminders(updatedTask.getReminders());
-            existingTask.setRecurring(updatedTask.isRecurring());
-            existingTask.setNotificationSent(updatedTask.getNotificationSent());
-
-            if (updatedTask.getCompletionDateTime() != null && updatedTask.getStartDate() != null) {
-                ZonedDateTime completionDateTimeUtc = updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC);
-                Duration duration = Duration.between(updatedTask.getStartDate(), completionDateTimeUtc);
-                existingTask.setDuration(duration);
-            }
+            // Break down the update logic into helper methods
+            updateBasicFields(existingTask, updatedTask);
+            updateDates(existingTask, updatedTask);
+            updateSubtasks(existingTask, updatedTask);
+            updateComments(existingTask, updatedTask);
+            updateOtherFields(existingTask, updatedTask);
 
             // Save the updated task
             return taskRepository.save(existingTask);
         } else {
-            throw new TaskNotFoundException("Task with id " + updatedTask.getId() + " not found.");
+            throw new TaskNotFoundException(String.format("Task with id %d not found. Unable to update task.", updatedTask.getId()));
         }
+    }
+
+    private void updateBasicFields(Task existingTask, Task updatedTask) {
+        existingTask.setTitle(updatedTask.getTitle());
+        existingTask.setDescription(updatedTask.getDescription());
+
+        // Use Optional to avoid explicit null checks
+        Optional.ofNullable(updatedTask.getPriority()).ifPresent(existingTask::setPriority);
+        Optional.ofNullable(updatedTask.getStatus()).ifPresent(existingTask::setStatus);
+    }
+
+    private void updateDates(Task existingTask, Task updatedTask) {
+        // Use Optional for handling nullable dates
+        Optional.ofNullable(updatedTask.getDueDate()).ifPresent(existingTask::setDueDate);
+        Optional.ofNullable(updatedTask.getScheduledStart()).ifPresent(existingTask::setScheduledStart);
+        Optional.ofNullable(updatedTask.getStartDate()).ifPresent(existingTask::setStartDate);
+
+        // Convert completionDateTime to UTC if provided
+        Optional.ofNullable(updatedTask.getCompletionDateTime())
+                .map(dateTime -> dateTime.withZoneSameInstant(ZoneOffset.UTC))
+                .ifPresent(existingTask::setCompletionDateTime);
+
+        // Always update lastModifiedDate to the current time in UTC
+        existingTask.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
+
+        // Set duration if both startDate and completionDateTime are provided
+        if (updatedTask.getStartDate() != null && updatedTask.getCompletionDateTime() != null) {
+            ZonedDateTime completionDateTimeUtc = updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC);
+            Duration duration = Duration.between(updatedTask.getStartDate(), completionDateTimeUtc);
+            existingTask.setDuration(duration);
+        }
+    }
+
+    private void updateSubtasks(Task existingTask, Task updatedTask) {
+        if (updatedTask.getSubtasks() != null) {
+            List<Subtask> existingSubtasks = existingTask.getSubtasks();
+
+            // Remove subtasks not in the updated list
+            existingSubtasks.removeIf(subtask -> !updatedTask.getSubtasks().contains(subtask));
+
+            // Add new subtasks that aren't already in the list
+            for (Subtask newSubtask : updatedTask.getSubtasks()) {
+                if (!existingSubtasks.contains(newSubtask)) {
+                    existingSubtasks.add(newSubtask);
+                    newSubtask.setTask(existingTask);  // Set reference to parent task
+                }
+            }
+        }
+    }
+
+    private void updateComments(Task existingTask, Task updatedTask) {
+        if (updatedTask.getComments() != null) {
+            List<Comment> existingComments = existingTask.getComments();
+            List<Comment> updatedComments = updatedTask.getComments();
+
+            // Remove comments not in the updated comments
+            existingComments.removeIf(comment -> !updatedComments.contains(comment));
+
+            // Add new comments that are not already present
+            for (Comment newComment : updatedComments) {
+                if (!existingComments.contains(newComment)) {
+                    existingComments.add(newComment);
+                }
+            }
+        }
+    }
+
+    private void updateOtherFields(Task existingTask, Task updatedTask) {
+        // Direct field updates using Optional where needed
+        existingTask.setTags(updatedTask.getTags());
+        existingTask.setAttachments(updatedTask.getAttachments());
+        existingTask.setReminders(updatedTask.getReminders());
+        existingTask.setRecurring(updatedTask.isRecurring());
+        existingTask.setNotificationSent(updatedTask.getNotificationSent());
     }
 
     @Override
