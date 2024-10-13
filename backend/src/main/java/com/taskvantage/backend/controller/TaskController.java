@@ -1,5 +1,4 @@
 package com.taskvantage.backend.controller;
-
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.service.TaskService;
@@ -17,6 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.MalformedJwtException;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -196,40 +199,60 @@ public class TaskController {
             @PathVariable Long userId,
             @RequestBody Map<String, String> tokenRequest) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            response.put("message", "Unauthorized: Invalid or missing Authorization header");
-            return ResponseEntity.status(401).body(response);
+        if (!isValidAuthorizationHeader(authorizationHeader)) {
+            return createErrorResponse("Unauthorized: Invalid or missing Authorization header", 401);
         }
 
         String jwtToken = authorizationHeader.substring(7);
         String username;
         Long tokenUserId;
         try {
-            // Extract username and userId from JWT
-            username = jwtUtil.getUsernameFromToken(jwtToken);
-            tokenUserId = jwtUtil.getUserIdFromToken(jwtToken);
+            Map<String, Object> tokenData = parseJwtToken(jwtToken);
+            username = (String) tokenData.get("username");
+            tokenUserId = (Long) tokenData.get("userId");
+        } catch (ExpiredJwtException e) {
+            return createErrorResponse("Forbidden: JWT token expired", 403);
+        } catch (SignatureException e) {
+            return createErrorResponse("Forbidden: JWT signature does not match", 403);
+        } catch (MalformedJwtException e) {
+            return createErrorResponse("Forbidden: JWT token is malformed", 403);
         } catch (Exception e) {
-            response.put("message", "Forbidden: Invalid JWT token");
-            return ResponseEntity.status(403).body(response);
+            return createErrorResponse("Forbidden: Invalid JWT token", 403);
         }
 
-        // Ensure that the userId from the JWT matches the userId from the path
         if (!userId.equals(tokenUserId)) {
-            response.put("message", "Forbidden: User ID mismatch");
-            return ResponseEntity.status(403).body(response);
+            return createErrorResponse("Forbidden: User ID mismatch", 403);
         }
 
         String fcmToken = tokenRequest.get("fcmToken");
         if (fcmToken == null || fcmToken.isEmpty()) {
-            response.put("message", "Invalid FCM token");
-            return ResponseEntity.status(400).body(response);
+            return createErrorResponse("Invalid FCM token", 400);
         }
 
         // Update FCM token
         customUserDetailsService.updateUserToken(username, fcmToken);
+        Map<String, Object> response = new HashMap<>();
         response.put("message", "FCM Token updated successfully");
         return ResponseEntity.ok(response);
+    }
+
+    private boolean isValidAuthorizationHeader(String authorizationHeader) {
+        return authorizationHeader != null && authorizationHeader.startsWith("Bearer ");
+    }
+
+    private ResponseEntity<Map<String, Object>> createErrorResponse(String message, int statusCode) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        return ResponseEntity.status(statusCode).body(response);
+    }
+
+    private Map<String, Object> parseJwtToken(String jwtToken) throws ExpiredJwtException, SignatureException, MalformedJwtException {
+        Map<String, Object> tokenData = new HashMap<>();
+        String username = jwtUtil.getUsernameFromToken(jwtToken);  // Assuming `jwtUtil` has a method for this
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);        // Assuming `jwtUtil` has a method for this
+
+        tokenData.put("username", username);
+        tokenData.put("userId", userId);
+        return tokenData;
     }
 }

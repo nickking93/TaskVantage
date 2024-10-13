@@ -21,7 +21,11 @@
 
 .row {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  width: 100%;
+  margin: 0 auto;
 }
 
 mat-form-field {
@@ -53,11 +57,25 @@ img {
 }
 
 .clipboard-img {
-  padding-top: 33.33%;
+  width: 500px;
+  margin-left: 30px;
+  display: inline-block;
+  vertical-align: top;
 }
 
-.designed-by {
-  padding-left: 27%;
+.image-heading {
+  font-size: 1.5rem;
+  color: #2365B2;
+  margin-bottom: 10px;
+  text-align: center; 
+  margin-top: 55%;
+}
+
+.image-description {
+  font-size: 1rem;
+  color: #444444;
+  margin-top: 5px;
+  text-align: center;
 }
 
 .google-signin-button,
