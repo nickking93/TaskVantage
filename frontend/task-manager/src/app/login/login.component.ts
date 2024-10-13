@@ -12,6 +12,19 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  currentSlide = 0;
+
+  carouselHeadings = [
+    'Manage Your Tasks with Ease',
+    'Seamless Task Tracking',
+    'Collaboration Made Simple'
+  ];
+
+  carouselDescriptions = [
+    'Stay on top of your tasks, deadlines, and productivity with TaskVantage.',
+    'Track your tasks across devices with ease and flexibility.',
+    'Work together with your team effortlessly with TaskVantage.'
+  ];
 
   hide = true;
   signin: FormGroup;
@@ -126,5 +139,8 @@ export class LoginComponent implements OnInit {
         }
       });
     }
+  }
+  onSlideChange(event: any): void {
+    this.currentSlide = event.currentSlide;
   }
 }
