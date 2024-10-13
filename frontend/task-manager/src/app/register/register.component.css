@@ -14,7 +14,7 @@
 }
 
 .logo-h1 {
-  font-size: 2.5rem; /* Use rem for better scalability */
+  font-size: 250%;
   color: #2365B2;
   font-weight: bold;
 }
@@ -30,19 +30,6 @@
 
 mat-form-field {
   width: 75%;
-  margin-bottom: 16px;
-  position: relative;
-}
-
-.mat-form-field .mat-error {
-  display: block;
-  margin-bottom: 8px;
-}
-
-.error-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 8px;
 }
 
 img {
@@ -56,26 +43,50 @@ img {
   width: 120px;
 }
 
-.clipboard-img {
-  width: 500px;
-  margin-left: 30px;
-  display: inline-block;
-  vertical-align: top;
+.register-heading {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: #2365B2;
 }
 
-.image-heading {
+.carousel-heading {
   font-size: 1.5rem;
   color: #2365B2;
   margin-bottom: 10px;
-  text-align: center; 
-  margin-top: 55%;
+  text-align: center;
+  padding-top: 30px; /* Add padding to push it down */
 }
 
-.image-description {
+.carousel-description {
   font-size: 1rem;
   color: #444444;
-  margin-top: 5px;
+  margin-top: 10px;
   text-align: center;
+}
+
+.carousel {
+  width: 500px;
+  margin: 0 auto;
+  padding-top: 30px; /* Add padding to align it with the login form */
+}
+
+.carousel-item img {
+  max-width: 100%;
+  height: auto;
+}
+
+.carousel-caption h2 {
+  font-size: 1.5rem;
+  color: #2365B2;
+}
+
+.carousel-caption p {
+  font-size: 1rem;
+  color: #444444;
+}
+
+#right_column {
+  padding-top: 12%;
 }
 
 .google-signin-button,
@@ -90,7 +101,7 @@ img {
   cursor: pointer;
   border-radius: 5px;
   font-family: Arial, sans-serif;
-  font-size: 0.875rem; /* Use rem for better scalability */
+  font-size: 14px;
   border: 1px solid #dcdcdc;
   display: flex;
   align-items: center;
@@ -115,12 +126,10 @@ img {
   background-color: #f7f7f7;
 }
 
-.login-button,
 .register-button {
   width: 75%;
   height: 40px;
   background-color: #2365B2;
-  color: white;
   text-align: center;
   line-height: 40px;
   cursor: pointer;
@@ -130,25 +139,43 @@ img {
   border: none;
   display: block;
   margin: 15px 0;
+  color: #ffff;
 }
 
-.login-button:hover,
 .register-button:hover {
   background-color: #1f5599;
 }
 
-.centered-link {
-  padding-left: 25%;
+.appleid-signin {
+  width: 360px;
+  height: 40px;
+  background-color: black;
+  color: black;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: 1px solid #dcdcdc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  margin-top: 15px;
+}
+
+.appleid-signin:hover {
+  background-color: black;
+}
+
+.link-container {
+  text-align: center;
+  width: 75%;
 }
 
 .centered-link a {
   display: inline-block;
-}
-
-.register-heading {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  color: #2365B2;
 }
 
 /* Mobile Optimization */
@@ -159,8 +186,8 @@ img {
   }
 
   .column {
-    width: 100%;
-    padding: 5px;
+    flex: 1 1 auto;
+    padding: 10px;
   }
 
   .logo {
@@ -174,7 +201,7 @@ img {
   }
 
   .logo-h1 {
-    font-size: 2rem;
+    font-size: 200%;
     text-align: center;
     padding-bottom: 20px;
   }
@@ -190,21 +217,39 @@ img {
     width: 90%;
   }
 
-  .clipboard-img {
-    padding-top: 10%;
-    width: 80%;
+  /* Adjust carousel for smaller screens */
+  .carousel {
+    width: 90%;
     margin: 0 auto;
+    padding-top: 20px; /* Reduce padding on mobile */
+  }
+
+  .carousel-heading {
+    font-size: 1.2rem; /* Reduce heading size on mobile */
+  }
+
+  .carousel-description {
+    font-size: 0.9rem; /* Reduce description size */
+  }
+
+  .carousel-item img {
+    width: 100%; /* Ensure full width on smaller screens */
+    height: auto;
   }
 
   .designed-by {
     padding-left: 0;
     text-align: center;
-    font-size: 0.75rem;
+    font-size: 12px;
   }
 
-  .centered-link {
-    padding-left: 0;
-    text-align: center;
-    font-size: 0.875rem;
+  .link-container {
+    width: 100%;
+    padding: 10px 0;
+  }
+
+  .register-link,
+  .privacy-link {
+    font-size: 14px;
   }
 }

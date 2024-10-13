@@ -66,19 +66,44 @@ img {
   vertical-align: top;
 }
 
-.image-heading {
+.carousel-heading {
   font-size: 1.5rem;
   color: #2365B2;
   margin-bottom: 10px;
-  text-align: center; 
-  margin-top: 55%;
+  text-align: center;
+  padding-top: 30px; /* Add padding to push it down */
 }
 
-.image-description {
+.carousel-description {
   font-size: 1rem;
   color: #444444;
-  margin-top: 5px;
+  margin-top: 10px;
   text-align: center;
+}
+
+.carousel {
+  width: 500px;
+  margin: 0 auto;
+  padding-top: 30px; /* Add padding to align it with the login form */
+}
+
+.carousel-item img {
+  max-width: 100%;
+  height: auto;
+}
+
+.carousel-caption h2 {
+  font-size: 1.5rem;
+  color: #2365B2;
+}
+
+.carousel-caption p {
+  font-size: 1rem;
+  color: #444444;
+}
+
+#right_column {
+  padding-top: 12%;
 }
 
 .google-signin-button,
@@ -181,7 +206,7 @@ img {
   }
 
   .column {
-    flex: 1 1 auto; 
+    flex: 1 1 auto;
     padding: 10px;
   }
 
@@ -212,8 +237,28 @@ img {
     width: 90%;
   }
 
+  /* Adjust carousel for smaller screens */
+  .carousel {
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 20px; /* Reduce padding on mobile */
+  }
+
+  .carousel-heading {
+    font-size: 1.2rem; /* Reduce heading size on mobile */
+  }
+
+  .carousel-description {
+    font-size: 0.9rem; /* Reduce description size */
+  }
+
+  .carousel-item img {
+    width: 100%; /* Ensure full width on smaller screens */
+    height: auto;
+  }
+
   .clipboard-img {
-    width: 80%; 
+    width: 80%;
     margin-left: 0;
     padding-top: 10%;
   }

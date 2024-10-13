@@ -60,10 +60,35 @@
     <a [routerLink]="['/login']" class="back-to-login-link">Back to Login</a>
   </div>
 
-  <div class="column">
-    <h2 class="image-heading">Manage Your Tasks with Ease</h2>
-    <img src="./assets/Images/Image_clipboard.png" alt="image" class="clipboard-img">
-    <p class="image-description">Stay on top of your tasks, deadlines, and productivity with TaskVantage. Plan, organize, and track everything in one place.</p>
+  <div class="column" id="right_column">
+    <h2 class="carousel-heading">{{ carouselHeadings[currentSlide] }}</h2>
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="./assets/Images/1_home.png" class="d-block w-100" alt="Task Management">
+        </div>
+        <div class="carousel-item">
+          <img src="./assets/Images/2_AddTask.png" class="d-block w-100" alt="Seamless Task Tracking">
+        </div>
+        <div class="carousel-item">
+          <img src="./assets/Images/3_tasks.png" class="d-block w-100" alt="Collaboration Made Simple">
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+    <p class="carousel-description">{{ carouselDescriptions[currentSlide] }}</p>
   </div>
 
   <div class="column"></div>

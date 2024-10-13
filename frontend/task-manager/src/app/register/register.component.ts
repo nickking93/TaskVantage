@@ -64,6 +64,21 @@ export class RegisterComponent implements OnInit {
   hideConfirm = true;
   registerForm: FormGroup;
 
+  // Carousel content and configuration
+  currentSlide = 0;
+
+  carouselHeadings = [
+    'Manage Your Tasks with Ease',
+    'Seamless Task Tracking',
+    'Collaboration Made Simple'
+  ];
+
+  carouselDescriptions = [
+    'Stay on top of your tasks, deadlines, and productivity with TaskVantage.',
+    'Track your tasks across devices with ease and flexibility.',
+    'Work together with your team effortlessly with TaskVantage.'
+  ];
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -133,5 +148,10 @@ export class RegisterComponent implements OnInit {
     dialogRef.afterClosed().subscribe(() => {
       this.router.navigate(['/login']);
     });
+  }
+
+  // Called when the carousel slide changes
+  onSlideChange(event: any): void {
+    this.currentSlide = event.currentSlide;
   }
 }
