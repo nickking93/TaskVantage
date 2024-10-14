@@ -33,5 +33,5 @@ build/
 .vscode/
 
 # Ignore the Firebase service account JSON file
-src/main/resources/taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json
+taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json
 backend/logs/

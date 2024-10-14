@@ -17,7 +17,7 @@ import java.io.InputStream;
 public class FirebaseConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(FirebaseConfig.class);
-    private static final String FIREBASE_CONFIG_PATH = "taskvantage-c1425-firebase-adminsdk-yc2y8-9b453309eb.json";
+    private static final String FIREBASE_CONFIG_PATH = "taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json";
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
