@@ -1,5 +1,5 @@
 package com.taskvantage.backend.service;
-
+import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.exception.TaskNotFoundException;
 import com.taskvantage.backend.model.Comment;
@@ -9,7 +9,8 @@ import com.taskvantage.backend.model.TaskPriority;
 import com.taskvantage.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
@@ -21,10 +22,16 @@ import java.util.Optional;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final GoogleCalendarService googleCalendarService;  // Inject the GoogleCalendarService
+    private final CustomUserDetailsService userDetailsService;  // To fetch user details
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, GoogleCalendarService googleCalendarService, CustomUserDetailsService userDetailsService, CustomUserDetailsService customUserDetailsService) {
         this.taskRepository = taskRepository;
+        this.googleCalendarService = googleCalendarService;
+        this.userDetailsService = userDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
@@ -35,15 +42,27 @@ public class TaskServiceImpl implements TaskService {
 
         // Ensure that dueDate and scheduledStart remain in UTC
         if (task.getDueDate() != null) {
-            task.setDueDate(task.getDueDate().withZoneSameInstant(ZoneOffset.UTC)); // Convert to UTC
+            task.setDueDate(task.getDueDate().withZoneSameInstant(ZoneOffset.UTC));  // Convert to UTC
         }
-
         if (task.getScheduledStart() != null) {
-            task.setScheduledStart(task.getScheduledStart().withZoneSameInstant(ZoneOffset.UTC)); // Convert to UTC
+            task.setScheduledStart(task.getScheduledStart().withZoneSameInstant(ZoneOffset.UTC));  // Convert to UTC
         }
 
-        // Save task
-        return taskRepository.save(task);
+        // Save task to the database
+        Task savedTask = taskRepository.save(task);
+
+        // Check if the user has a linked Google Calendar
+        User user = customUserDetailsService.findUserById(task.getUserId());
+        if (user.getGoogleAccessToken() != null) {
+            try {
+                // Add task to Google Calendar
+                googleCalendarService.createCalendarEvent(user, task.getTitle(), task.getScheduledStart(), task.getDueDate());
+            } catch (GeneralSecurityException | IOException e) {
+                e.printStackTrace();  // Handle exceptions here (e.g., log the error)
+            }
+        }
+
+        return savedTask;
     }
 
     @Override

@@ -41,6 +41,45 @@ public class User {
     @Column(nullable = true)
     private LocalDateTime passwordResetTokenExpiry;
 
+    public String getGoogleAccessToken() {
+        return googleAccessToken;
+    }
+
+    // Getter and Setter for Google Access Token
+    public void setGoogleAccessToken(String googleAccessToken) {
+        this.googleAccessToken = googleAccessToken;
+    }
+
+    // Getter and Setter for Google Refresh Token
+    public String getGoogleRefreshToken() {
+        return googleRefreshToken;
+    }
+
+    public void setGoogleRefreshToken(String googleRefreshToken) {
+        this.googleRefreshToken = googleRefreshToken;
+    }
+
+    // Google Calendar tokens
+    @Column(nullable = true)
+    private String googleAccessToken;
+
+    @Column(nullable = true)
+    private String googleRefreshToken;
+
+    // Outlook Calendar tokens
+    @Column(nullable = true)
+    private String outlookAccessToken;
+
+    @Column(nullable = true)
+    private String outlookRefreshToken;
+
+    // Apple Calendar tokens
+    @Column(nullable = true)
+    private String appleAccessToken;
+
+    @Column(nullable = true)
+    private String appleRefreshToken;
+
     // Getter and Setter for id
     public Long getId() {
         return id;

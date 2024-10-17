@@ -204,4 +204,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         logger.info("Password updated successfully for user: {}", user.getUsername());
         return true;
     }
+
+    public User findUserById(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            return userOptional.get();
+        } else {
+            logger.error("User not found with id: {}", userId);
+            throw new UsernameNotFoundException("User not found with id: " + userId);
+        }
+    }
 }
