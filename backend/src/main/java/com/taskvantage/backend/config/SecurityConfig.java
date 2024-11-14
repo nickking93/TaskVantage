@@ -153,6 +153,9 @@ public class SecurityConfig {
         return new HttpCookieOAuth2AuthorizationRequestRepository();
     }
 
+    @Value("${app.backend-url}")
+    private String backendUrl;
+
     @Bean
     public ClientRegistration googleClientRegistration() {
         return CommonOAuth2Provider.GOOGLE
@@ -160,7 +163,7 @@ public class SecurityConfig {
                 .clientId("872741914932-asspmr6jois4ovvr3bvjm4p44csq9qjs.apps.googleusercontent.com")
                 .clientSecret(googleClientSecret)
                 .scope("openid", "profile", "email", "https://www.googleapis.com/auth/calendar")
-                .redirectUri("http://localhost:8080/login/oauth2/code/google")
+                .redirectUri(backendUrl + "/login/oauth2/code/google")
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .tokenUri("https://oauth2.googleapis.com/token")
                 .build();
