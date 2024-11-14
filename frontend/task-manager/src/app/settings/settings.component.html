@@ -1,1 +1,39 @@
-<p>settings works!</p>
+<div class="settings-container">
+  <h2>Settings</h2>
+  
+  <mat-divider></mat-divider>
+
+  <!-- Google Calendar Integration Section -->
+  <div class="google-calendar-integration">
+    <h3>Google Calendar Integration</h3>
+    
+    <ng-container *ngIf="!isGoogleConnected; else connectedTemplate">
+      <p>Connect your Google Calendar to sync your tasks automatically</p>
+      <button mat-raised-button color="primary" (click)="connectGoogleCalendar()">
+        <mat-icon>calendar_today</mat-icon>
+        Connect to Google Calendar
+      </button>
+    </ng-container>
+
+    <ng-template #connectedTemplate>
+      <div class="connected-settings">
+        <p class="status-text">
+          <mat-icon color="primary">check_circle</mat-icon>
+          Google Calendar Connected
+        </p>
+        
+        <mat-slide-toggle 
+          [(ngModel)]="isTaskSyncEnabled" 
+          (change)="toggleTaskSync($event.checked)"
+          [disabled]="!isGoogleConnected">
+          Automatically sync tasks with Google Calendar
+        </mat-slide-toggle>
+
+        <button mat-button color="warn" (click)="disconnectGoogleCalendar()">
+          <mat-icon>link_off</mat-icon>
+          Disconnect Google Calendar
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</div>

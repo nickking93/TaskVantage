@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * UserRepository provides methods to interact with the User entity in the database.
+ */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -16,6 +19,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return The User entity.
      */
     User findByUsername(String username);
+
+    /**
+     * Finds a user by their Google email.
+     *
+     * @param googleEmail The Google email of the user.
+     * @return An Optional containing the User if found.
+     */
+    Optional<User> findByGoogleEmail(String googleEmail);
 
     /**
      * Finds a user by their email verification token.

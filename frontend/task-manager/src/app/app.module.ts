@@ -13,11 +13,18 @@ import { SharedModule } from './shared.module';
 import { provideHttpClient } from '@angular/common/http';
 import { ServiceWorkerModule } from '@angular/service-worker';
 
+// Import Angular Material modules
+import { MatButtonModule } from '@angular/material/button';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    RegisterComponent,
+    RegisterComponent
+    // SettingsComponent removed from here
   ],
   imports: [
     BrowserModule,
@@ -29,12 +36,14 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     MatIconModule,
     MatDialogModule,
     SharedModule,
+    MatButtonModule,          
+    MatSlideToggleModule,     
+    MatDividerModule,         
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
-      // Register the ServiceWorker as soon as the application is stable
-      // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerImmediately'
-    })
+    }),
+    MatSnackBarModule
   ],
   providers: [
     provideHttpClient()

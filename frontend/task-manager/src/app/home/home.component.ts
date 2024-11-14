@@ -103,6 +103,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         return;
       }
   
+      // Store userId in local storage
+      localStorage.setItem('google_auth_user_id', this.userId);
+  
       this.authService.getUserDetails().subscribe(user => {
         if (user.id.toString() === this.userId) {
           this.username = user.username;

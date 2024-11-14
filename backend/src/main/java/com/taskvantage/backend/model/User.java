@@ -41,6 +41,70 @@ public class User {
     @Column(nullable = true)
     private LocalDateTime passwordResetTokenExpiry;
 
+    public String getGoogleAccessToken() {
+        return googleAccessToken;
+    }
+
+    // New field for storing Google account email
+    @Column(nullable = true)
+    private String googleEmail;
+
+    @Column(nullable = false)
+    private boolean taskSyncEnabled = false; // Default value can be set as needed
+
+    // Getter and Setter for googleEmail
+    public String getGoogleEmail() {
+        return googleEmail;
+    }
+
+    public void setGoogleEmail(String googleEmail) {
+        this.googleEmail = googleEmail;
+    }
+
+    // Getter and Setter for taskSyncEnabled
+    public boolean isTaskSyncEnabled() {
+        return taskSyncEnabled;
+    }
+
+    public void setTaskSyncEnabled(boolean taskSyncEnabled) {
+        this.taskSyncEnabled = taskSyncEnabled;
+    }
+
+    // Getter and Setter for Google Access Token
+    public void setGoogleAccessToken(String googleAccessToken) {
+        this.googleAccessToken = googleAccessToken;
+    }
+
+    // Getter and Setter for Google Refresh Token
+    public String getGoogleRefreshToken() {
+        return googleRefreshToken;
+    }
+
+    public void setGoogleRefreshToken(String googleRefreshToken) {
+        this.googleRefreshToken = googleRefreshToken;
+    }
+
+    // Google Calendar tokens
+    @Column(nullable = true)
+    private String googleAccessToken;
+
+    @Column(nullable = true)
+    private String googleRefreshToken;
+
+    // Outlook Calendar tokens
+    @Column(nullable = true)
+    private String outlookAccessToken;
+
+    @Column(nullable = true)
+    private String outlookRefreshToken;
+
+    // Apple Calendar tokens
+    @Column(nullable = true)
+    private String appleAccessToken;
+
+    @Column(nullable = true)
+    private String appleRefreshToken;
+
     // Getter and Setter for id
     public Long getId() {
         return id;
