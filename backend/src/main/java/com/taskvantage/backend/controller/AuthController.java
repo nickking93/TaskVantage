@@ -235,4 +235,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    /**
+     * Fetch user settings (whether Google is connected and task sync is enabled).
+     *
+     * @param principal The currently authenticated user's details.
+     * @return A response entity with the user's settings.
+     */
+    @GetMapping("/user/settings")
+    public ResponseEntity<Map<String, Object>> getUserSettings(Authentication principal) {
+        User user = customUserDetailsService.findUserByUsername(principal.getName());
+        Map<String, Object> settings = new HashMap<>();
+
+        settings.put("googleConnected", user.getGoogleAccessToken() != null);
+        settings.put("taskSyncEnabled", user.isTaskSyncEnabled());
+
+        return ResponseEntity.ok(settings);
+    }
 }

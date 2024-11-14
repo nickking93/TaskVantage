@@ -17,6 +17,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * CustomUserDetailsService implements UserDetailsService to manage user-related operations.
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -36,30 +39,87 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Load user details by username. It checks both username and Google email.
+     *
+     * @param username the username or Google email of the user
+     * @return UserDetails object containing user information
+     * @throws UsernameNotFoundException if the user is not found
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            logger.error("User not found with username: {}", username);
-            throw new UsernameNotFoundException("User not found");
-        }
+        User user = findUser(username);
         return new CustomUserDetails(user);
     }
 
-    public User findUserByUsername(String username) throws UsernameNotFoundException {
+    /**
+     * Finds a user by their username or Google email.
+     *
+     * This method first attempts to find a user using the provided username.
+     * If no user is found, it then checks if the username corresponds to a Google email.
+     *
+     * @param username the username or Google email of the user to be found
+     * @return the User object if found
+     * @throws UsernameNotFoundException if no user is found with the given username or Google email
+     */
+    private User findUser(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            logger.error("User not found with username: {}", username);
+            // Check if the username is a Google email
+            user = userRepository.findByGoogleEmail(username).orElse(null);
+        }
+        if (user == null) {
+            logger.error("User not found with username or Google email: {}", username);
             throw new UsernameNotFoundException("User not found");
         }
         return user;
     }
 
+    /**
+     * Find a user by their username or Google email.
+     *
+     * @param username the username or Google email of the user
+     * @return User object if found
+     * @throws UsernameNotFoundException if the user is not found
+     */
+    public User findUserByUsername(String username) throws UsernameNotFoundException {
+        return findUser(username);
+    }
+
+    /**
+     * Find a user by their Google email.
+     *
+     * @param googleEmail the Google email of the user
+     * @return User object if found
+     * @throws UsernameNotFoundException if the user is not found
+     */
+    public User findUserByGoogleEmail(String googleEmail) throws UsernameNotFoundException {
+        User user = userRepository.findByGoogleEmail(googleEmail).orElse(null);
+        if (user == null) {
+            logger.error("User not found with Google email: {}", googleEmail);
+            throw new UsernameNotFoundException("User not found");
+        }
+        return user;
+    }
+
+    /**
+     * Find a user by their email verification token.
+     *
+     * @param token the verification token
+     * @return User object if found
+     * @throws UsernameNotFoundException if the token is invalid
+     */
     public User findUserByVerificationToken(String token) {
         return userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid verification token"));
     }
 
+    /**
+     * Verify a user's email using a verification token.
+     *
+     * @param token the verification token
+     * @return true if the email is verified, false otherwise
+     */
     public boolean verifyUserEmail(String token) {
         User user = findUserByVerificationToken(token);
         if (user != null && !user.isEmailVerified()) {
@@ -74,10 +134,22 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
     }
 
+    /**
+     * Save the user to the database.
+     *
+     * @param user the User object to save
+     * @return the saved User object
+     */
     public User saveUser(User user) {
         return userRepository.save(user);
     }
 
+    /**
+     * Register a new user.
+     *
+     * @param authRequest the AuthRequest containing registration details
+     * @return message indicating success or failure of registration
+     */
     public String registerUser(AuthRequest authRequest) {
         if (userRepository.findByUsername(authRequest.getUsername()) != null) {
             logger.warn("Attempted to register with an already taken username: {}", authRequest.getUsername());
@@ -111,6 +183,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
     }
 
+    /**
+     * Update the FCM token for a user.
+     *
+     * @param username the username of the user
+     * @param token    the FCM token to set
+     */
     public void updateUserToken(String username, String token) {
         if (token == null || token.isEmpty()) {
             logger.warn("Invalid FCM token for user: {}", username);
@@ -123,6 +201,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         logger.info("FCM Token updated successfully for user: {}", username);
     }
 
+    /**
+     * Clear the FCM token for a user.
+     *
+     * @param username the username of the user
+     */
     public void clearUserToken(String username) {
         User user = findUserByUsername(username);
         user.setToken(null);
@@ -133,8 +216,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     /**
      * Sends a password reset link to the user's email.
      *
-     * @param email The user's email address.
-     * @return True if the reset link was sent successfully, false otherwise.
+     * @param email the user's email address
+     * @return true if the reset link was sent successfully, false otherwise
      */
     public boolean sendPasswordResetLink(String email) {
         User user = userRepository.findByUsername(email);
@@ -167,11 +250,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     /**
-     * Validates the password reset token and checks if it has expired.
+     * Validate the password reset token and checks if it has expired.
      *
-     * @param token The reset token.
-     * @return The associated user if the token is valid and not expired.
-     * @throws UsernameNotFoundException If the token is invalid or expired.
+     * @param token the reset token
+     * @return the associated user if the token is valid and not expired
+     * @throws UsernameNotFoundException if the token is invalid or expired
      */
     public User validatePasswordResetToken(String token) {
         Optional<User> optionalUser = userRepository.findByPasswordResetToken(token);
@@ -186,11 +269,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     /**
-     * Updates the user's password after verifying the reset token.
+     * Update the user's password after verifying the reset token.
      *
-     * @param token The password reset token.
-     * @param newPassword The new password to be set.
-     * @return True if the password was updated successfully, false otherwise.
+     * @param token       the password reset token
+     * @param newPassword the new password to be set
+     * @return true if the password was updated successfully, false otherwise
      */
     public boolean updatePassword(String token, String newPassword) {
         User user = validatePasswordResetToken(token);
@@ -205,6 +288,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         return true;
     }
 
+    /**
+     * Find a user by their ID.
+     *
+     * @param userId the ID of the user
+     * @return the User object if found
+     * @throws UsernameNotFoundException if the user is not found
+     */
     public User findUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {

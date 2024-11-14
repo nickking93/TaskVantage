@@ -2,14 +2,20 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { SharedModule } from '../shared.module'; // Import SharedModule
+import { SharedModule } from '../shared.module';
 
-import { HomeComponent } from './home.component';  // Import HomeComponent explicitly
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+
+import { HomeComponent } from './home.component';
 import { TasksComponent } from '../tasks/tasks.component';
 import { SettingsComponent } from '../settings/settings.component';
 import { HelpPageComponent } from '../help-page/help-page.component';
 import { AddTaskComponent } from '../add-task/add-task.component';
-import { UpdateTaskComponent } from '../update-task/update-task.component'; // Import the new UpdateTaskComponent
+import { UpdateTaskComponent } from '../update-task/update-task.component';
 
 @NgModule({
   imports: [
@@ -18,7 +24,7 @@ import { UpdateTaskComponent } from '../update-task/update-task.component'; // I
     RouterModule.forChild([
       {
         path: '',
-        component: HomeComponent,  // Now HomeComponent is recognized
+        component: HomeComponent,
         children: [
           {
             path: 'tasks',
@@ -37,13 +43,21 @@ import { UpdateTaskComponent } from '../update-task/update-task.component'; // I
             component: AddTaskComponent,
           },
           {
-            path: 'update-task/:taskId',  // New route for updating tasks
+            path: 'update-task/:taskId',
             component: UpdateTaskComponent,
           },
         ],
       },
     ]),
-    SharedModule, // Import SharedModule to make SuccessDialogComponent available
+    SharedModule,
+    MatDividerModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatButtonModule,
+    MatSnackBarModule
   ],
+  declarations: [
+    SettingsComponent
+  ]
 })
 export class HomeModule {}

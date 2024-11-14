@@ -45,6 +45,31 @@ public class User {
         return googleAccessToken;
     }
 
+    // New field for storing Google account email
+    @Column(nullable = true)
+    private String googleEmail;
+
+    @Column(nullable = false)
+    private boolean taskSyncEnabled = false; // Default value can be set as needed
+
+    // Getter and Setter for googleEmail
+    public String getGoogleEmail() {
+        return googleEmail;
+    }
+
+    public void setGoogleEmail(String googleEmail) {
+        this.googleEmail = googleEmail;
+    }
+
+    // Getter and Setter for taskSyncEnabled
+    public boolean isTaskSyncEnabled() {
+        return taskSyncEnabled;
+    }
+
+    public void setTaskSyncEnabled(boolean taskSyncEnabled) {
+        this.taskSyncEnabled = taskSyncEnabled;
+    }
+
     // Getter and Setter for Google Access Token
     public void setGoogleAccessToken(String googleAccessToken) {
         this.googleAccessToken = googleAccessToken;

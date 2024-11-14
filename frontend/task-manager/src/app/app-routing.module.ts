@@ -5,6 +5,7 @@ import { RegisterComponent } from './register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { SettingsComponent } from './settings/settings.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -19,7 +20,12 @@ const routes: Routes = [
   },
   { path: 'privacy-policy', loadChildren: () => import('./privacy-policy/privacy-policy.module').then(m => m.PrivacyPolicyModule) },
   { path: 'verify-email', component: VerifyEmailComponent },
-  { path: '**', redirectTo: '/login' }
+  {
+    path: 'home/:userId/settings',  
+    component: SettingsComponent,
+    canActivate: [AuthGuard]
+  },
+  { path: '**', redirectTo: '/login' }  
 ];
 
 @NgModule({

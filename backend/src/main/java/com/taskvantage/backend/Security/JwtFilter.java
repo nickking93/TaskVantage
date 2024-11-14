@@ -27,19 +27,10 @@ public class JwtFilter extends OncePerRequestFilter {
     // List of paths that should be excluded from JWT validation
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/api/login", "/api/register", "/api/verify-email", "/api/forgot-password",
-            "/api/reset-password", "/favicon.ico", "/test/google-calendar"
+            "/api/reset-password", "/favicon.ico", "/test/google-calendar", "/oauth2/callback/google",
+            "/login/oauth2/code/google"
     );
 
-    /**
-     * The filter intercepts HTTP requests to check for JWT authentication tokens.
-     * If the token is valid, it sets the user authentication in the security context.
-     *
-     * @param request  The HTTP request object.
-     * @param response The HTTP response object.
-     * @param chain    The filter chain.
-     * @throws ServletException In case of general servlet errors.
-     * @throws IOException      In case of I/O errors.
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -49,6 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // Skip JWT validation for public endpoints or static resources
         if (EXCLUDED_PATHS.contains(requestPath)) {
+            System.out.println("Skipping JWT validation for path: " + requestPath);
             chain.doFilter(request, response); // Skip JWT validation for excluded paths
             return;
         }
