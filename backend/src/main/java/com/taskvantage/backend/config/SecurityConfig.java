@@ -121,7 +121,9 @@ public class SecurityConfig {
                 }))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/oauth2/**", "/login/oauth2/code/*", "/oauth2/authorization/**", "/oauth2/google/status", "/api/set-user-id-cookie").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/code/*", "/oauth2/authorization/**",
+                                "/oauth2/google/status", "/api/oauth2/google/status",
+                                "/api/set-user-id-cookie").permitAll()
                         .requestMatchers("/api/login", "/api/register", "/api/verify-email", "/api/forgot-password", "/api/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )

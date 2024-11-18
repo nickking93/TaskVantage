@@ -22,9 +22,10 @@ export class SettingsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('Route Params:', this.route.snapshot.params);
-    console.log('Local Storage User ID:', localStorage.getItem('google_auth_user_id'));
-    // Handle redirect from OAuth flow
+    // First, check the connection status regardless of query parameters
+    this.checkConnectionStatus();
+    
+    // Then handle any OAuth redirect responses
     this.route.queryParams.subscribe(params => {
       if (params['status'] === 'success') {
         this.isGoogleConnected = true;
@@ -50,13 +51,8 @@ export class SettingsComponent implements OnInit {
           duration: 3000
         });
       }
-      
-      // Only check connection status after a successful OAuth flow
-      if (params['status'] === 'success') {
-        this.checkConnectionStatus();
-      }
     });
-}
+  }
 
   private checkConnectionStatus(): void {
     // Retrieve userId from route parameters or localStorage
@@ -142,7 +138,7 @@ export class SettingsComponent implements OnInit {
   }
 
   disconnectGoogleCalendar(): void {
-    this.userService.disconnectGoogleCalendar().subscribe({
+    this.googleAuthService.disconnectGoogleCalendar().subscribe({
       next: () => {
         this.isGoogleConnected = false;
         this.isTaskSyncEnabled = false;

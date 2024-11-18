@@ -96,7 +96,7 @@ export class LoginComponent implements OnInit {
       const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
         disableClose: true,
         data: {
-          message: 'Logging in...'  // Pass the dynamic message here
+          message: 'Logging in...'
         }
       });
   
@@ -110,7 +110,8 @@ export class LoginComponent implements OnInit {
         (response) => {
           console.log('Login response:', response);
           
-          localStorage.setItem('token', response.token);
+          // Changed from 'token' to 'jwtToken' to match AuthService
+          localStorage.setItem('jwtToken', response.token);
           const userId = response.id;
           console.log('User ID after login:', userId);
   
@@ -121,17 +122,15 @@ export class LoginComponent implements OnInit {
           loadingDialogRef.close();
           console.error('Login failed', error);
   
-          // Open the dialog on login failure
           this.dialog.open(SuccessDialogComponent, {
             data: {
-              title: 'Error', // Dynamic title for error
-              message: error.message // Use the message from the error handler
+              title: 'Error',
+              message: error.message
             }
           });
         }
       );
     } else {
-      // Validation errors in the form
       this.dialog.open(SuccessDialogComponent, {
         data: {
           title: 'Error',
@@ -140,6 +139,7 @@ export class LoginComponent implements OnInit {
       });
     }
   }
+  
   onSlideChange(event: any): void {
     this.currentSlide = event.currentSlide;
   }
