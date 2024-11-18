@@ -3,6 +3,8 @@ import { GoogleAuthService } from '../services/google-auth.service';
 import { UserService } from '../services/user.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { LoadingDialogComponent } from '../../app/loading-dialog.component';
 
 @Component({
   selector: 'app-settings',
@@ -18,7 +20,8 @@ export class SettingsComponent implements OnInit {
     private userService: UserService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -138,8 +141,17 @@ export class SettingsComponent implements OnInit {
   }
 
   disconnectGoogleCalendar(): void {
+    // Open the loading dialog
+    const dialogRef = this.dialog.open(LoadingDialogComponent, {
+      disableClose: true,  // Prevent closing by clicking outside
+      data: {
+        message: 'Disconnecting Google Calendar...'
+      }
+    });
+  
     this.googleAuthService.disconnectGoogleCalendar().subscribe({
       next: () => {
+        dialogRef.close();  // Close the dialog on success
         this.isGoogleConnected = false;
         this.isTaskSyncEnabled = false;
         this.snackBar.open('Google Calendar disconnected', 'Close', {
@@ -147,6 +159,7 @@ export class SettingsComponent implements OnInit {
         });
       },
       error: (error) => {
+        dialogRef.close();  // Close the dialog on error
         console.error('Error disconnecting Google Calendar:', error);
         this.snackBar.open('Failed to disconnect Google Calendar', 'Close', {
           duration: 3000
