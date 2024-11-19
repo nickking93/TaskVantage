@@ -46,6 +46,17 @@ public class GoogleCalendarService {
         calendarService.events().insert("primary", event).execute();
     }
 
+    public void updateCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, String eventId) throws GeneralSecurityException, IOException {
+        Calendar calendarService = getCalendarService(user);
+
+        Event event = new Event()
+                .setSummary(taskTitle)
+                .setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
+                .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
+
+        calendarService.events().update("primary", eventId, event).execute();
+    }
+
     // Test Google Calendar integration with access token from environment variable
     public void testGoogleCalendarIntegration() throws GeneralSecurityException, IOException {
         // Retrieve access token from environment variable

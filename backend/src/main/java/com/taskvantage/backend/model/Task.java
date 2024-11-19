@@ -85,7 +85,16 @@ public class Task {
     @Column(name = "notification_sent")
     private Boolean notificationSent;
 
-    // Getters and Setters for ZonedDateTime fields
+    @Column(name = "google_calendar_event_id")
+    private String googleCalendarEventId;
+
+    public String getGoogleCalendarEventId() {
+        return googleCalendarEventId;
+    }
+
+    public void setGoogleCalendarEventId(String googleCalendarEventId) {
+        this.googleCalendarEventId = googleCalendarEventId;
+    }
 
     public Long getId() {
         return id;

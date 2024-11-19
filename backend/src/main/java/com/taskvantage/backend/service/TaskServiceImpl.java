@@ -7,6 +7,8 @@ import com.taskvantage.backend.model.Subtask;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.model.TaskPriority;
 import com.taskvantage.backend.repository.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.util.Optional;
 @Service
 public class TaskServiceImpl implements TaskService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GoogleCalendarService.class);
     private final TaskRepository taskRepository;
     private final GoogleCalendarService googleCalendarService;  // Inject the GoogleCalendarService
     private final CustomUserDetailsService userDetailsService;  // To fetch user details
@@ -34,6 +37,27 @@ public class TaskServiceImpl implements TaskService {
         this.customUserDetailsService = customUserDetailsService;
     }
 
+    private void syncWithGoogleCalendar(Task task, User user) {
+        // Only sync if user has Google Calendar connected AND sync is enabled
+        if (user != null &&
+                user.getGoogleAccessToken() != null &&
+                user.isTaskSyncEnabled()) {
+            try {
+                if (task.getScheduledStart() != null && task.getDueDate() != null) {
+                    googleCalendarService.createCalendarEvent(
+                            user,
+                            task.getTitle(),
+                            task.getScheduledStart(),
+                            task.getDueDate()
+                    );
+                }
+            } catch (GeneralSecurityException | IOException e) {
+                // Log the error but don't fail the task operation
+                logger.error("Failed to sync task with Google Calendar", e);
+            }
+        }
+    }
+
     @Override
     public Task addTask(Task task) {
         // Set creation and last modified dates to current time in UTC
@@ -42,27 +66,47 @@ public class TaskServiceImpl implements TaskService {
 
         // Ensure that dueDate and scheduledStart remain in UTC
         if (task.getDueDate() != null) {
-            task.setDueDate(task.getDueDate().withZoneSameInstant(ZoneOffset.UTC));  // Convert to UTC
+            task.setDueDate(task.getDueDate().withZoneSameInstant(ZoneOffset.UTC));
         }
         if (task.getScheduledStart() != null) {
-            task.setScheduledStart(task.getScheduledStart().withZoneSameInstant(ZoneOffset.UTC));  // Convert to UTC
+            task.setScheduledStart(task.getScheduledStart().withZoneSameInstant(ZoneOffset.UTC));
         }
 
         // Save task to the database
         Task savedTask = taskRepository.save(task);
 
-        // Check if the user has a linked Google Calendar
+        // Sync with Google Calendar if enabled
         User user = customUserDetailsService.findUserById(task.getUserId());
-        if (user.getGoogleAccessToken() != null) {
-            try {
-                // Add task to Google Calendar
-                googleCalendarService.createCalendarEvent(user, task.getTitle(), task.getScheduledStart(), task.getDueDate());
-            } catch (GeneralSecurityException | IOException e) {
-                e.printStackTrace();  // Handle exceptions here (e.g., log the error)
-            }
-        }
+        syncWithGoogleCalendar(savedTask, user);
 
         return savedTask;
+    }
+
+    @Override
+    public Task updateTask(Task updatedTask) {
+        Optional<Task> existingTaskOptional = taskRepository.findById(updatedTask.getId());
+
+        if (existingTaskOptional.isPresent()) {
+            Task existingTask = existingTaskOptional.get();
+
+            // Break down the update logic into helper methods
+            updateBasicFields(existingTask, updatedTask);
+            updateDates(existingTask, updatedTask);
+            updateSubtasks(existingTask, updatedTask);
+            updateComments(existingTask, updatedTask);
+            updateOtherFields(existingTask, updatedTask);
+
+            // Save the updated task
+            Task savedTask = taskRepository.save(existingTask);
+
+            // Sync updates with Google Calendar if enabled
+            User user = customUserDetailsService.findUserById(savedTask.getUserId());
+            syncWithGoogleCalendar(savedTask, user);
+
+            return savedTask;
+        } else {
+            throw new TaskNotFoundException(String.format("Task with id %d not found. Unable to update task.", updatedTask.getId()));
+        }
     }
 
     @Override
@@ -119,27 +163,6 @@ public class TaskServiceImpl implements TaskService {
         summary.setTotalTasksThisMonth(totalTasksThisMonth);
 
         return summary;
-    }
-
-    @Override
-    public Task updateTask(Task updatedTask) {
-        Optional<Task> existingTaskOptional = taskRepository.findById(updatedTask.getId());
-
-        if (existingTaskOptional.isPresent()) {
-            Task existingTask = existingTaskOptional.get();
-
-            // Break down the update logic into helper methods
-            updateBasicFields(existingTask, updatedTask);
-            updateDates(existingTask, updatedTask);
-            updateSubtasks(existingTask, updatedTask);
-            updateComments(existingTask, updatedTask);
-            updateOtherFields(existingTask, updatedTask);
-
-            // Save the updated task
-            return taskRepository.save(existingTask);
-        } else {
-            throw new TaskNotFoundException(String.format("Task with id %d not found. Unable to update task.", updatedTask.getId()));
-        }
     }
 
     private void updateBasicFields(Task existingTask, Task updatedTask) {
