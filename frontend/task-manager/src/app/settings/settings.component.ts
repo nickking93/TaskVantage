@@ -3,6 +3,8 @@ import { GoogleAuthService } from '../services/google-auth.service';
 import { UserService } from '../services/user.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { LoadingDialogComponent } from '../../app/loading-dialog.component';
 
 @Component({
   selector: 'app-settings',
@@ -18,13 +20,15 @@ export class SettingsComponent implements OnInit {
     private userService: UserService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
-    console.log('Route Params:', this.route.snapshot.params);
-    console.log('Local Storage User ID:', localStorage.getItem('google_auth_user_id'));
-    // Handle redirect from OAuth flow
+    // First, check the connection status regardless of query parameters
+    this.checkConnectionStatus();
+    
+    // Then handle any OAuth redirect responses
     this.route.queryParams.subscribe(params => {
       if (params['status'] === 'success') {
         this.isGoogleConnected = true;
@@ -50,38 +54,29 @@ export class SettingsComponent implements OnInit {
           duration: 3000
         });
       }
-      
-      // Only check connection status after a successful OAuth flow
-      if (params['status'] === 'success') {
-        this.checkConnectionStatus();
-      }
     });
-}
+  }
 
-  private checkConnectionStatus(): void {
-    // Retrieve userId from route parameters or localStorage
-    const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id') || '';
-
+  checkConnectionStatus(): void {
+    const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id');
+  
     if (userId) {
-      this.googleAuthService.checkGoogleCalendarConnection(userId).subscribe({
-        next: (response) => {
-          this.isGoogleConnected = response.connected;
-          if (this.isGoogleConnected) {
-            this.loadUserSettings();
+      this.googleAuthService.checkGoogleCalendarConnection(userId)
+        .subscribe({
+          next: (response) => {
+            this.isGoogleConnected = response.connected;
+            if (this.isGoogleConnected) {
+              this.loadUserSettings();
+            }
+          },
+          error: (error) => {
+            if (error.status !== 401) { // Don't show error for auth failures
+              this.snackBar.open('Failed to check connection status', 'Close', {
+                duration: 3000
+              });
+            }
           }
-        },
-        error: (error) => {
-          console.error('Error checking Google Calendar connection:', error);
-          this.snackBar.open('Failed to check connection status', 'Close', {
-            duration: 3000
-          });
-        }
-      });
-    } else {
-      console.error('User ID is not available');
-      this.snackBar.open('User ID is not available', 'Close', {
-        duration: 3000
-      });
+        });
     }
   }
 
@@ -142,8 +137,17 @@ export class SettingsComponent implements OnInit {
   }
 
   disconnectGoogleCalendar(): void {
-    this.userService.disconnectGoogleCalendar().subscribe({
+    // Open the loading dialog
+    const dialogRef = this.dialog.open(LoadingDialogComponent, {
+      disableClose: true,  // Prevent closing by clicking outside
+      data: {
+        message: 'Disconnecting Google Calendar...'
+      }
+    });
+  
+    this.googleAuthService.disconnectGoogleCalendar().subscribe({
       next: () => {
+        dialogRef.close();  // Close the dialog on success
         this.isGoogleConnected = false;
         this.isTaskSyncEnabled = false;
         this.snackBar.open('Google Calendar disconnected', 'Close', {
@@ -151,6 +155,7 @@ export class SettingsComponent implements OnInit {
         });
       },
       error: (error) => {
+        dialogRef.close();  // Close the dialog on error
         console.error('Error disconnecting Google Calendar:', error);
         this.snackBar.open('Failed to disconnect Google Calendar', 'Close', {
           duration: 3000
