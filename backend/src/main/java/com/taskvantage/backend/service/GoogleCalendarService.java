@@ -1,13 +1,14 @@
 package com.taskvantage.backend.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.tasks.Tasks;
+import com.google.api.services.tasks.model.TaskList;
+import com.google.api.services.tasks.model.TaskLists;
 import com.taskvantage.backend.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -39,63 +41,102 @@ public class GoogleCalendarService {
         this.httpTransport = new NetHttpTransport();
     }
 
-    // Build the Calendar service using the stored access token
-    private Calendar getCalendarService(User user) throws GeneralSecurityException, IOException {
+    // Build the Tasks service using the stored access token
+    private Tasks getTasksService(User user) throws GeneralSecurityException, IOException {
         GoogleCredential credential = new GoogleCredential().setAccessToken(user.getGoogleAccessToken());
 
-        return new Calendar.Builder(
+        return new Tasks.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
                 credential
         ).setApplicationName("TaskVantage").build();
     }
 
-    // Create an event in Google Calendar for a task
-    public void createCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end) throws GeneralSecurityException, IOException {
-        Calendar calendarService = getCalendarService(user);
+    // Create a task in Google Tasks
+    public void createGoogleTask(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, String description)
+            throws GeneralSecurityException, IOException {
+        if (user.getGoogleAccessToken() == null) {
+            logger.error("No Google access token found for user {}", user.getId());
+            return;
+        }
 
-        Event event = new Event()
-                .setSummary(taskTitle)
-                .setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
-                .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
+        Tasks tasksService = getTasksService(user);
 
-        calendarService.events().insert("primary", event).execute();
+        try {
+            // Get the default task list
+            TaskLists taskLists = tasksService.tasklists().list().execute();
+            if (taskLists.getItems() != null && !taskLists.getItems().isEmpty()) {
+                String taskListId = taskLists.getItems().get(0).getId();
+
+                com.google.api.services.tasks.model.Task googleTask = new com.google.api.services.tasks.model.Task()
+                        .setTitle(taskTitle)
+                        .setDue(formatDateTime(end))
+                        .setNotes(description);
+
+                tasksService.tasks().insert(taskListId, googleTask).execute();
+                logger.info("Successfully created Google Task '{}' for user {}", taskTitle, user.getId());
+            } else {
+                // Create a new task list if none exists
+                TaskList newTaskList = new TaskList().setTitle("TaskVantage Tasks");
+                TaskList createdList = tasksService.tasklists().insert(newTaskList).execute();
+
+                com.google.api.services.tasks.model.Task googleTask = new com.google.api.services.tasks.model.Task()
+                        .setTitle(taskTitle)
+                        .setDue(formatDateTime(end))
+                        .setNotes(description);
+
+                tasksService.tasks().insert(createdList.getId(), googleTask).execute();
+                logger.info("Created new task list and task '{}' for user {}", taskTitle, user.getId());
+            }
+        } catch (GoogleJsonResponseException e) {
+            logger.error("Google Tasks API error: {}, Error code: {}", e.getDetails().getMessage(), e.getStatusCode());
+            throw e;
+        }
     }
 
-    public void updateCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, String eventId) throws GeneralSecurityException, IOException {
-        Calendar calendarService = getCalendarService(user);
+    // Update a task in Google Tasks
+    public void updateGoogleTask(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, String taskId, String description)
+            throws GeneralSecurityException, IOException {
+        Tasks tasksService = getTasksService(user);
 
-        Event event = new Event()
-                .setSummary(taskTitle)
-                .setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
-                .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
+        // Update the task
+        com.google.api.services.tasks.model.Task googleTask = new com.google.api.services.tasks.model.Task()
+                .setTitle(taskTitle)
+                .setDue(formatDateTime(end))  // Google Tasks only supports due date, not start date
+                .setNotes(description);       // Add description as notes
 
-        calendarService.events().update("primary", eventId, event).execute();
+        // Get the default task list
+        TaskLists taskLists = tasksService.tasklists().list().execute();
+        if (taskLists.getItems() != null && !taskLists.getItems().isEmpty()) {
+            String taskListId = taskLists.getItems().get(0).getId();
+            tasksService.tasks().update(taskListId, taskId, googleTask).execute();
+            logger.info("Updated Google Task '{}' for user {}", taskTitle, user.getId());
+        } else {
+            logger.warn("No task lists found for user {}", user.getId());
+        }
     }
 
-    // Test Google Calendar integration with access token from environment variable
+    // Helper method to format DateTime for Google Tasks
+    private String formatDateTime(ZonedDateTime dateTime) {
+        // Google Tasks API expects RFC 3339 timestamp
+        return dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    // Test Google Tasks integration
     public void testGoogleCalendarIntegration() throws GeneralSecurityException, IOException {
-        // Retrieve access token from environment variable
         String accessToken = System.getenv("TEST_GOOGLE_ACCESS_TOKEN");
 
         if (accessToken == null || accessToken.isEmpty()) {
             throw new IllegalStateException("Environment variable TEST_GOOGLE_ACCESS_TOKEN is not set or is empty.");
         }
 
-        // Simulate a user with an access token from the environment
         User testUser = new User();
         testUser.setGoogleAccessToken(accessToken);
 
-        // Simulate a task creation
         ZonedDateTime start = ZonedDateTime.now();
         ZonedDateTime end = start.plusHours(1);
 
-        createCalendarEvent(testUser, "Test Task from Backend", start, end);
-    }
-
-    // Helper method to convert ZonedDateTime to Date for Google Calendar
-    private Date convertToDate(ZonedDateTime zonedDateTime) {
-        return Date.from(zonedDateTime.toInstant());
+        createGoogleTask(testUser, "Test Task from Backend", start, end, "Test task description");
     }
 
     /**

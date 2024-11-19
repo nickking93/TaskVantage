@@ -44,16 +44,18 @@ public class TaskServiceImpl implements TaskService {
                 user.isTaskSyncEnabled()) {
             try {
                 if (task.getScheduledStart() != null && task.getDueDate() != null) {
-                    googleCalendarService.createCalendarEvent(
+                    // Using Google Tasks API instead of Calendar Events
+                    googleCalendarService.createGoogleTask(
                             user,
                             task.getTitle(),
                             task.getScheduledStart(),
-                            task.getDueDate()
+                            task.getDueDate(),
+                            task.getDescription() // Optionally include description if available
                     );
                 }
             } catch (GeneralSecurityException | IOException e) {
                 // Log the error but don't fail the task operation
-                logger.error("Failed to sync task with Google Calendar", e);
+                logger.error("Failed to sync task with Google Tasks", e);
             }
         }
     }

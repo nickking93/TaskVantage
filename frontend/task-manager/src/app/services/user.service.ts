@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -29,10 +29,17 @@ export class UserService {
 
   // Update task sync preference
   updateTaskSync(enabled: boolean): Observable<any> {
+    console.log('UserService: Sending task sync update request:', enabled);
     return this.http.post(
       `${this.apiUrl}/api/oauth2/google/sync-settings`,
       { enabled },
       { headers: this.getHeaders() }
+    ).pipe(
+      tap(response => console.log('UserService: Received response:', response)),
+      catchError(error => {
+        console.error('UserService: Error updating task sync:', error);
+        throw error;
+      })
     );
-  }
+}
 }

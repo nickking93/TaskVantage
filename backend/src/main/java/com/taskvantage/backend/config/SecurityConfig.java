@@ -180,10 +180,12 @@ public class SecurityConfig {
                 .getBuilder("google")
                 .clientId("872741914932-asspmr6jois4ovvr3bvjm4p44csq9qjs.apps.googleusercontent.com")
                 .clientSecret(googleClientSecret)
-                .scope("openid", "profile", "email", "https://www.googleapis.com/auth/calendar")
+                .scope("openid",
+                        "profile",
+                        "email",
+                        "https://www.googleapis.com/auth/calendar",
+                        "https://www.googleapis.com/auth/tasks")
                 .redirectUri(backendUrl + "/login/oauth2/code/google")
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .tokenUri("https://oauth2.googleapis.com/token")
                 .build();
     }
 

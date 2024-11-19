@@ -128,21 +128,29 @@ public class GoogleOAuth2Controller {
 
     @PostMapping("/oauth2/google/sync-settings")
     public ResponseEntity<?> updateTaskSyncSettings(HttpServletRequest request, @RequestBody Map<String, Boolean> settings) {
-        logger.debug("Updating task sync settings");
+        logger.debug("Updating task sync settings with payload: {}", settings);
 
         String userId = request.getHeader("X-User-Id");
+        logger.debug("User ID from header: {}", userId);
+
         if (userId == null) {
             logger.error("X-User-Id header is missing");
             return ResponseEntity.badRequest().body(Map.of("error", "User ID is required"));
         }
 
         Boolean enabled = settings.get("enabled");
+        logger.debug("Sync enabled value: {}", enabled);
+
         if (enabled == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Enabled status is required"));
         }
 
         try {
             User user = userDetailsService.findUserById(Long.parseLong(userId));
+            logger.debug("Found user: {}, current sync status: {}",
+                    user != null ? user.getId() : "null",
+                    user != null ? user.isTaskSyncEnabled() : "n/a");
+
             if (user == null) {
                 logger.error("User not found with ID: {}", userId);
                 return ResponseEntity.notFound().build();
@@ -150,17 +158,21 @@ public class GoogleOAuth2Controller {
 
             // Only allow enabling sync if Google Calendar is connected
             if (enabled && user.getGoogleAccessToken() == null) {
+                logger.warn("Attempted to enable sync without Google connection");
                 return ResponseEntity.badRequest().body(Map.of(
                         "error", "Cannot enable sync without Google Calendar connection"
                 ));
             }
 
+            boolean oldStatus = user.isTaskSyncEnabled();
             user.setTaskSyncEnabled(enabled);
-            userDetailsService.saveUser(user);
+            User savedUser = userDetailsService.saveUser(user);
+            logger.debug("Updated user sync status from {} to {}, saved status: {}",
+                    oldStatus, enabled, savedUser.isTaskSyncEnabled());
 
             return ResponseEntity.ok(Map.of(
                     "message", "Task sync settings updated successfully",
-                    "enabled", enabled
+                    "enabled", savedUser.isTaskSyncEnabled()  // Return the actual saved value
             ));
         } catch (Exception e) {
             logger.error("Error updating task sync settings", e);

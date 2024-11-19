@@ -81,18 +81,20 @@ export class SettingsComponent implements OnInit {
   }
 
   private loadUserSettings(): void {
+    console.log('SettingsComponent: Loading user settings');
     this.userService.getUserSettings().subscribe({
       next: (settings) => {
-        this.isTaskSyncEnabled = settings.taskSyncEnabled;
+        console.log('SettingsComponent: Received settings:', settings);
+        this.isTaskSyncEnabled = settings.taskSyncEnabled || settings.enabled; // Check both properties
       },
       error: (error) => {
-        console.error('Error loading user settings:', error);
+        console.error('SettingsComponent: Error loading user settings:', error);
         this.snackBar.open('Failed to load settings', 'Close', {
           duration: 3000
         });
       }
     });
-  }
+}
 
   connectGoogleCalendar(): void {
     // Attempt to retrieve userId from route parameters
@@ -116,9 +118,15 @@ export class SettingsComponent implements OnInit {
   }
 
   toggleTaskSync(enabled: boolean): void {
+    console.log('SettingsComponent: Toggling task sync to:', enabled);
     this.userService.updateTaskSync(enabled).subscribe({
       next: (response) => {
+        console.log('SettingsComponent: Update response:', response);
         this.isTaskSyncEnabled = enabled;
+        
+        // Verify the setting was saved by fetching current state
+        this.loadUserSettings();
+        
         this.snackBar.open(
           `Task sync ${enabled ? 'enabled' : 'disabled'}`,
           'Close',
@@ -126,15 +134,14 @@ export class SettingsComponent implements OnInit {
         );
       },
       error: (error) => {
-        console.error('Error updating task sync:', error);
+        console.error('SettingsComponent: Error updating task sync:', error);
         this.snackBar.open('Failed to update task sync settings', 'Close', {
-          duration: 3000
-        });
+          duration: 3000 });
         // Revert the toggle if the update failed
         this.isTaskSyncEnabled = !enabled;
       }
     });
-  }
+}
 
   disconnectGoogleCalendar(): void {
     // Open the loading dialog
