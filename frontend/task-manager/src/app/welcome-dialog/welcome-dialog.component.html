@@ -1,0 +1,23 @@
+<div class="dialog-container">
+    <h2 mat-dialog-title class="dialog-title">Welcome to TaskVantage!</h2>
+    
+    <mat-dialog-content class="dialog-content">
+      <p>
+        This application is designed as a portfolio piece to demonstrate my capabilities in software development. 
+        It showcases various features and techniques I have mastered through my education and personal projects. 
+        Please note that this application is intended for demonstration purposes only.
+      </p>
+      <p>
+        Thank you for visiting, and I hope you find this showcase insightful!
+      </p>
+    </mat-dialog-content>
+    
+    <mat-dialog-actions align="end" class="dialog-actions">
+      <button mat-button color="warn" (click)="onDecline()">
+        Decline and Leave
+      </button>
+      <button mat-button color="primary" (click)="onAccept()">
+        Acknowledge and Visit
+      </button>
+    </mat-dialog-actions>
+  </div>

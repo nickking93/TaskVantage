@@ -1,0 +1,60 @@
+.dialog-container {
+    padding: 20px;
+    max-width: 500px;
+  }
+  
+  .dialog-title {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  
+  .dialog-content {
+    margin: 20px 0;
+  }
+  
+  .dialog-content p {
+    margin: 16px 0;
+    line-height: 1.6;
+    color: #555;
+    font-size: 16px;
+  }
+  
+  .dialog-actions {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  
+  /* Button styling */
+  button[mat-button] {
+    min-width: 120px;
+    padding: 8px 16px;
+  }
+  
+  button[color="warn"] {
+    margin-right: 8px;
+  }
+  
+  /* Add some responsive adjustments */
+  @media (max-width: 480px) {
+    .dialog-container {
+      padding: 16px;
+    }
+    
+    .dialog-title {
+      font-size: 20px;
+    }
+    
+    .dialog-content p {
+      font-size: 14px;
+    }
+    
+    button[mat-button] {
+      min-width: 100px;
+      padding: 6px 12px;
+    }
+  }

@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router'; // ActivatedRoute added to get URL parameters
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { MatDialog } from '@angular/material/dialog'; 
 import { LoadingDialogComponent } from '../loading-dialog.component';
-import { SuccessDialogComponent } from '../success-dialog/success-dialog.component'; // Import the dialog component
+import { SuccessDialogComponent } from '../success-dialog/success-dialog.component'; 
+import { WelcomeDialogComponent } from '../../app/welcome-dialog/welcome-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -43,7 +44,26 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Add a slight delay to ensure queryParams are captured correctly
+    // Show the welcome dialog
+    const welcomeDialogRef = this.dialog.open(WelcomeDialogComponent, {
+      disableClose: true,
+      width: '500px',
+      maxWidth: '90vw',
+      panelClass: 'welcome-dialog'
+    });
+  
+    welcomeDialogRef.afterClosed().subscribe(result => {
+      if (result === false) {
+        // The decline logic is now handled in the dialog component
+        return;
+      }
+      // Continue with normal flow for accepted users
+      this.checkVerification();
+    });
+  }
+  
+  // Separate method for verification check
+  private checkVerification(): void {
     setTimeout(() => {
       this.route.queryParams.subscribe(params => {
         const verified = params['verified'];
@@ -63,8 +83,8 @@ export class LoginComponent implements OnInit {
           });
         }
       });
-    }, 500); // Adding a 500ms delay
-  }    
+    }, 500);
+  }
 
   // Method to verify the email using the token
   verifyEmail(token: string) {
