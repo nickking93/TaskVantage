@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -30,22 +30,28 @@ export class GoogleAuthService {
   checkGoogleCalendarConnection(userId: string): Observable<any> {
     if (!userId) {
       console.error('User ID is required to check Google Calendar connection.');
-      return new Observable();
+      return throwError(() => new Error('User ID is required'));
     }
-  
-    // Get the token using the same key as LoginComponent
-    const token = localStorage.getItem('token');
-  
-    if (!token) {
-      console.error('No JWT token found');
-      return new Observable();
-    }
-  
-    const headers = new HttpHeaders()
-      .set('X-User-Id', userId)
-      .set('Authorization', `Bearer ${token}`);
+
+    const headers = new HttpHeaders().set('X-User-Id', userId);
       
-    return this.http.get(`${this.apiUrl}/api/oauth2/google/status`, { headers });
+    return this.http.get(`${this.apiUrl}/api/oauth2/google/status`, { headers }).pipe(
+      catchError((error) => {
+        if (error.status === 401) {
+          // Token expired, redirect to login
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  initiateGoogleAuth(userId: string): void {
+    // Store userId in localStorage before redirect
+    localStorage.setItem('google_auth_user_id', userId);
+    // Redirect to backend OAuth endpoint
+    window.location.href = `${this.apiUrl}/oauth2/authorization/google?userId=${userId}`;
   }
 
   disconnectGoogleCalendar(): Observable<any> {

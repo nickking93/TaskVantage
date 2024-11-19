@@ -10,7 +10,6 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { SharedModule } from './shared.module';
-import { provideHttpClient } from '@angular/common/http';
 import { ServiceWorkerModule } from '@angular/service-worker';
 
 // Import Angular Material modules
@@ -19,12 +18,15 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+// Updated imports
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './auth.interceptor';
+
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     RegisterComponent
-    // SettingsComponent removed from here
   ],
   imports: [
     BrowserModule,
@@ -46,7 +48,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatSnackBarModule
   ],
   providers: [
-    provideHttpClient()
+    provideHttpClient(withInterceptors([authInterceptor]))
   ],
   bootstrap: [AppComponent]
 })

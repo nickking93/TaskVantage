@@ -5,6 +5,7 @@ import com.taskvantage.backend.Security.JwtFilter;
 import com.taskvantage.backend.Security.OAuth2CookieFilter;
 import com.taskvantage.backend.Security.SimpleLoggingFilter;
 import com.taskvantage.backend.service.CustomUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -126,6 +127,21 @@ public class SecurityConfig {
                                 "/api/set-user-id-cookie").permitAll()
                         .requestMatchers("/api/login", "/api/register", "/api/verify-email", "/api/forgot-password", "/api/reset-password").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            if (request.getRequestURI().startsWith("/api/")) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json");
+                                response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            } else if (request.getRequestURI().contains("/oauth2/authorization/google")) {
+                                // Let OAuth2 requests go through without redirect
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            } else {
+                                // Redirect non-API unauthorized requests to login
+                                response.sendRedirect("http://localhost:4200/login");
+                            }
+                        })
                 )
                 .oauth2Login(oauth2 -> {
                     logger.info("Setting up OAuth2 login");

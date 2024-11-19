@@ -57,30 +57,26 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  private checkConnectionStatus(): void {
-    // Retrieve userId from route parameters or localStorage
-    const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id') || '';
-
+  checkConnectionStatus(): void {
+    const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id');
+  
     if (userId) {
-      this.googleAuthService.checkGoogleCalendarConnection(userId).subscribe({
-        next: (response) => {
-          this.isGoogleConnected = response.connected;
-          if (this.isGoogleConnected) {
-            this.loadUserSettings();
+      this.googleAuthService.checkGoogleCalendarConnection(userId)
+        .subscribe({
+          next: (response) => {
+            this.isGoogleConnected = response.connected;
+            if (this.isGoogleConnected) {
+              this.loadUserSettings();
+            }
+          },
+          error: (error) => {
+            if (error.status !== 401) { // Don't show error for auth failures
+              this.snackBar.open('Failed to check connection status', 'Close', {
+                duration: 3000
+              });
+            }
           }
-        },
-        error: (error) => {
-          console.error('Error checking Google Calendar connection:', error);
-          this.snackBar.open('Failed to check connection status', 'Close', {
-            duration: 3000
-          });
-        }
-      });
-    } else {
-      console.error('User ID is not available');
-      this.snackBar.open('User ID is not available', 'Close', {
-        duration: 3000
-      });
+        });
     }
   }
 
