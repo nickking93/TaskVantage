@@ -50,27 +50,23 @@ public class GoogleCalendarService {
         ).setApplicationName("TaskVantage").build();
     }
 
-    // Create an event in Google Calendar for a task
-    public void createCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end) throws GeneralSecurityException, IOException {
+    public void createCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, boolean isAllDay) throws GeneralSecurityException, IOException {
         Calendar calendarService = getCalendarService(user);
 
         Event event = new Event()
-                .setSummary(taskTitle)
-                .setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
-                .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
+                .setSummary(taskTitle);
+
+        if (isAllDay) {
+            // For all-day events, use date without time
+            event.setStart(new EventDateTime().setDate(new com.google.api.client.util.DateTime(true, convertToDate(start).getTime(), 0)))
+                    .setEnd(new EventDateTime().setDate(new com.google.api.client.util.DateTime(true, convertToDate(end).getTime(), 0)));
+        } else {
+            // For regular events, use datetime
+            event.setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
+                    .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
+        }
 
         calendarService.events().insert("primary", event).execute();
-    }
-
-    public void updateCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, String eventId) throws GeneralSecurityException, IOException {
-        Calendar calendarService = getCalendarService(user);
-
-        Event event = new Event()
-                .setSummary(taskTitle)
-                .setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
-                .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
-
-        calendarService.events().update("primary", eventId, event).execute();
     }
 
     // Test Google Calendar integration with access token from environment variable
@@ -90,7 +86,14 @@ public class GoogleCalendarService {
         ZonedDateTime start = ZonedDateTime.now();
         ZonedDateTime end = start.plusHours(1);
 
-        createCalendarEvent(testUser, "Test Task from Backend", start, end);
+        // Test both regular and all-day events
+        // Regular event
+        createCalendarEvent(testUser, "Test Task from Backend", start, end, false);
+
+        // All-day event
+        ZonedDateTime startOfDay = start.toLocalDate().atStartOfDay(start.getZone());
+        ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
+        createCalendarEvent(testUser, "Test All-Day Task from Backend", startOfDay, endOfDay, true);
     }
 
     // Helper method to convert ZonedDateTime to Date for Google Calendar
