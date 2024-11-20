@@ -88,6 +88,19 @@ public class Task {
     @Column(name = "google_calendar_event_id")
     private String googleCalendarEventId;
 
+    @Column(name = "is_all_day")
+    private Boolean isAllDay = false;
+
+    // Updated getter to follow naming conventions
+    public Boolean isAllDay() {
+        return isAllDay;
+    }
+
+    // Setter remains unchanged
+    public void setIsAllDay(Boolean isAllDay) {
+        this.isAllDay = isAllDay;
+    }
+
     public String getGoogleCalendarEventId() {
         return googleCalendarEventId;
     }

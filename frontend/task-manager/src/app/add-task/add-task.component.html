@@ -24,7 +24,7 @@
       </mat-form-field>
 
       <!-- Due Time -->
-      <mat-form-field appearance="fill" class="form-field">
+      <mat-form-field appearance="fill" class="form-field" *ngIf="!newTask.isAllDay">
         <mat-label>Due Time</mat-label>
         <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
       </mat-form-field>
@@ -39,7 +39,7 @@
       </mat-form-field>
 
       <!-- Scheduled Start Time -->
-      <mat-form-field appearance="fill" class="form-field">
+      <mat-form-field appearance="fill" class="form-field" *ngIf="!newTask.isAllDay">
         <mat-label>Scheduled Start Time</mat-label>
         <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
       </mat-form-field>
@@ -54,11 +54,12 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- Recurring Checkbox -->
-      <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
-
-      <!-- Notify Before Start Checkbox -->
-      <mat-checkbox [(ngModel)]="newTask.notifyBeforeStart" name="notifyBeforeStart">Push Notifications</mat-checkbox>
+      <!-- Checkboxes -->
+      <div class="checkbox-group">
+        <mat-checkbox [(ngModel)]="newTask.recurring" name="recurring">Recurring</mat-checkbox>
+        <mat-checkbox [(ngModel)]="newTask.notifyBeforeStart" name="notifyBeforeStart">Push Notifications</mat-checkbox>
+        <mat-checkbox [(ngModel)]="newTask.isAllDay" name="isAllDay">All Day Task</mat-checkbox>
+      </div>
 
       <!-- Submit Button -->
       <div class="button-container">

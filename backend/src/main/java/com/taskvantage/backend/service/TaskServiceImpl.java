@@ -44,11 +44,13 @@ public class TaskServiceImpl implements TaskService {
                 user.isTaskSyncEnabled()) {
             try {
                 if (task.getScheduledStart() != null && task.getDueDate() != null) {
+                    // Pass `task.isAllDay()` (or appropriate boolean value) to match method signature
                     googleCalendarService.createCalendarEvent(
                             user,
                             task.getTitle(),
                             task.getScheduledStart(),
-                            task.getDueDate()
+                            task.getDueDate(),
+                            task.isAllDay()
                     );
                 }
             } catch (GeneralSecurityException | IOException e) {
@@ -57,6 +59,7 @@ public class TaskServiceImpl implements TaskService {
             }
         }
     }
+
 
     @Override
     public Task addTask(Task task) {

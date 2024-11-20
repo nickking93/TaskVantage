@@ -32,7 +32,6 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
   styleUrls: ['./add-task.component.css']
 })
 export class AddTaskComponent implements OnInit {
-
   userId: string = ''; 
   dueDate: Date | null = null; 
   dueTime: string = ''; 
@@ -44,18 +43,21 @@ export class AddTaskComponent implements OnInit {
   formInvalid: boolean = false;
 
   newTask: Task = new Task(
-    '',               
-    '',               
-    'Medium',         
-    false,            
-    undefined,        
-    '',               
-    'Pending',        
-    undefined,        
-    undefined,        
-    undefined,        
-    undefined,        
-    undefined         
+    '',               // title
+    '',               // description
+    'Medium',         // priority
+    false,            // recurring
+    undefined,        // dueDate
+    '',               // userId
+    'Pending',        // status
+    undefined,        // scheduledStart
+    undefined,        // completionDateTime
+    undefined,        // duration
+    undefined,        // lastModifiedDate
+    undefined,        // startDate
+    false,            // notifyBeforeStart
+    undefined,        // actualStart
+    false             // isAllDay
   );
 
   constructor(
@@ -75,67 +77,116 @@ export class AddTaskComponent implements OnInit {
   validateDates(): void {
     const now = new Date();
   
-    if (this.scheduledStartDate && this.scheduledStartTime) {
-      const scheduledStart = new Date(this.scheduledStartDate);
-      const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
-      scheduledStart.setHours(startHours, startMinutes, 0);
-      this.scheduledStartDateInvalid = scheduledStart <= now ? true : false;  // Ensure only boolean values are assigned
+    if (this.newTask?.isAllDay) {
+      // All-day task validation
+      now.setHours(0, 0, 0, 0);
+  
+      if (this.scheduledStartDate) {
+        const scheduledStart = new Date(this.scheduledStartDate);
+        scheduledStart.setHours(0, 0, 0, 0);
+        this.scheduledStartDateInvalid = scheduledStart < now;
+      } else {
+        this.scheduledStartDateInvalid = false;
+      }
+  
+      if (this.dueDate) {
+        const due = new Date(this.dueDate);
+        due.setHours(0, 0, 0, 0);
+        this.dueDateInvalid =
+          due < now ||
+          (this.scheduledStartDate
+            ? due < new Date(this.scheduledStartDate)
+            : false);
+      } else {
+        this.dueDateInvalid = false;
+      }
     } else {
-      this.scheduledStartDateInvalid = false;  // Default to false if no start date
+      // Regular task validation
+      if (this.scheduledStartDate && this.scheduledStartTime) {
+        const scheduledStart = new Date(this.scheduledStartDate);
+        const [startHours, startMinutes] = this.scheduledStartTime
+          .split(":")
+          .map(Number);
+        scheduledStart.setHours(startHours, startMinutes, 0);
+        this.scheduledStartDateInvalid = scheduledStart <= now;
+      } else {
+        this.scheduledStartDateInvalid = false;
+      }
+  
+      if (this.dueDate && this.dueTime) {
+        const due = new Date(this.dueDate);
+        const [dueHours, dueMinutes] = this.dueTime.split(":").map(Number);
+        due.setHours(dueHours, dueMinutes, 0);
+        this.dueDateInvalid =
+          due <= now ||
+          (this.scheduledStartDate && this.scheduledStartTime
+            ? due <= new Date(this.scheduledStartDate)
+            : false);
+      } else {
+        this.dueDateInvalid = false;
+      }
     }
   
-    if (this.dueDate && this.dueTime) {
-      const due = new Date(this.dueDate);
-      const [dueHours, dueMinutes] = this.dueTime.split(':').map(Number);
-      due.setHours(dueHours, dueMinutes, 0);
-      this.dueDateInvalid = due <= now || (this.scheduledStartDate && due <= this.scheduledStartDate) ? true : false;  // Ensure only boolean values are assigned
-    } else {
-      this.dueDateInvalid = false;  // Default to false if no due date
-    }
-  
-    this.formInvalid = this.dueDateInvalid || this.scheduledStartDateInvalid;
+    this.formInvalid = !!this.dueDateInvalid || !!this.scheduledStartDateInvalid;
   }
+  
 
   createTask(): void {
     this.newTask.userId = this.userId;
   
-    if (this.dueDate && this.dueTime) {
-      const dueDateObj = new Date(this.dueDate);
-      const [hours, minutes] = this.dueTime.split(':').map(Number);
-      dueDateObj.setHours(hours, minutes, 0);
-      this.newTask.dueDate = dueDateObj.toISOString(); 
-    }
-  
-    if (this.scheduledStartDate && this.scheduledStartTime) {
-      const scheduledStartObj = new Date(this.scheduledStartDate);
-      const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
-      scheduledStartObj.setHours(startHours, startMinutes, 0);
-      this.newTask.scheduledStart = scheduledStartObj.toISOString();
+    if (this.newTask.isAllDay) {
+      // For all-day tasks, set times to start/end of day
+      if (this.dueDate) {
+        const dueDateObj = new Date(this.dueDate);
+        dueDateObj.setHours(23, 59, 59);
+        this.newTask.dueDate = dueDateObj.toISOString();
+      }
+      
+      if (this.scheduledStartDate) {
+        const scheduledStartObj = new Date(this.scheduledStartDate);
+        scheduledStartObj.setHours(0, 0, 0);
+        this.newTask.scheduledStart = scheduledStartObj.toISOString();
+      }
+    } else {
+      // Regular tasks with specific times
+      if (this.dueDate && this.dueTime) {
+        const dueDateObj = new Date(this.dueDate);
+        const [hours, minutes] = this.dueTime.split(':').map(Number);
+        dueDateObj.setHours(hours, minutes, 0);
+        this.newTask.dueDate = dueDateObj.toISOString();
+      }
+    
+      if (this.scheduledStartDate && this.scheduledStartTime) {
+        const scheduledStartObj = new Date(this.scheduledStartDate);
+        const [startHours, startMinutes] = this.scheduledStartTime.split(':').map(Number);
+        scheduledStartObj.setHours(startHours, startMinutes, 0);
+        this.newTask.scheduledStart = scheduledStartObj.toISOString();
+      }
     }
   
     console.log('Task to be created:', this.newTask);
   
-    this.taskService.createTask(this.newTask).subscribe(
-      response => {
+    this.taskService.createTask(this.newTask).subscribe({
+      next: (response) => {
         console.log('Task created successfully:', response);
         this.dialog.open(SuccessDialogComponent, { 
           width: '300px', 
-          data: { title: 'Success', message: 'Task added successfully!' } // Added title "Success"
+          data: { title: 'Success', message: 'Task added successfully!' }
         });
         this.router.navigate(['/home', this.userId]);
       },
-      error => {
+      error: (error) => {
         console.error('Error adding task:', error);
       }
-    );
+    });
   }
   
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
-      data: { title: 'Success', message: 'Task created successfully!' } // Added title "Success"
+      data: { title: 'Success', message: 'Task created successfully!' }
     }).afterClosed().subscribe(() => {
       this.router.navigate([`/home/${this.userId}`]);
     });
-  }  
+  }
 }
