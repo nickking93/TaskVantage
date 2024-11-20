@@ -9,10 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatSelectModule } from '@angular/material/select'; // For priority dropdown
-import { MatCheckboxModule } from '@angular/material/checkbox'; // For checkboxes
-import { MatDialog } from '@angular/material/dialog'; // Import MatDialog
-import { SuccessDialogComponent } from '../success-dialog/success-dialog.component'; // Import SuccessDialogComponent
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 @Component({
   selector: 'app-update-task',
@@ -32,134 +32,250 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 })
 export class UpdateTaskComponent implements OnInit {
   taskForm!: FormGroup;
-  task!: any;
+  taskData: any;
+  dueDateInvalid: boolean = false;
+  scheduledStartDateInvalid: boolean = false;
+  formInvalid: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private taskService: TaskService,
     private router: Router,
     private fb: FormBuilder,
-    private dialog: MatDialog // Inject MatDialog
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.initForm();
-
+    
     const taskId = this.route.snapshot.paramMap.get('taskId');
     if (taskId) {
-      this.taskService.getTaskById(taskId).subscribe((task: any) => {
-        console.log('Fetched Task:', task);
-        this.task = task;
+      this.taskService.getTaskById(taskId).subscribe((response: any) => {
+        console.log('Fetched Task:', response);
+        this.taskData = response;
         this.populateForm();
       });
     }
   }
 
-  // Initialize form with fields
   initForm(): void {
     this.taskForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
       dueDate: ['', Validators.required],
-      dueTime: ['', Validators.required],
+      dueTime: [{ value: '', disabled: false }, Validators.required],
       scheduledStart: ['', Validators.required],
-      scheduledStartTime: ['', Validators.required],
-      priority: ['', Validators.required],  // Priority dropdown
-      recurring: [false],  // Recurring checkbox
-      notifyBeforeStart: [false]  // Push notifications checkbox
+      scheduledStartTime: [{ value: '', disabled: false }, Validators.required],
+      priority: ['', Validators.required],
+      recurring: [false],
+      notifyBeforeStart: [false],
+      isAllDay: [false]
+    });
+
+    this.taskForm.get('isAllDay')?.valueChanges.subscribe(isAllDay => {
+      console.log('isAllDay changed:', isAllDay);
+      this.handleAllDayChange(isAllDay);
     });
   }
 
-  // Populate form with task values
+  handleAllDayChange(isAllDay: boolean): void {
+    console.log('Handling all day change:', isAllDay);
+    const dueTimeControl = this.taskForm.get('dueTime');
+    const scheduledStartTimeControl = this.taskForm.get('scheduledStartTime');
+    
+    if (isAllDay) {
+      dueTimeControl?.disable();
+      scheduledStartTimeControl?.disable();
+      dueTimeControl?.setValue('');
+      scheduledStartTimeControl?.setValue('');
+    } else {
+      dueTimeControl?.enable();
+      scheduledStartTimeControl?.enable();
+      
+      if (!dueTimeControl?.value) {
+        dueTimeControl?.setValue('00:00');
+      }
+      if (!scheduledStartTimeControl?.value) {
+        scheduledStartTimeControl?.setValue('00:00');
+      }
+    }
+    
+    this.validateDates();
+  }
+
   populateForm(): void {
-    console.log('Setting values from task:', this.task?.task);
+    if (!this.taskData?.task) {
+      console.error('No task data available');
+      return;
+    }
 
-    const title = this.task?.task?.title || 'Default Title';
-    const description = this.task?.task?.description || 'Default Description';
+    console.log('Raw task data:', this.taskData);
 
-    const dueDate = this.task?.task?.dueDate ? new Date(this.task.task.dueDate) : null;
-    const localDueDate = dueDate ? this.convertUTCToLocalDate(dueDate) : '';
-    const dueTime = dueDate ? this.convertUTCToLocalTime(dueDate) : '';
+    const taskDetails = this.taskData.task;
+    const isAllDay = taskDetails.allDay || false;
+    console.log('Is all day task:', isAllDay);
 
-    const scheduledStart = this.task?.task?.scheduledStart ? new Date(this.task.task.scheduledStart) : null;
-    const localScheduledStart = scheduledStart ? this.convertUTCToLocalDate(scheduledStart) : '';
-    const scheduledStartTime = scheduledStart ? this.convertUTCToLocalTime(scheduledStart) : '';
+    const dueDate = taskDetails.dueDate;
+    const scheduledStart = taskDetails.scheduledStart;
+    const priority = (taskDetails.priority || 'Medium').charAt(0).toUpperCase() + 
+                    taskDetails.priority?.slice(1).toLowerCase();
 
-    const priority = this.task?.task?.priority || '';
-    const recurring = this.task?.task?.recurring || false;
-    const notifyBeforeStart = this.task?.task?.notifyBeforeStart || false;
-
-    this.taskForm.setValue({
-      title: title,
-      description: description,
-      dueDate: localDueDate,
-      dueTime: dueTime,
-      scheduledStart: localScheduledStart,
-      scheduledStartTime: scheduledStartTime,
+    const formValues = {
+      title: taskDetails.title,
+      description: taskDetails.description,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      scheduledStart: scheduledStart ? new Date(scheduledStart) : null,
       priority: priority,
-      recurring: recurring,
-      notifyBeforeStart: notifyBeforeStart
-    });
+      recurring: taskDetails.recurring || false,
+      notifyBeforeStart: taskDetails.notifyBeforeStart || false,
+      isAllDay: isAllDay
+    };
 
-    console.log('Form values after setting:', this.taskForm.value);
+    console.log('Setting form values:', formValues);
+
+    this.taskForm.patchValue(formValues);
+
+    if (!isAllDay) {
+      const dueDateObj = dueDate ? new Date(dueDate) : null;
+      const scheduledStartObj = scheduledStart ? new Date(scheduledStart) : null;
+
+      this.taskForm.patchValue({
+        dueTime: dueDateObj ? this.convertUTCToLocalTime(dueDateObj) : '00:00',
+        scheduledStartTime: scheduledStartObj ? this.convertUTCToLocalTime(scheduledStartObj) : '00:00'
+      });
+    }
+
+    this.handleAllDayChange(isAllDay);
+
+    console.log('Form values after population:', this.taskForm.value);
+    console.log('Form status:', this.taskForm.status);
   }
 
-  // Convert UTC date to local date (YYYY-MM-DD)
+  validateDates(): void {
+    const now = new Date();
+    const isAllDay = this.taskForm.get('isAllDay')?.value;
+  
+    if (isAllDay) {
+      now.setHours(0, 0, 0, 0);
+  
+      const scheduledStartDate = this.taskForm.get('scheduledStart')?.value;
+      if (scheduledStartDate) {
+        const scheduledStart = new Date(scheduledStartDate);
+        scheduledStart.setHours(0, 0, 0, 0);
+        this.scheduledStartDateInvalid = scheduledStart < now;
+      } else {
+        this.scheduledStartDateInvalid = false;
+      }
+  
+      const dueDate = this.taskForm.get('dueDate')?.value;
+      if (dueDate) {
+        const due = new Date(dueDate);
+        due.setHours(0, 0, 0, 0);
+        this.dueDateInvalid =
+          due < now ||
+          (scheduledStartDate ? due < new Date(scheduledStartDate) : false);
+      } else {
+        this.dueDateInvalid = false;
+      }
+    } else {
+      const scheduledStartDate = this.taskForm.get('scheduledStart')?.value;
+      const scheduledStartTime = this.taskForm.get('scheduledStartTime')?.value;
+      
+      if (scheduledStartDate && scheduledStartTime) {
+        const scheduledStart = new Date(scheduledStartDate);
+        const [startHours, startMinutes] = scheduledStartTime.split(':').map(Number);
+        scheduledStart.setHours(startHours, startMinutes, 0);
+        this.scheduledStartDateInvalid = scheduledStart <= now;
+      } else {
+        this.scheduledStartDateInvalid = false;
+      }
+  
+      const dueDate = this.taskForm.get('dueDate')?.value;
+      const dueTime = this.taskForm.get('dueTime')?.value;
+      
+      if (dueDate && dueTime) {
+        const due = new Date(dueDate);
+        const [dueHours, dueMinutes] = dueTime.split(':').map(Number);
+        due.setHours(dueHours, dueMinutes, 0);
+        this.dueDateInvalid =
+          due <= now ||
+          (scheduledStartDate && scheduledStartTime
+            ? due <= new Date(scheduledStartDate)
+            : false);
+      } else {
+        this.dueDateInvalid = false;
+      }
+    }
+  
+    this.formInvalid = this.dueDateInvalid || this.scheduledStartDateInvalid;
+  }
+
   convertUTCToLocalDate(date: Date): string {
-    return date.toLocaleDateString('en-CA');  // ISO 8601 format (YYYY-MM-DD)
+    return date.toLocaleDateString('en-CA');
   }
 
-  // Convert UTC time to local time (HH:MM)
   convertUTCToLocalTime(date: Date): string {
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
   }
 
-// Combine local date and time and convert to UTC
-combineLocalDateAndTimeToUTC(date: string, time: string): string {
-  const [hours, minutes] = time.split(':');
-  const localDate = new Date(`${date}T${hours}:${minutes}:00`);
+  combineLocalDateAndTimeToUTC(date: string, time: string | null): string {
+    if (time) {
+      const [hours, minutes] = time.split(':');
+      const localDate = new Date(`${date}T${hours}:${minutes}:00`);
+      return localDate.toISOString();
+    } else {
+      const localDate = new Date(date);
+      return localDate.toISOString();
+    }
+  }
 
-  // Convert the local time to UTC, ensuring the backend only receives a single UTC adjustment.
-  return new Date(localDate).toISOString();  // Avoid unnecessary timezone manipulation
-}
-
-  // Update task method
   updateTask(): void {
-    if (this.taskForm.valid) {
-      const formValues = this.taskForm.value;
+    if (this.taskForm.valid && !this.formInvalid) {
+      const formValues = this.taskForm.getRawValue();
+      const isAllDay = formValues.isAllDay;
   
-      // Combine date and time fields into UTC for due date and scheduled start
-      const dueDateTime = this.combineLocalDateAndTimeToUTC(formValues.dueDate, formValues.dueTime);
-      const scheduledStartDateTime = this.combineLocalDateAndTimeToUTC(formValues.scheduledStart, formValues.scheduledStartTime);
+      let dueDateTime: string;
+      let scheduledStartDateTime: string;
   
-      // Log the dates to verify the correct UTC values are being sent
-      console.log('Due DateTime (UTC):', dueDateTime);
-      console.log('Scheduled Start DateTime (UTC):', scheduledStartDateTime);
+      if (isAllDay) {
+        const dueDate = new Date(formValues.dueDate);
+        dueDate.setHours(23, 59, 59);
+        dueDateTime = dueDate.toISOString();
   
-      // Update the task object
-      this.task = {
-        ...this.task.task,
+        const scheduledStart = new Date(formValues.scheduledStart);
+        scheduledStart.setHours(0, 0, 0);
+        scheduledStartDateTime = scheduledStart.toISOString();
+      } else {
+        dueDateTime = this.combineLocalDateAndTimeToUTC(formValues.dueDate, formValues.dueTime);
+        scheduledStartDateTime = this.combineLocalDateAndTimeToUTC(
+          formValues.scheduledStart,
+          formValues.scheduledStartTime
+        );
+      }
+  
+      const updatedTask = {
+        ...this.taskData.task,
         title: formValues.title,
         description: formValues.description,
         dueDate: dueDateTime,
         scheduledStart: scheduledStartDateTime,
-        priority: formValues.priority,
+        priority: formValues.priority.toUpperCase(),
         recurring: formValues.recurring,
         notifyBeforeStart: formValues.notifyBeforeStart,
-        notificationSent: false
+        allDay: formValues.isAllDay
       };
   
-      if (!this.task.id) {
+      if (!updatedTask.id) {
         console.error('Task ID is undefined!');
-        return; // Prevent the update if the task.id is missing
+        return;
       }
   
-      this.taskService.updateTask(this.task).subscribe(
+      this.taskService.updateTask(updatedTask).subscribe(
         (response) => {
           console.log('Task updated successfully:', response);
-          this.openSuccessDialog();  // Open the success dialog
+          this.openSuccessDialog();
         },
         (error) => {
           console.error('Error updating task:', error);
@@ -167,14 +283,13 @@ combineLocalDateAndTimeToUTC(date: string, time: string): string {
       );
     }
   }
-  
-  // Open success dialog after task update
+
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
       data: { title: 'Success', message: 'Task updated successfully!' }
     }).afterClosed().subscribe(() => {
-      this.router.navigate(['/home', this.task.userId, 'tasks']);
+      this.router.navigate(['/home', this.taskData.task.userId, 'tasks']);
     });
   }
 }
