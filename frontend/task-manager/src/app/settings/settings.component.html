@@ -7,13 +7,27 @@
   <div class="google-calendar-integration">
     <h3>Google Calendar Integration</h3>
     
-    <ng-container *ngIf="!isGoogleConnected; else connectedTemplate">
-      <p>Connect your Google Calendar to sync your tasks automatically</p>
-      <button mat-raised-button color="primary" (click)="connectGoogleCalendar()">
-        <mat-icon>calendar_today</mat-icon>
-        Connect to Google Calendar
-      </button>
+    <ng-container *ngIf="!isLoading; else loadingTemplate">
+      <ng-container *ngIf="!isGoogleConnected; else connectedTemplate">
+        <!-- Add the connection button here -->
+        <div class="not-connected-settings">
+          <p class="status-text">
+            <mat-icon color="warn">error_outline</mat-icon>
+            Google Calendar Not Connected
+          </p>
+          <button mat-raised-button color="primary" 
+                  (click)="connectGoogleCalendar()"
+                  [disabled]="isLoading">
+            <mat-icon>link</mat-icon>
+            Connect Google Calendar
+          </button>
+        </div>
+      </ng-container>
     </ng-container>
+
+    <ng-template #loadingTemplate>
+      <mat-spinner diameter="24"></mat-spinner>
+    </ng-template>
 
     <ng-template #connectedTemplate>
       <div class="connected-settings">
@@ -25,11 +39,13 @@
         <mat-slide-toggle 
           [(ngModel)]="isTaskSyncEnabled" 
           (change)="toggleTaskSync($event.checked)"
-          [disabled]="!isGoogleConnected">
+          [disabled]="!isGoogleConnected || isLoading">
           Automatically sync tasks with Google Calendar
         </mat-slide-toggle>
 
-        <button mat-button color="warn" (click)="disconnectGoogleCalendar()">
+        <button mat-button color="warn" 
+                (click)="disconnectGoogleCalendar()"
+                [disabled]="isLoading">
           <mat-icon>link_off</mat-icon>
           Disconnect Google Calendar
         </button>

@@ -55,9 +55,6 @@ import { UpdateTaskComponent } from '../update-task/update-task.component';
     MatSlideToggleModule,
     MatButtonModule,
     MatSnackBarModule
-  ],
-  declarations: [
-    SettingsComponent
   ]
 })
 export class HomeModule {}
