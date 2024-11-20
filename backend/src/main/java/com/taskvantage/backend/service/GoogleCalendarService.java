@@ -39,7 +39,6 @@ public class GoogleCalendarService {
         this.httpTransport = new NetHttpTransport();
     }
 
-    // Build the Calendar service using the stored access token
     private Calendar getCalendarService(User user) throws GeneralSecurityException, IOException {
         GoogleCredential credential = new GoogleCredential().setAccessToken(user.getGoogleAccessToken());
 
@@ -50,60 +49,101 @@ public class GoogleCalendarService {
         ).setApplicationName("TaskVantage").build();
     }
 
-    public void createCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, boolean isAllDay) throws GeneralSecurityException, IOException {
+    public String createCalendarEvent(User user, String taskTitle, ZonedDateTime start, ZonedDateTime end, boolean isAllDay)
+            throws GeneralSecurityException, IOException {
         Calendar calendarService = getCalendarService(user);
 
         Event event = new Event()
                 .setSummary(taskTitle);
 
         if (isAllDay) {
-            // For all-day events, use date without time
             event.setStart(new EventDateTime().setDate(new com.google.api.client.util.DateTime(true, convertToDate(start).getTime(), 0)))
                     .setEnd(new EventDateTime().setDate(new com.google.api.client.util.DateTime(true, convertToDate(end).getTime(), 0)));
         } else {
-            // For regular events, use datetime
             event.setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
                     .setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
         }
 
-        calendarService.events().insert("primary", event).execute();
+        Event createdEvent = calendarService.events().insert("primary", event).execute();
+        logger.info("Created Google Calendar event with ID: {}", createdEvent.getId());
+        return createdEvent.getId();
     }
 
-    // Test Google Calendar integration with access token from environment variable
+    public void updateCalendarEvent(User user, String eventId, String taskTitle, ZonedDateTime start,
+                                    ZonedDateTime end, boolean isAllDay) throws GeneralSecurityException, IOException {
+        Calendar calendarService = getCalendarService(user);
+
+        try {
+            // First, get the existing event
+            Event event = calendarService.events().get("primary", eventId).execute();
+
+            // Update the event details
+            event.setSummary(taskTitle);
+
+            if (isAllDay) {
+                event.setStart(new EventDateTime()
+                                .setDate(new com.google.api.client.util.DateTime(true, convertToDate(start).getTime(), 0)))
+                        .setEnd(new EventDateTime()
+                                .setDate(new com.google.api.client.util.DateTime(true, convertToDate(end).getTime(), 0)));
+            } else {
+                event.setStart(new EventDateTime()
+                                .setDateTime(new com.google.api.client.util.DateTime(convertToDate(start))))
+                        .setEnd(new EventDateTime()
+                                .setDateTime(new com.google.api.client.util.DateTime(convertToDate(end))));
+            }
+
+            calendarService.events().update("primary", eventId, event).execute();
+            logger.info("Updated Google Calendar event: {}", eventId);
+        } catch (IOException e) {
+            logger.error("Failed to update Google Calendar event: {}", eventId, e);
+            throw e;
+        }
+    }
+
+    public void deleteCalendarEvent(User user, String eventId) throws GeneralSecurityException, IOException {
+        Calendar calendarService = getCalendarService(user);
+
+        try {
+            calendarService.events().delete("primary", eventId).execute();
+            logger.info("Deleted Google Calendar event: {}", eventId);
+        } catch (IOException e) {
+            logger.error("Failed to delete Google Calendar event: {}", eventId, e);
+            throw e;
+        }
+    }
+
     public void testGoogleCalendarIntegration() throws GeneralSecurityException, IOException {
-        // Retrieve access token from environment variable
         String accessToken = System.getenv("TEST_GOOGLE_ACCESS_TOKEN");
 
         if (accessToken == null || accessToken.isEmpty()) {
             throw new IllegalStateException("Environment variable TEST_GOOGLE_ACCESS_TOKEN is not set or is empty.");
         }
 
-        // Simulate a user with an access token from the environment
         User testUser = new User();
         testUser.setGoogleAccessToken(accessToken);
 
-        // Simulate a task creation
         ZonedDateTime start = ZonedDateTime.now();
         ZonedDateTime end = start.plusHours(1);
 
-        // Test both regular and all-day events
-        // Regular event
-        createCalendarEvent(testUser, "Test Task from Backend", start, end, false);
+        // Test regular event
+        String eventId = createCalendarEvent(testUser, "Test Task from Backend", start, end, false);
 
-        // All-day event
+        // Test update
+        updateCalendarEvent(testUser, eventId, "Updated Test Task", start, end, false);
+
+        // Test delete
+        deleteCalendarEvent(testUser, eventId);
+
+        // Test all-day event
         ZonedDateTime startOfDay = start.toLocalDate().atStartOfDay(start.getZone());
         ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
         createCalendarEvent(testUser, "Test All-Day Task from Backend", startOfDay, endOfDay, true);
     }
 
-    // Helper method to convert ZonedDateTime to Date for Google Calendar
     private Date convertToDate(ZonedDateTime zonedDateTime) {
         return Date.from(zonedDateTime.toInstant());
     }
 
-    /**
-     * Comprehensively revokes Google Calendar access and cleans up user data
-     */
     @Transactional
     public void revokeAccess(User user) {
         if (user == null) {
@@ -114,45 +154,34 @@ public class GoogleCalendarService {
         boolean accessTokenRevoked = false;
         boolean refreshTokenRevoked = false;
 
-        // 1. Revoke access token if present
         if (user.getGoogleAccessToken() != null) {
             accessTokenRevoked = revokeToken(user.getGoogleAccessToken());
         }
 
-        // 2. Revoke refresh token if present
         if (user.getGoogleRefreshToken() != null) {
             refreshTokenRevoked = revokeToken(user.getGoogleRefreshToken());
         }
 
-        // 3. Clear all Google-related data from user entity
         clearUserGoogleData(user);
 
-        // Log the results
         logger.info("Google Calendar access revocation completed for user ID: {}. Access token revoked: {}, Refresh token revoked: {}",
                 user.getId(), accessTokenRevoked, refreshTokenRevoked);
     }
 
-    /**
-     * Revokes a single token using Google's revocation endpoint
-     */
     private boolean revokeToken(String token) {
         try {
-            // Create the request body
             Map<String, String> params = new HashMap<>();
             params.put("token", token);
             HttpContent content = new UrlEncodedContent(params);
 
-            // Build and execute the revocation request
             HttpRequestFactory requestFactory = httpTransport.createRequestFactory();
             HttpRequest request = requestFactory.buildPostRequest(
                     new GenericUrl(GOOGLE_OAUTH2_REVOKE_URL),
                     content
             );
 
-            // Add required headers
             request.getHeaders().setContentType("application/x-www-form-urlencoded");
 
-            // Execute the request
             HttpResponse response = request.execute();
 
             boolean success = response.getStatusCode() == 200;
@@ -169,9 +198,6 @@ public class GoogleCalendarService {
         }
     }
 
-    /**
-     * Validates if a token is still valid using Google's tokeninfo endpoint
-     */
     public boolean isTokenValid(String token) {
         try {
             HttpRequestFactory requestFactory = httpTransport.createRequestFactory();
@@ -190,9 +216,6 @@ public class GoogleCalendarService {
         }
     }
 
-    /**
-     * Clears all Google-related data from the user entity
-     */
     private void clearUserGoogleData(User user) {
         user.setGoogleAccessToken(null);
         user.setGoogleRefreshToken(null);

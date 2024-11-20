@@ -220,17 +220,6 @@ export class UpdateTaskComponent implements OnInit {
     return `${hours}:${minutes}`;
   }
 
-  combineLocalDateAndTimeToUTC(date: string, time: string | null): string {
-    if (time) {
-      const [hours, minutes] = time.split(':');
-      const localDate = new Date(`${date}T${hours}:${minutes}:00`);
-      return localDate.toISOString();
-    } else {
-      const localDate = new Date(date);
-      return localDate.toISOString();
-    }
-  }
-
   updateTask(): void {
     if (this.taskForm.valid && !this.formInvalid) {
       const formValues = this.taskForm.getRawValue();
@@ -240,6 +229,7 @@ export class UpdateTaskComponent implements OnInit {
       let scheduledStartDateTime: string;
   
       if (isAllDay) {
+        // For all-day tasks, set times to start/end of day
         const dueDate = new Date(formValues.dueDate);
         dueDate.setHours(23, 59, 59);
         dueDateTime = dueDate.toISOString();
@@ -248,11 +238,16 @@ export class UpdateTaskComponent implements OnInit {
         scheduledStart.setHours(0, 0, 0);
         scheduledStartDateTime = scheduledStart.toISOString();
       } else {
-        dueDateTime = this.combineLocalDateAndTimeToUTC(formValues.dueDate, formValues.dueTime);
-        scheduledStartDateTime = this.combineLocalDateAndTimeToUTC(
-          formValues.scheduledStart,
-          formValues.scheduledStartTime
-        );
+        // Regular tasks with specific times
+        const dueDateObj = new Date(formValues.dueDate);
+        const [dueHours, dueMinutes] = formValues.dueTime.split(':').map(Number);
+        dueDateObj.setHours(dueHours, dueMinutes, 0);
+        dueDateTime = dueDateObj.toISOString();
+  
+        const scheduledStartObj = new Date(formValues.scheduledStart);
+        const [startHours, startMinutes] = formValues.scheduledStartTime.split(':').map(Number);
+        scheduledStartObj.setHours(startHours, startMinutes, 0);
+        scheduledStartDateTime = scheduledStartObj.toISOString();
       }
   
       const updatedTask = {

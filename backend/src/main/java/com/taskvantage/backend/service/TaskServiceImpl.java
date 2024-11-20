@@ -23,51 +23,71 @@ import java.util.Optional;
 @Service
 public class TaskServiceImpl implements TaskService {
 
-    private static final Logger logger = LoggerFactory.getLogger(GoogleCalendarService.class);
+    private static final Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
     private final TaskRepository taskRepository;
-    private final GoogleCalendarService googleCalendarService;  // Inject the GoogleCalendarService
-    private final CustomUserDetailsService userDetailsService;  // To fetch user details
+    private final GoogleCalendarService googleCalendarService;
+    private final CustomUserDetailsService userDetailsService;
     private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, GoogleCalendarService googleCalendarService, CustomUserDetailsService userDetailsService, CustomUserDetailsService customUserDetailsService) {
+    public TaskServiceImpl(TaskRepository taskRepository, GoogleCalendarService googleCalendarService,
+                           CustomUserDetailsService userDetailsService, CustomUserDetailsService customUserDetailsService) {
         this.taskRepository = taskRepository;
         this.googleCalendarService = googleCalendarService;
         this.userDetailsService = userDetailsService;
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    private void syncWithGoogleCalendar(Task task, User user) {
-        // Only sync if user has Google Calendar connected AND sync is enabled
-        if (user != null &&
-                user.getGoogleAccessToken() != null &&
-                user.isTaskSyncEnabled()) {
+    private void syncWithGoogleCalendar(Task task, User user, boolean isUpdate) {
+        if (user != null && user.getGoogleAccessToken() != null && user.isTaskSyncEnabled()) {
             try {
                 if (task.getScheduledStart() != null && task.getDueDate() != null) {
-                    // Pass `task.isAllDay()` (or appropriate boolean value) to match method signature
-                    googleCalendarService.createCalendarEvent(
-                            user,
-                            task.getTitle(),
-                            task.getScheduledStart(),
-                            task.getDueDate(),
-                            task.isAllDay()
-                    );
+                    if (isUpdate && task.getGoogleCalendarEventId() != null) {
+                        // Update existing calendar event
+                        googleCalendarService.updateCalendarEvent(
+                                user,
+                                task.getGoogleCalendarEventId(),
+                                task.getTitle(),
+                                task.getScheduledStart(),
+                                task.getDueDate(),
+                                task.isAllDay()
+                        );
+                    } else {
+                        // Create new calendar event
+                        String eventId = googleCalendarService.createCalendarEvent(
+                                user,
+                                task.getTitle(),
+                                task.getScheduledStart(),
+                                task.getDueDate(),
+                                task.isAllDay()
+                        );
+                        task.setGoogleCalendarEventId(eventId);
+                    }
                 }
             } catch (GeneralSecurityException | IOException e) {
-                // Log the error but don't fail the task operation
                 logger.error("Failed to sync task with Google Calendar", e);
             }
         }
     }
 
+    private void deleteGoogleCalendarEvent(Task task, User user) {
+        if (user != null &&
+                user.getGoogleAccessToken() != null &&
+                user.isTaskSyncEnabled() &&
+                task.getGoogleCalendarEventId() != null) {
+            try {
+                googleCalendarService.deleteCalendarEvent(user, task.getGoogleCalendarEventId());
+            } catch (GeneralSecurityException | IOException e) {
+                logger.error("Failed to delete Google Calendar event", e);
+            }
+        }
+    }
 
     @Override
     public Task addTask(Task task) {
-        // Set creation and last modified dates to current time in UTC
         task.setCreationDate(ZonedDateTime.now(ZoneOffset.UTC));
         task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
-        // Ensure that dueDate and scheduledStart remain in UTC
         if (task.getDueDate() != null) {
             task.setDueDate(task.getDueDate().withZoneSameInstant(ZoneOffset.UTC));
         }
@@ -75,12 +95,14 @@ public class TaskServiceImpl implements TaskService {
             task.setScheduledStart(task.getScheduledStart().withZoneSameInstant(ZoneOffset.UTC));
         }
 
-        // Save task to the database
         Task savedTask = taskRepository.save(task);
-
-        // Sync with Google Calendar if enabled
         User user = customUserDetailsService.findUserById(task.getUserId());
-        syncWithGoogleCalendar(savedTask, user);
+        syncWithGoogleCalendar(savedTask, user, false);
+
+        // Save again if Google Calendar ID was added
+        if (savedTask.getGoogleCalendarEventId() != null) {
+            savedTask = taskRepository.save(savedTask);
+        }
 
         return savedTask;
     }
@@ -91,22 +113,26 @@ public class TaskServiceImpl implements TaskService {
 
         if (existingTaskOptional.isPresent()) {
             Task existingTask = existingTaskOptional.get();
+            String originalEventId = existingTask.getGoogleCalendarEventId();
 
-            // Break down the update logic into helper methods
             updateBasicFields(existingTask, updatedTask);
             updateDates(existingTask, updatedTask);
             updateSubtasks(existingTask, updatedTask);
             updateComments(existingTask, updatedTask);
             updateOtherFields(existingTask, updatedTask);
 
-            // Save the updated task
+            // Preserve the Google Calendar Event ID
+            existingTask.setGoogleCalendarEventId(originalEventId);
+
+            // Save the task first to ensure all fields are updated
             Task savedTask = taskRepository.save(existingTask);
 
-            // Sync updates with Google Calendar if enabled
+            // Sync with Google Calendar if needed
             User user = customUserDetailsService.findUserById(savedTask.getUserId());
-            syncWithGoogleCalendar(savedTask, user);
+            syncWithGoogleCalendar(savedTask, user, true);
 
-            return savedTask;
+            // Save again if needed (though the Google Calendar ID shouldn't have changed for updates)
+            return taskRepository.save(savedTask);
         } else {
             throw new TaskNotFoundException(String.format("Task with id %d not found. Unable to update task.", updatedTask.getId()));
         }
@@ -142,11 +168,11 @@ public class TaskServiceImpl implements TaskService {
         long totalSubtasks = tasks.stream().mapToLong(TaskSummary::getTotalSubtasks).sum();
         long pastDeadlineTasks = tasks.stream()
                 .filter(task -> task.getDueDate() != null &&
-                        task.getDueDate().isBefore(ZonedDateTime.now(ZoneOffset.UTC)) && // Compare with ZonedDateTime in UTC
+                        task.getDueDate().isBefore(ZonedDateTime.now(ZoneOffset.UTC)) &&
                         !"Completed".equalsIgnoreCase(task.getStatus()))
                 .count();
 
-        YearMonth currentMonth = YearMonth.now(ZoneOffset.UTC); // Use current time in UTC
+        YearMonth currentMonth = YearMonth.now(ZoneOffset.UTC);
         long completedTasksThisMonth = tasks.stream()
                 .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
                         task.getDueDate() != null &&
@@ -168,83 +194,19 @@ public class TaskServiceImpl implements TaskService {
         return summary;
     }
 
-    private void updateBasicFields(Task existingTask, Task updatedTask) {
-        existingTask.setTitle(updatedTask.getTitle());
-        existingTask.setDescription(updatedTask.getDescription());
-
-        // Use Optional to avoid explicit null checks
-        Optional.ofNullable(updatedTask.getPriority()).ifPresent(existingTask::setPriority);
-        Optional.ofNullable(updatedTask.getStatus()).ifPresent(existingTask::setStatus);
-    }
-
-    private void updateDates(Task existingTask, Task updatedTask) {
-        // Use Optional for handling nullable dates
-        Optional.ofNullable(updatedTask.getDueDate()).ifPresent(existingTask::setDueDate);
-        Optional.ofNullable(updatedTask.getScheduledStart()).ifPresent(existingTask::setScheduledStart);
-        Optional.ofNullable(updatedTask.getStartDate()).ifPresent(existingTask::setStartDate);
-
-        // Convert completionDateTime to UTC if provided
-        Optional.ofNullable(updatedTask.getCompletionDateTime())
-                .map(dateTime -> dateTime.withZoneSameInstant(ZoneOffset.UTC))
-                .ifPresent(existingTask::setCompletionDateTime);
-
-        // Always update lastModifiedDate to the current time in UTC
-        existingTask.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
-
-        // Set duration if both startDate and completionDateTime are provided
-        if (updatedTask.getStartDate() != null && updatedTask.getCompletionDateTime() != null) {
-            ZonedDateTime completionDateTimeUtc = updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC);
-            Duration duration = Duration.between(updatedTask.getStartDate(), completionDateTimeUtc);
-            existingTask.setDuration(duration);
-        }
-    }
-
-    private void updateSubtasks(Task existingTask, Task updatedTask) {
-        if (updatedTask.getSubtasks() != null) {
-            List<Subtask> existingSubtasks = existingTask.getSubtasks();
-
-            // Remove subtasks not in the updated list
-            existingSubtasks.removeIf(subtask -> !updatedTask.getSubtasks().contains(subtask));
-
-            // Add new subtasks that aren't already in the list
-            for (Subtask newSubtask : updatedTask.getSubtasks()) {
-                if (!existingSubtasks.contains(newSubtask)) {
-                    existingSubtasks.add(newSubtask);
-                    newSubtask.setTask(existingTask);  // Set reference to parent task
-                }
-            }
-        }
-    }
-
-    private void updateComments(Task existingTask, Task updatedTask) {
-        if (updatedTask.getComments() != null) {
-            List<Comment> existingComments = existingTask.getComments();
-            List<Comment> updatedComments = updatedTask.getComments();
-
-            // Remove comments not in the updated comments
-            existingComments.removeIf(comment -> !updatedComments.contains(comment));
-
-            // Add new comments that are not already present
-            for (Comment newComment : updatedComments) {
-                if (!existingComments.contains(newComment)) {
-                    existingComments.add(newComment);
-                }
-            }
-        }
-    }
-
-    private void updateOtherFields(Task existingTask, Task updatedTask) {
-        // Direct field updates using Optional where needed
-        existingTask.setTags(updatedTask.getTags());
-        existingTask.setAttachments(updatedTask.getAttachments());
-        existingTask.setReminders(updatedTask.getReminders());
-        existingTask.setRecurring(updatedTask.isRecurring());
-        existingTask.setNotificationSent(updatedTask.getNotificationSent());
-    }
-
     @Override
     public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+        Optional<Task> taskOptional = taskRepository.findById(id);
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            User user = customUserDetailsService.findUserById(task.getUserId());
+
+            // Delete from Google Calendar first
+            deleteGoogleCalendarEvent(task, user);
+
+            // Then delete from database
+            taskRepository.deleteById(id);
+        }
     }
 
     @Override
@@ -255,11 +217,11 @@ public class TaskServiceImpl implements TaskService {
 
             // Set default priority if not set
             if (task.getPriority() == null) {
-                task.setPriority(TaskPriority.MEDIUM); // Default priority
+                task.setPriority(TaskPriority.MEDIUM);
             }
 
             task.setStartDate(startDate);
-            task.setStatus("In Progress"); // Set task status to "In Progress"
+            task.setStatus("In Progress");
             task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
             taskRepository.save(task);
@@ -274,12 +236,82 @@ public class TaskServiceImpl implements TaskService {
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
             task.setStatus("Complete");
-            task.setCompletionDateTime(ZonedDateTime.now(ZoneOffset.UTC)); // Set completionDateTime to now
-            task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC)); // Update lastModifiedDate
+            task.setCompletionDateTime(ZonedDateTime.now(ZoneOffset.UTC));
+            task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 
             taskRepository.save(task);
         } else {
             throw new TaskNotFoundException("Task not found with id " + taskId);
         }
+    }
+
+    private void updateBasicFields(Task existingTask, Task updatedTask) {
+        existingTask.setTitle(updatedTask.getTitle());
+        existingTask.setDescription(updatedTask.getDescription());
+        Optional.ofNullable(updatedTask.getPriority()).ifPresent(existingTask::setPriority);
+        Optional.ofNullable(updatedTask.getStatus()).ifPresent(existingTask::setStatus);
+        existingTask.setIsAllDay(updatedTask.isAllDay());
+    }
+
+    private void updateDates(Task existingTask, Task updatedTask) {
+        Optional.ofNullable(updatedTask.getDueDate())
+                .map(date -> date.withZoneSameInstant(ZoneOffset.UTC))
+                .ifPresent(existingTask::setDueDate);
+
+        Optional.ofNullable(updatedTask.getScheduledStart())
+                .map(date -> date.withZoneSameInstant(ZoneOffset.UTC))
+                .ifPresent(existingTask::setScheduledStart);
+
+        Optional.ofNullable(updatedTask.getStartDate())
+                .map(date -> date.withZoneSameInstant(ZoneOffset.UTC))
+                .ifPresent(existingTask::setStartDate);
+
+        Optional.ofNullable(updatedTask.getCompletionDateTime())
+                .map(dateTime -> dateTime.withZoneSameInstant(ZoneOffset.UTC))
+                .ifPresent(existingTask::setCompletionDateTime);
+
+        existingTask.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
+
+        if (updatedTask.getStartDate() != null && updatedTask.getCompletionDateTime() != null) {
+            Duration duration = Duration.between(
+                    updatedTask.getStartDate(),
+                    updatedTask.getCompletionDateTime().withZoneSameInstant(ZoneOffset.UTC)
+            );
+            existingTask.setDuration(duration);
+        }
+    }
+
+    private void updateSubtasks(Task existingTask, Task updatedTask) {
+        if (updatedTask.getSubtasks() != null) {
+            List<Subtask> existingSubtasks = existingTask.getSubtasks();
+            existingSubtasks.removeIf(subtask -> !updatedTask.getSubtasks().contains(subtask));
+            for (Subtask newSubtask : updatedTask.getSubtasks()) {
+                if (!existingSubtasks.contains(newSubtask)) {
+                    existingSubtasks.add(newSubtask);
+                    newSubtask.setTask(existingTask);
+                }
+            }
+        }
+    }
+
+    private void updateComments(Task existingTask, Task updatedTask) {
+        if (updatedTask.getComments() != null) {
+            List<Comment> existingComments = existingTask.getComments();
+            List<Comment> updatedComments = updatedTask.getComments();
+            existingComments.removeIf(comment -> !updatedComments.contains(comment));
+            for (Comment newComment : updatedComments) {
+                if (!existingComments.contains(newComment)) {
+                    existingComments.add(newComment);
+                }
+            }
+        }
+    }
+
+    private void updateOtherFields(Task existingTask, Task updatedTask) {
+        existingTask.setTags(updatedTask.getTags());
+        existingTask.setAttachments(updatedTask.getAttachments());
+        existingTask.setReminders(updatedTask.getReminders());
+        existingTask.setRecurring(updatedTask.isRecurring());
+        existingTask.setNotificationSent(updatedTask.getNotificationSent());
     }
 }
