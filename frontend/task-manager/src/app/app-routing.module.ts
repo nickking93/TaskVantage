@@ -5,7 +5,6 @@ import { RegisterComponent } from './register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { SettingsComponent } from './settings/settings.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -22,7 +21,7 @@ const routes: Routes = [
   { path: 'verify-email', component: VerifyEmailComponent },
   {
     path: 'home/:userId/settings',  
-    component: SettingsComponent,
+    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
     canActivate: [AuthGuard]
   },
   { path: '**', redirectTo: '/login' }  

@@ -1,19 +1,43 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { GoogleAuthService } from '../services/google-auth.service';
 import { UserService } from '../services/user.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { LoadingDialogComponent } from '../../app/loading-dialog.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.css']
+  styleUrls: ['./settings.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatDividerModule,
+    MatSnackBarModule,
+    MatDialogModule
+  ]
 })
 export class SettingsComponent implements OnInit {
   isGoogleConnected: boolean = false;
   isTaskSyncEnabled: boolean = false;
+  isLoading: boolean = true;
 
   constructor(
     private googleAuthService: GoogleAuthService,
@@ -25,10 +49,10 @@ export class SettingsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // First, check the connection status regardless of query parameters
-    this.checkConnectionStatus();
+    // Load settings immediately
+    this.loadAllSettings();
     
-    // Then handle any OAuth redirect responses
+    // Handle OAuth redirect responses
     this.route.queryParams.subscribe(params => {
       if (params['status'] === 'success') {
         this.isGoogleConnected = true;
@@ -57,53 +81,44 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  checkConnectionStatus(): void {
-    const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id');
+private loadAllSettings(): void {
+  const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id');
   
-    if (userId) {
-      this.googleAuthService.checkGoogleCalendarConnection(userId)
-        .subscribe({
-          next: (response) => {
-            this.isGoogleConnected = response.connected;
-            if (this.isGoogleConnected) {
-              this.loadUserSettings();
-            }
-          },
-          error: (error) => {
-            if (error.status !== 401) { // Don't show error for auth failures
-              this.snackBar.open('Failed to check connection status', 'Close', {
-                duration: 3000
-              });
-            }
+  if (userId) {
+    import('rxjs').then(({ forkJoin }) => {
+      forkJoin({
+        connection: this.googleAuthService.checkGoogleCalendarConnection(userId),
+        settings: this.userService.getUserSettings()
+      }).subscribe({
+        next: (results) => {
+          this.isGoogleConnected = results.connection.connected;
+          // Change this line to match backend response
+          this.isTaskSyncEnabled = results.settings.enabled;  // <-- Changed from taskSyncEnabled to enabled
+          this.isLoading = false;
+        },
+        error: (error) => {
+          if (error.status !== 401) {
+            this.snackBar.open('Failed to load settings', 'Close', {
+              duration: 3000
+            });
           }
-        });
-    }
-  }
-
-  private loadUserSettings(): void {
-    this.userService.getUserSettings().subscribe({
-      next: (settings) => {
-        this.isTaskSyncEnabled = settings.taskSyncEnabled;
-      },
-      error: (error) => {
-        console.error('Error loading user settings:', error);
-        this.snackBar.open('Failed to load settings', 'Close', {
-          duration: 3000
-        });
-      }
+          this.isLoading = false;
+        }
+      });
     });
+  } else {
+    this.isLoading = false;
   }
+}
 
   connectGoogleCalendar(): void {
-    // Attempt to retrieve userId from route parameters
     let userId = this.route.snapshot.params['userId'];
   
-    // Fallback to localStorage if userId is not in route parameters
     if (!userId) {
       userId = localStorage.getItem('google_auth_user_id');
     }
   
-    console.log('User ID:', userId); // Debugging line to check the userId
+    console.log('User ID:', userId);
   
     if (userId) {
       this.googleAuthService.connectGoogleCalendar(userId);
@@ -116,9 +131,11 @@ export class SettingsComponent implements OnInit {
   }
 
   toggleTaskSync(enabled: boolean): void {
+    const previousState = this.isTaskSyncEnabled;
+    this.isTaskSyncEnabled = enabled;  // Optimistically update
+
     this.userService.updateTaskSync(enabled).subscribe({
       next: (response) => {
-        this.isTaskSyncEnabled = enabled;
         this.snackBar.open(
           `Task sync ${enabled ? 'enabled' : 'disabled'}`,
           'Close',
@@ -127,19 +144,17 @@ export class SettingsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error updating task sync:', error);
+        this.isTaskSyncEnabled = previousState;  // Revert on error
         this.snackBar.open('Failed to update task sync settings', 'Close', {
           duration: 3000
         });
-        // Revert the toggle if the update failed
-        this.isTaskSyncEnabled = !enabled;
       }
     });
   }
 
   disconnectGoogleCalendar(): void {
-    // Open the loading dialog
     const dialogRef = this.dialog.open(LoadingDialogComponent, {
-      disableClose: true,  // Prevent closing by clicking outside
+      disableClose: true,
       data: {
         message: 'Disconnecting Google Calendar...'
       }
@@ -147,7 +162,7 @@ export class SettingsComponent implements OnInit {
   
     this.googleAuthService.disconnectGoogleCalendar().subscribe({
       next: () => {
-        dialogRef.close();  // Close the dialog on success
+        dialogRef.close();
         this.isGoogleConnected = false;
         this.isTaskSyncEnabled = false;
         this.snackBar.open('Google Calendar disconnected', 'Close', {
@@ -155,7 +170,7 @@ export class SettingsComponent implements OnInit {
         });
       },
       error: (error) => {
-        dialogRef.close();  // Close the dialog on error
+        dialogRef.close();
         console.error('Error disconnecting Google Calendar:', error);
         this.snackBar.open('Failed to disconnect Google Calendar', 'Close', {
           duration: 3000
