@@ -4,7 +4,7 @@ import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
 import { initializeApp } from 'firebase/app';
-import { getMessaging, onMessage } from 'firebase/messaging';
+import { getMessaging } from 'firebase/messaging';
 
 if (environment.production) {
   enableProdMode();
@@ -21,12 +21,6 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/firebase-messaging-sw.js')
     .then((registration) => {
       console.log('Service Worker registered with scope:', registration.scope);
-
-      // Handle foreground messages
-      onMessage(messaging, (payload) => {
-        console.log('Message received. ', payload);
-        // Customize notification here if needed
-      });
     })
     .catch(err => console.error('Service Worker registration failed: ', err));
 }

@@ -13,28 +13,19 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// We'll only use onBackgroundMessage and remove the push event listener
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  // Customize notification here
+  
+  const messageId = `${payload.notification.title}:${payload.notification.body}:${Date.now()}`;
+  
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/firebase-logo.png'
+    icon: '/firebase-logo.png',
+    tag: messageId, // Add tag to prevent duplicates
+    renotify: false
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
-});
-
-self.addEventListener('push', function(event) {
-  const notificationData = event.data.json();
-
-  const notificationTitle = notificationData.notification.title;
-  const notificationOptions = {
-    body: notificationData.notification.body,
-    icon: '/firebase-logo.png'
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(notificationTitle, notificationOptions)
-  );
 });

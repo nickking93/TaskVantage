@@ -9,15 +9,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+    private static final ConcurrentHashMap<String, Long> lastNotificationTimes = new ConcurrentHashMap<>();
+    private static final long NOTIFICATION_COOLDOWN_MINUTES = 15;
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
@@ -31,50 +36,86 @@ public class NotificationService {
     }
 
     @Scheduled(fixedRate = 60000) // Runs every minute
+    @Transactional
     public void checkAndSendNotifications() {
-        // Current time in UTC
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        ZonedDateTime end = now.plusMinutes(15); // Time window of 15 minutes
+        // Narrow the window to exactly 15 minutes from now
+        ZonedDateTime exactWindow = now.plusMinutes(15);
 
-        logger.info("Checking for tasks with scheduled_start between {} and {}", now, end);
+        logger.debug("Starting notification check at {} for tasks at {}", now, exactWindow);
 
-        // Retrieve all users from the repository
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
-            logger.info("Processing user: {}", user.getUsername());
-
-            // Get all tasks scheduled to start in the next 15 minutes
-            List<Task> tasksToNotify = taskRepository.findTasksScheduledBetween(user.getId(), now, end);
-
-            if (tasksToNotify.isEmpty()) {
-                logger.info("No tasks found for user {} in the scheduled time range.", user.getUsername());
+            try {
+                processUserTasks(user, now, exactWindow);
+            } catch (Exception e) {
+                logger.error("Error processing notifications for user {}: {}", user.getUsername(), e.getMessage(), e);
             }
-
-            tasksToNotify.forEach(task -> {
-                // Log the scheduled_start time for each task
-                logger.info("Checking task '{}', scheduled_start: {}", task.getTitle(), task.getScheduledStart());
-
-                // Check if the task's notification has not been sent
-                if (task.getNotificationSent() == null || !task.getNotificationSent()) {
-                    if (user.getToken() != null) {
-                        String message = "Your task '" + task.getTitle() + "' is starting in less than 15 minutes.";
-                        firebaseNotificationService.sendNotification(user.getToken(), task.getTitle(), message);
-
-                        // Mark the notification as sent
-                        task.setNotificationSent(true);
-                        taskRepository.save(task); // Update the task in the database
-
-                        logger.info("Notification sent for task '{}' to user '{}'", task.getTitle(), user.getUsername());
-                    } else {
-                        logger.warn("User with ID {} does not have an FCM token.", user.getId());
-                    }
-                } else {
-                    logger.info("Notification already sent for task '{}'", task.getTitle());
-                }
-            });
         }
 
-        logger.info("Notification check completed.");
+        logger.debug("Notification check completed at {}", ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    private void processUserTasks(User user, ZonedDateTime now, ZonedDateTime targetTime) {
+        logger.debug("Processing tasks for user: {}", user.getUsername());
+
+        // Get tasks that start exactly at the target time (15 minutes from now)
+        List<Task> tasksToNotify = taskRepository.findTasksScheduledBetween(
+                user.getId(),
+                targetTime.minusMinutes(1), // 1 minute buffer before
+                targetTime.plusMinutes(1)   // 1 minute buffer after
+        );
+
+        for (Task task : tasksToNotify) {
+            String taskKey = String.format("%d-%d", user.getId(), task.getId());
+
+            if (canSendNotification(taskKey) && !isNotificationSentRecently(task)) {
+                sendTaskNotification(user, task);
+            } else {
+                logger.debug("Skipping notification for task '{}' due to rate limiting or previous send",
+                        task.getTitle());
+            }
+        }
+    }
+
+    private boolean canSendNotification(String taskKey) {
+        Long lastNotificationTime = lastNotificationTimes.get(taskKey);
+        long currentTime = System.currentTimeMillis();
+
+        if (lastNotificationTime == null ||
+                TimeUnit.MILLISECONDS.toMinutes(currentTime - lastNotificationTime) >= NOTIFICATION_COOLDOWN_MINUTES) {
+            lastNotificationTimes.put(taskKey, currentTime);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isNotificationSentRecently(Task task) {
+        return task.getNotificationSent() != null && task.getNotificationSent();
+    }
+
+    private void sendTaskNotification(User user, Task task) {
+        if (user.getToken() == null) {
+            logger.warn("User {} has no FCM token registered", user.getUsername());
+            return;
+        }
+
+        try {
+            String message = String.format("Your task '%s' is starting in %d minutes",
+                    task.getTitle(), 15);
+
+            firebaseNotificationService.sendNotification(user.getToken(), task.getTitle(), message);
+
+            task.setNotificationSent(true);
+            taskRepository.save(task);
+
+            logger.info("Successfully sent notification for task '{}' to user '{}'",
+                    task.getTitle(), user.getUsername());
+
+        } catch (Exception e) {
+            logger.error("Failed to send notification for task '{}' to user '{}': {}",
+                    task.getTitle(), user.getUsername(), e.getMessage(), e);
+        }
     }
 }
