@@ -76,6 +76,14 @@ export class UpdateTaskComponent implements OnInit {
       console.log('isAllDay changed:', isAllDay);
       this.handleAllDayChange(isAllDay);
     });
+
+    // Add value change subscriptions for debugging
+    this.taskForm.valueChanges.subscribe(values => {
+      console.log('Form values changed:', values);
+      console.log('Form valid state:', this.taskForm.valid);
+      console.log('Form invalid state:', this.taskForm.invalid);
+      console.log('Custom form invalid state:', this.formInvalid);
+    });
   }
 
   handleAllDayChange(isAllDay: boolean): void {
@@ -86,14 +94,14 @@ export class UpdateTaskComponent implements OnInit {
     if (isAllDay) {
       dueTimeControl?.disable();
       scheduledStartTimeControl?.disable();
-      dueTimeControl?.setValue('');
-      scheduledStartTimeControl?.setValue('');
+      dueTimeControl?.setValue('23:59');
+      scheduledStartTimeControl?.setValue('00:00');
     } else {
       dueTimeControl?.enable();
       scheduledStartTimeControl?.enable();
       
       if (!dueTimeControl?.value) {
-        dueTimeControl?.setValue('00:00');
+        dueTimeControl?.setValue('23:59');
       }
       if (!scheduledStartTimeControl?.value) {
         scheduledStartTimeControl?.setValue('00:00');
@@ -140,7 +148,7 @@ export class UpdateTaskComponent implements OnInit {
       const scheduledStartObj = scheduledStart ? new Date(scheduledStart) : null;
 
       this.taskForm.patchValue({
-        dueTime: dueDateObj ? this.convertUTCToLocalTime(dueDateObj) : '00:00',
+        dueTime: dueDateObj ? this.convertUTCToLocalTime(dueDateObj) : '23:59',
         scheduledStartTime: scheduledStartObj ? this.convertUTCToLocalTime(scheduledStartObj) : '00:00'
       });
     }
@@ -154,60 +162,73 @@ export class UpdateTaskComponent implements OnInit {
   validateDates(): void {
     const now = new Date();
     const isAllDay = this.taskForm.get('isAllDay')?.value;
-  
+    
+    console.log('Validating dates - isAllDay:', isAllDay);
+    
+    // Reset validation flags
+    this.scheduledStartDateInvalid = false;
+    this.dueDateInvalid = false;
+    
+    const scheduledStartDate = this.taskForm.get('scheduledStart')?.value;
+    const dueDate = this.taskForm.get('dueDate')?.value;
+    
+    if (!scheduledStartDate || !dueDate) {
+      console.log('Missing required dates');
+      return;
+    }
+
     if (isAllDay) {
-      now.setHours(0, 0, 0, 0);
-  
-      const scheduledStartDate = this.taskForm.get('scheduledStart')?.value;
-      if (scheduledStartDate) {
-        const scheduledStart = new Date(scheduledStartDate);
-        scheduledStart.setHours(0, 0, 0, 0);
-        this.scheduledStartDateInvalid = scheduledStart < now;
-      } else {
-        this.scheduledStartDateInvalid = false;
-      }
-  
-      const dueDate = this.taskForm.get('dueDate')?.value;
-      if (dueDate) {
-        const due = new Date(dueDate);
-        due.setHours(0, 0, 0, 0);
-        this.dueDateInvalid =
-          due < now ||
-          (scheduledStartDate ? due < new Date(scheduledStartDate) : false);
-      } else {
-        this.dueDateInvalid = false;
-      }
-    } else {
-      const scheduledStartDate = this.taskForm.get('scheduledStart')?.value;
-      const scheduledStartTime = this.taskForm.get('scheduledStartTime')?.value;
+      const startDate = new Date(scheduledStartDate);
+      startDate.setHours(0, 0, 0, 0);
       
-      if (scheduledStartDate && scheduledStartTime) {
-        const scheduledStart = new Date(scheduledStartDate);
-        const [startHours, startMinutes] = scheduledStartTime.split(':').map(Number);
-        scheduledStart.setHours(startHours, startMinutes, 0);
-        this.scheduledStartDateInvalid = scheduledStart <= now;
-      } else {
-        this.scheduledStartDateInvalid = false;
-      }
-  
-      const dueDate = this.taskForm.get('dueDate')?.value;
+      const endDate = new Date(dueDate);
+      endDate.setHours(23, 59, 59, 999);
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      this.scheduledStartDateInvalid = startDate < today;
+      this.dueDateInvalid = endDate < today || endDate < startDate;
+      
+      console.log('All-day validation:', {
+        scheduledStartInvalid: this.scheduledStartDateInvalid,
+        dueDateInvalid: this.dueDateInvalid,
+        startDate,
+        endDate,
+        today
+      });
+    } else {
+      const startTime = this.taskForm.get('scheduledStartTime')?.value;
       const dueTime = this.taskForm.get('dueTime')?.value;
       
-      if (dueDate && dueTime) {
-        const due = new Date(dueDate);
-        const [dueHours, dueMinutes] = dueTime.split(':').map(Number);
-        due.setHours(dueHours, dueMinutes, 0);
-        this.dueDateInvalid =
-          due <= now ||
-          (scheduledStartDate && scheduledStartTime
-            ? due <= new Date(scheduledStartDate)
-            : false);
-      } else {
-        this.dueDateInvalid = false;
+      if (!startTime || !dueTime) {
+        console.log('Missing required times');
+        return;
       }
+      
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const [dueHours, dueMinutes] = dueTime.split(':').map(Number);
+      
+      const startDateTime = new Date(scheduledStartDate);
+      startDateTime.setHours(startHours, startMinutes, 0, 0);
+      
+      const dueDateTime = new Date(dueDate);
+      dueDateTime.setHours(dueHours, dueMinutes, 0, 0);
+      
+      this.scheduledStartDateInvalid = startDateTime < now;
+      this.dueDateInvalid = dueDateTime < now || dueDateTime <= startDateTime;
+      
+      console.log('Timed validation:', {
+        scheduledStartInvalid: this.scheduledStartDateInvalid,
+        dueDateInvalid: this.dueDateInvalid,
+        startDateTime,
+        dueDateTime,
+        now
+      });
     }
-  
+    
     this.formInvalid = this.dueDateInvalid || this.scheduledStartDateInvalid;
+    console.log('Form validation result:', { formInvalid: this.formInvalid });
   }
 
   convertUTCToLocalDate(date: Date): string {
@@ -221,6 +242,11 @@ export class UpdateTaskComponent implements OnInit {
   }
 
   updateTask(): void {
+    console.log('Attempting to update task');
+    console.log('Form valid:', this.taskForm.valid);
+    console.log('Form invalid:', this.taskForm.invalid);
+    console.log('Custom form invalid:', this.formInvalid);
+    
     if (this.taskForm.valid && !this.formInvalid) {
       const formValues = this.taskForm.getRawValue();
       const isAllDay = formValues.isAllDay;
@@ -259,8 +285,10 @@ export class UpdateTaskComponent implements OnInit {
         priority: formValues.priority.toUpperCase(),
         recurring: formValues.recurring,
         notifyBeforeStart: formValues.notifyBeforeStart,
-        allDay: formValues.isAllDay
+        isAllDay: formValues.isAllDay  // Changed from allDay to isAllDay
       };
+  
+      console.log('Sending updated task:', updatedTask); // Added for debugging
   
       if (!updatedTask.id) {
         console.error('Task ID is undefined!');
@@ -276,6 +304,14 @@ export class UpdateTaskComponent implements OnInit {
           console.error('Error updating task:', error);
         }
       );
+    } else {
+      console.log('Form is invalid:', {
+        formValidation: this.taskForm.valid,
+        customValidation: !this.formInvalid,
+        formErrors: this.taskForm.errors,
+        dueDateInvalid: this.dueDateInvalid,
+        scheduledStartDateInvalid: this.scheduledStartDateInvalid
+      });
     }
   }
 

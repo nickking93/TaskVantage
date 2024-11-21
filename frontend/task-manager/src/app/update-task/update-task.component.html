@@ -20,7 +20,11 @@
       <!-- Due Date -->
       <mat-form-field appearance="fill" class="form-field">
         <mat-label>Due Date</mat-label>
-        <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate" required (dateChange)="validateDates()">
+        <input matInput 
+               [matDatepicker]="dueDatePicker" 
+               formControlName="dueDate" 
+               required 
+               (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #dueDatePicker></mat-datepicker>
         <mat-error *ngIf="taskForm.get('dueDate')?.hasError('required')">
@@ -34,7 +38,11 @@
       <!-- Due Time -->
       <mat-form-field appearance="fill" class="form-field" *ngIf="!taskForm.get('isAllDay')?.value">
         <mat-label>Due Time</mat-label>
-        <input matInput formControlName="dueTime" type="time" required>
+        <input matInput 
+               formControlName="dueTime" 
+               type="time" 
+               required
+               (change)="validateDates()">
         <mat-error *ngIf="taskForm.get('dueTime')?.hasError('required')">
           Due Time is required
         </mat-error>
@@ -43,7 +51,11 @@
       <!-- Scheduled Start Date -->
       <mat-form-field appearance="fill" class="form-field">
         <mat-label>Scheduled Start Date</mat-label>
-        <input matInput [matDatepicker]="scheduledStartDatePicker" formControlName="scheduledStart" required (dateChange)="validateDates()">
+        <input matInput 
+               [matDatepicker]="scheduledStartDatePicker" 
+               formControlName="scheduledStart" 
+               required 
+               (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
         <mat-error *ngIf="taskForm.get('scheduledStart')?.hasError('required')">
@@ -57,7 +69,11 @@
       <!-- Scheduled Start Time -->
       <mat-form-field appearance="fill" class="form-field" *ngIf="!taskForm.get('isAllDay')?.value">
         <mat-label>Scheduled Start Time</mat-label>
-        <input matInput formControlName="scheduledStartTime" type="time" required>
+        <input matInput 
+               formControlName="scheduledStartTime" 
+               type="time" 
+               required
+               (change)="validateDates()">
         <mat-error *ngIf="taskForm.get('scheduledStartTime')?.hasError('required')">
           Scheduled Start Time is required
         </mat-error>
@@ -85,7 +101,12 @@
 
       <!-- Submit Button -->
       <div class="button-container">
-        <button mat-raised-button color="primary" type="submit" [disabled]="taskForm.invalid || formInvalid">Update Task</button>
+        <button mat-raised-button 
+                color="primary" 
+                type="submit" 
+                [disabled]="taskForm.invalid || formInvalid">
+          Update Task
+        </button>
       </div>
     </div>
   </form>
