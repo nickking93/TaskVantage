@@ -87,6 +87,20 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     /**
+     * Find a user by their FCM token.
+     *
+     * @param token the FCM token to search for
+     * @return Optional<User> containing the user if found
+     */
+    public Optional<User> findUserByFCMToken(String token) {
+        if (token == null || token.isEmpty()) {
+            logger.warn("Attempted to find user with null or empty FCM token");
+            return Optional.empty();
+        }
+        return userRepository.findByToken(token);
+    }
+
+    /**
      * Find a user by their Google email.
      *
      * @param googleEmail the Google email of the user
@@ -202,15 +216,23 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     /**
-     * Clear the FCM token for a user.
+     * Clear the FCM token for a user and save the update.
      *
      * @param username the username of the user
      */
     public void clearUserToken(String username) {
-        User user = findUserByUsername(username);
-        user.setToken(null);
-        saveUser(user);
-        logger.info("FCM Token cleared successfully for user: {}", username);
+        try {
+            User user = findUserByUsername(username);
+            String oldToken = user.getToken();
+            user.setToken(null);
+            saveUser(user);
+            logger.info("FCM Token cleared successfully for user: {} (Old token: {})",
+                    username, oldToken != null ? oldToken.substring(0, Math.min(oldToken.length(), 10)) + "..." : "null");
+        } catch (UsernameNotFoundException e) {
+            logger.error("Failed to clear FCM token - User not found: {}", username);
+        } catch (Exception e) {
+            logger.error("Unexpected error while clearing FCM token for user: {}", username, e);
+        }
     }
 
     /**

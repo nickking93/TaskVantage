@@ -4,6 +4,7 @@ import com.taskvantage.backend.model.AuthRequest;
 import com.taskvantage.backend.model.User;
 import com.taskvantage.backend.service.CustomUserDetailsService;
 import com.taskvantage.backend.Security.JwtUtil;
+import com.taskvantage.backend.service.FirebaseNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private FirebaseNotificationService firebaseNotificationService;
 
     /**
      * Authenticates the user and generates a JWT token if successful.
@@ -67,8 +71,12 @@ public class AuthController {
 
             // Handle FCM token if provided
             if (authRequest.getFcmToken() != null && !authRequest.getFcmToken().isEmpty()) {
-                customUserDetailsService.updateUserToken(user.getUsername(), authRequest.getFcmToken());
-                logger.info("Updated FCM Token for user: {}", user.getUsername());
+                firebaseNotificationService.sendNotification(
+                        authRequest.getFcmToken(),
+                        "Welcome to TaskVantage",
+                        "Thank you for logging in. Enjoy using the app!",
+                        user.getUsername()
+                );
             }
 
             // Prepare response
@@ -107,6 +115,45 @@ public class AuthController {
         } else {
             response.put("message", result);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    /**
+     * Updates the Firebase Cloud Messaging (FCM) token for the authenticated user.
+     *
+     * @param request Contains the FCM token to be updated.
+     * @param authentication The authentication object representing the currently authenticated user.
+     * @return A response entity with the result of the update. Returns:
+     *         - 200 OK: If the FCM token is updated successfully.
+     *         - 400 Bad Request: If the FCM token is missing or invalid.
+     *         - 401 Unauthorized: If the user is not authenticated.
+     *         - 500 Internal Server Error: If an error occurs while updating the token.
+     */
+    @PostMapping("/update-fcm-token")
+    public ResponseEntity<Map<String, Object>> updateFCMToken(@RequestBody Map<String, String> request, Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            response.put("message", "User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        String fcmToken = request.get("fcmToken");
+        if (fcmToken == null || fcmToken.trim().isEmpty()) {
+            response.put("message", "FCM token is required");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            String username = authentication.getName();
+            customUserDetailsService.updateUserToken(username, fcmToken);
+
+            response.put("message", "FCM token updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error updating FCM token", e);
+            response.put("message", "Failed to update FCM token");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
