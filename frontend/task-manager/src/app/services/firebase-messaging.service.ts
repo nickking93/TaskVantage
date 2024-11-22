@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, from, of } from 'rxjs';
-import { catchError, retry, tap, switchMap, map } from 'rxjs/operators';
+import { catchError, retry, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { getMessaging, getToken, deleteToken, onMessage } from 'firebase/messaging';
 import { getApp } from 'firebase/app';
@@ -11,120 +11,246 @@ import { getApp } from 'firebase/app';
 })
 export class FirebaseMessagingService {
   private apiUrl = environment.apiUrl;
-  private readonly TOKEN_REFRESH_INTERVAL = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-  private lastTokenTimestamp: number | null = null;
-  private processedMessageIds = new Map<string, number>();
-  private lastMessageTimestamp: number | null = null;
-  private readonly MESSAGE_DEDUPE_WINDOW = 2000; // 2 seconds window for deduplication
+  private isInitialized = false;
+  private serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
+  private permissionRequestInProgress = false;
 
-  constructor(private http: HttpClient) {
-    this.initializeMessaging();
-  }
+  constructor(private http: HttpClient) {}
 
-  private initializeMessaging(): void {
+  async initialize(): Promise<void> {
+    console.log('Starting FirebaseMessagingService initialize');
+    
+    const jwtToken = localStorage.getItem('jwtToken');
+    console.log('JWT Token exists:', !!jwtToken);
+    
+    if (!jwtToken) {
+      console.log('User not logged in, skipping notification initialization');
+      return;
+    }
+
+    if (this.isInitialized) {
+      console.log('Firebase messaging already initialized');
+      return;
+    }
+
     try {
-      const messaging = getMessaging(getApp());
-      onMessage(messaging, (payload) => {
-        // Only handle foreground messages if the app is focused
-        if (document.visibilityState === 'visible') {
-          this.handleIncomingMessage(payload);
-        }
-      });
-  
-      // Clean up old message IDs every minute
-      setInterval(() => this.cleanupOldMessages(), 60000);
+      if (!this.checkBrowserSupport()) {
+        return;
+      }
+
+      await this.initializeServiceWorker();
+      await this.initializeMessaging();
+      
+      // Request permission and get token if not already done
+      if (Notification.permission === 'granted') {
+        await this.getAndUpdateToken();
+      }
+      
+      this.isInitialized = true;
+      console.log('Firebase messaging initialized successfully');
+
     } catch (error) {
       console.error('Error initializing Firebase Messaging:', error);
+      throw error;
     }
   }
 
-  private handleIncomingMessage(payload: any): void {
-    console.log('Raw Firebase payload received:', payload);
-    const currentTime = Date.now();
-    
-    // Generate a unique message ID based on content and time window
-    const messageId = this.generateMessageId(payload);
-    console.log('Generated messageId:', messageId);
-    
-    // Check for duplicates
-    if (this.isDuplicateMessage(messageId, currentTime)) {
-        console.log('Duplicate message detected, ignoring message:', messageId);
-        return;
+  private async waitForServiceWorkerActivation(registration: ServiceWorkerRegistration): Promise<void> {
+    if (registration.active) {
+      return;
     }
 
-    console.log('Message passed deduplication check:', messageId);
-    console.log('Current processed messages:', Array.from(this.processedMessageIds.entries()));
-
-    // Store the message ID with timestamp
-    this.processedMessageIds.set(messageId, currentTime);
-    this.lastMessageTimestamp = currentTime;
-
-    // Show the notification using the Notifications API
-    if (Notification.permission === 'granted') {
-        const notificationTitle = payload.notification?.title || 'Notification';
-        const notificationOptions = {
-            body: payload.notification?.body,
-            tag: messageId, // Use messageId as tag to prevent duplicates
-            renotify: false, // Prevent renotification for same tag
-            silent: false,
-            data: {
-                messageId,
-                timestamp: currentTime
-            }
-        };
-
-        try {
-            console.log('Creating notification with options:', notificationOptions);
-            new Notification(notificationTitle, notificationOptions);
-        } catch (error) {
-            console.error('Error showing notification:', error);
-        }
-    }
-}
-
-  private generateMessageId(payload: any): string {
-    const title = payload.notification?.title || '';
-    const body = payload.notification?.body || '';
-    const timestamp = Math.floor(Date.now() / this.MESSAGE_DEDUPE_WINDOW);
-    return `${title}:${body}:${timestamp}`;
-  }
-
-  private isDuplicateMessage(messageId: string, currentTime: number): boolean {
-    // Check if we've seen this exact message ID recently
-    const lastSeenTime = this.processedMessageIds.get(messageId);
-    if (lastSeenTime) {
-      return (currentTime - lastSeenTime) < this.MESSAGE_DEDUPE_WINDOW;
-    }
-
-    // Check if we've received any message too recently
-    if (this.lastMessageTimestamp) {
-      return (currentTime - this.lastMessageTimestamp) < this.MESSAGE_DEDUPE_WINDOW;
-    }
-
-    return false;
-  }
-
-  private cleanupOldMessages(): void {
-    const currentTime = Date.now();
-    for (const [messageId, timestamp] of this.processedMessageIds.entries()) {
-      if (currentTime - timestamp > 60000) { // Remove entries older than 1 minute
-        this.processedMessageIds.delete(messageId);
-      }
-    }
-  }
-
-  sendTokenToServer(userId: string, fcmToken: string, authToken: string): Observable<any> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${authToken}`,
-      'Content-Type': 'application/json'
+    return new Promise((resolve) => {
+      registration.addEventListener('activate', () => resolve(), { once: true });
     });
-    const url = `${this.apiUrl}/api/tasks/${userId}/update-token`;
+  }
+
+  private async getAndUpdateToken(): Promise<string | null> {
+    try {
+      // Wait for service worker to be ready
+      if (!this.serviceWorkerRegistration) {
+        console.error('No service worker registration available');
+        return null;
+      }
+
+      // Ensure service worker is active
+      if (this.serviceWorkerRegistration.installing || this.serviceWorkerRegistration.waiting) {
+        await this.waitForServiceWorkerActivation(this.serviceWorkerRegistration);
+      }
+
+      const token = await this.getMessagingToken();
+      if (token) {
+        console.log('Got FCM token:', token);
+        await this.updateTokenInBackend(token);
+        return token;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting and updating token:', error);
+      return null;
+    }
+  }
+
+  private checkBrowserSupport(): boolean {
+    if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+      console.warn('Notifications are not supported in this browser');
+      return false;
+    }
+    return true;
+  }
+
+  private async initializeServiceWorker(): Promise<void> {
+    console.log('Initializing service worker');
     
-    return this.http.post(url, { fcmToken }, { headers }).pipe(
-      retry(3), // Retry failed requests up to 3 times
-      tap(() => console.log('FCM token successfully sent to server')),
-      catchError(this.handleError)
-    );
+    try {
+      // Unregister existing service workers
+      const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of existingRegistrations) {
+        if (registration.scope.includes('firebase-cloud-messaging-push-scope')) {
+          await registration.unregister();
+        }
+      }
+
+      // Register new service worker
+      this.serviceWorkerRegistration = await this.registerServiceWorker();
+      console.log('Service worker registered successfully');
+
+      // Wait for activation
+      await this.waitForServiceWorkerActivation(this.serviceWorkerRegistration);
+      console.log('Service worker activated successfully');
+    } catch (error) {
+      console.error('Error in service worker initialization:', error);
+      throw error;
+    }
+  }
+
+  private async initializeMessaging(): Promise<void> {
+    console.log('Initializing Firebase messaging');
+    const messaging = getMessaging(getApp());
+    
+    onMessage(messaging, (payload) => {
+      console.log('Foreground message received:', payload);
+      this.showNotification(payload);
+    });
+  }
+
+  async requestPermissionAndGetToken(): Promise<string | null> {
+    if (this.permissionRequestInProgress) {
+      console.log('Permission request already in progress');
+      return null;
+    }
+
+    this.permissionRequestInProgress = true;
+    
+    try {
+      if (!this.checkBrowserSupport()) {
+        return null;
+      }
+
+      // Make sure service worker is initialized
+      if (!this.isInitialized) {
+        await this.initialize();
+      }
+
+      console.log('Requesting Notification permission from browser');
+      const permission = await Notification.requestPermission();
+      console.log('Browser permission request result:', permission);
+      
+      if (permission === 'granted') {
+        return this.getAndUpdateToken();
+      }
+      
+      if (permission === 'denied') {
+        localStorage.setItem('notificationPermission', 'denied');
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error requesting permission:', error);
+      return null;
+    } finally {
+      this.permissionRequestInProgress = false;
+    }
+  }
+
+  private async getMessagingToken(): Promise<string | null> {
+    try {
+      const messaging = getMessaging(getApp());
+      console.log('Getting messaging token...');
+      
+      let options: { vapidKey: string; serviceWorkerRegistration?: ServiceWorkerRegistration } = {
+        vapidKey: environment.firebaseConfig.vapidKey
+      };
+
+      if (this.serviceWorkerRegistration) {
+        options.serviceWorkerRegistration = this.serviceWorkerRegistration;
+      }
+
+      const currentToken = await getToken(messaging, options);
+
+      if (currentToken) {
+        console.log('Messaging token obtained successfully');
+        localStorage.setItem('notificationPermission', 'granted');
+        return currentToken;
+      } else {
+        console.warn('No messaging token received');
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting messaging token:', error);
+      return null;
+    }
+  }
+
+  private async registerServiceWorker(): Promise<ServiceWorkerRegistration> {
+    try {
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+        scope: '/'
+      });
+      console.log('Service Worker registered with scope:', registration.scope);
+      return registration;
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+      throw error;
+    }
+  }
+
+  private async showNotification(payload: any): Promise<void> {
+    if (!this.serviceWorkerRegistration || Notification.permission !== 'granted') {
+      return;
+    }
+
+    const messageId = payload.data?.messageId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    
+    this.serviceWorkerRegistration.active?.postMessage({
+      type: 'SHOW_NOTIFICATION',
+      payload: {
+        ...payload,
+        data: {
+          ...payload.data,
+          messageId,
+          messageType: 'foreground'
+        }
+      }
+    });
+  }
+
+  private updateTokenInBackend(token: string): Promise<void> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+    });
+
+    console.log('Updating FCM token in backend:', token);
+    return this.http.post<void>(`${this.apiUrl}/api/update-fcm-token`, { fcmToken: token }, { headers })
+      .pipe(
+        tap(() => console.log('FCM token successfully updated in backend')),
+        catchError((error) => {
+          console.error('Error updating FCM token in backend:', error);
+          throw error;
+        })
+      ).toPromise();
   }
 
   clearTokenFromServer(username: string, authToken: string): Observable<any> {
@@ -136,87 +262,16 @@ export class FirebaseMessagingService {
       'Authorization': `Bearer ${authToken}`,
       'Content-Type': 'application/json'
     });
-    const url = `${this.apiUrl}/api/users/${username}/clear-fcm-token`;
     
-    return this.removeTokenFromDevice().pipe(
-      switchMap(() => this.http.post(url, {}, { headers })),
+    return this.http.post(`${this.apiUrl}/api/users/${username}/clear-fcm-token`, {}, { headers }).pipe(
       retry(3),
-      tap(() => console.log('FCM token successfully cleared from server')),
+      tap(() => console.log('FCM token cleared from server')),
       catchError(this.handleError)
     );
   }
 
-  async requestPermissionAndGetToken(): Promise<string | null> {
-    try {
-      const messaging = getMessaging(getApp());
-      const permission = await Notification.requestPermission();
-      
-      if (permission === 'granted') {
-        const currentToken = await getToken(messaging, {
-          vapidKey: environment.firebaseConfig.vapidKey
-        });
-
-        if (currentToken) {
-          this.lastTokenTimestamp = Date.now();
-          this.scheduleTokenRefresh();
-          return currentToken;
-        }
-      }
-      
-      console.warn('No registration token available.');
-      return null;
-    } catch (error) {
-      console.error('Error getting permission or token:', error);
-      return null;
-    }
-  }
-
-  private scheduleTokenRefresh(): void {
-    setInterval(() => {
-      this.refreshToken();
-    }, this.TOKEN_REFRESH_INTERVAL);
-  }
-
-  private async refreshToken(): Promise<void> {
-    const newToken = await this.requestPermissionAndGetToken();
-    if (newToken) {
-      // Get the current user's auth token and ID
-      const authToken = localStorage.getItem('authToken'); // Adjust based on your auth storage
-      const userId = localStorage.getItem('userId'); // Adjust based on your user ID storage
-      
-      if (authToken && userId) {
-        this.sendTokenToServer(userId, newToken, authToken).subscribe();
-      }
-    }
-  }
-
-  private removeTokenFromDevice(): Observable<void> {
-    const messaging = getMessaging(getApp());
-    return from(deleteToken(messaging)).pipe(
-      map(() => {
-        console.log('Device token successfully removed');
-        this.lastTokenTimestamp = null;
-        return void 0;
-      }),
-      catchError(error => {
-        console.error('Error removing device token:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An error occurred';
-    
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-    }
-    
-    console.error(errorMessage);
-    return throwError(() => new Error(errorMessage));
+    console.error('An error occurred:', error);
+    return throwError(() => new Error('An error occurred while processing the request'));
   }
 }

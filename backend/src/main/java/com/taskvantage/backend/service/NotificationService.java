@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -21,15 +23,40 @@ import java.util.concurrent.TimeUnit;
 public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
-    private static final ConcurrentHashMap<String, Long> lastNotificationTimes = new ConcurrentHashMap<>();
+    private static final Map<String, NotificationAttempt> notificationAttempts = new ConcurrentHashMap<>();
     private static final long NOTIFICATION_COOLDOWN_MINUTES = 15;
+    private static final long NOTIFICATION_WINDOW_MINUTES = 15;
+    private static final int MAX_ATTEMPTS = 3;
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final FirebaseNotificationService firebaseNotificationService;
 
+    private static class NotificationAttempt {
+        final long timestamp;
+        int attempts;
+        boolean success;
+
+        NotificationAttempt() {
+            this.timestamp = System.currentTimeMillis();
+            this.attempts = 1;
+            this.success = false;
+        }
+
+        boolean canRetry() {
+            return attempts < MAX_ATTEMPTS && !success;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - timestamp > TimeUnit.MINUTES.toMillis(NOTIFICATION_COOLDOWN_MINUTES);
+        }
+    }
+
     @Autowired
-    public NotificationService(TaskRepository taskRepository, UserRepository userRepository, FirebaseNotificationService firebaseNotificationService) {
+    public NotificationService(
+            TaskRepository taskRepository,
+            UserRepository userRepository,
+            FirebaseNotificationService firebaseNotificationService) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.firebaseNotificationService = firebaseNotificationService;
@@ -39,16 +66,18 @@ public class NotificationService {
     @Transactional
     public void checkAndSendNotifications() {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-        // Narrow the window to exactly 15 minutes from now
-        ZonedDateTime exactWindow = now.plusMinutes(15);
+        ZonedDateTime windowEnd = now.plusMinutes(NOTIFICATION_WINDOW_MINUTES);
 
-        logger.debug("Starting notification check at {} for tasks at {}", now, exactWindow);
+        logger.debug("Starting notification check at {} for tasks starting before {}", now, windowEnd);
 
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findUsersWithValidTokens();
+        logger.debug("Processing notifications for {} users", users.size());
+
+        cleanupOldAttempts();
 
         for (User user : users) {
             try {
-                processUserTasks(user, now, exactWindow);
+                processUserTasks(user, now, windowEnd);
             } catch (Exception e) {
                 logger.error("Error processing notifications for user {}: {}", user.getUsername(), e.getMessage(), e);
             }
@@ -57,65 +86,102 @@ public class NotificationService {
         logger.debug("Notification check completed at {}", ZonedDateTime.now(ZoneOffset.UTC));
     }
 
-    private void processUserTasks(User user, ZonedDateTime now, ZonedDateTime targetTime) {
-        logger.debug("Processing tasks for user: {}", user.getUsername());
+    @Transactional
+    private void processUserTasks(User user, ZonedDateTime now, ZonedDateTime windowEnd) {
+        if (user.getToken() == null) {
+            logger.debug("Skipping notification check for user {} - no FCM token", user.getUsername());
+            return;
+        }
 
-        // Get tasks that start exactly at the target time (15 minutes from now)
         List<Task> tasksToNotify = taskRepository.findTasksScheduledBetween(
                 user.getId(),
-                targetTime.minusMinutes(1), // 1 minute buffer before
-                targetTime.plusMinutes(1)   // 1 minute buffer after
+                now,
+                windowEnd
         );
 
         for (Task task : tasksToNotify) {
-            String taskKey = String.format("%d-%d", user.getId(), task.getId());
-
-            if (canSendNotification(taskKey) && !isNotificationSentRecently(task)) {
-                sendTaskNotification(user, task);
-            } else {
-                logger.debug("Skipping notification for task '{}' due to rate limiting or previous send",
-                        task.getTitle());
+            if (shouldSendNotification(task, now)) {
+                String notificationKey = createNotificationKey(user.getId(), task.getId());
+                sendNotification(user, task, now, notificationKey);
             }
         }
     }
 
-    private boolean canSendNotification(String taskKey) {
-        Long lastNotificationTime = lastNotificationTimes.get(taskKey);
-        long currentTime = System.currentTimeMillis();
-
-        if (lastNotificationTime == null ||
-                TimeUnit.MILLISECONDS.toMinutes(currentTime - lastNotificationTime) >= NOTIFICATION_COOLDOWN_MINUTES) {
-            lastNotificationTimes.put(taskKey, currentTime);
-            return true;
+    private boolean shouldSendNotification(Task task, ZonedDateTime now) {
+        // Skip if notification was already sent or task is completed
+        if (Boolean.TRUE.equals(task.getNotificationSent()) || "Complete".equals(task.getStatus())) {
+            logger.debug("Skipping notification for task '{}' - already sent or completed", task.getTitle());
+            return false;
         }
-        return false;
+
+        // Calculate minutes until task starts
+        long minutesUntilStart = ChronoUnit.MINUTES.between(now, task.getScheduledStart());
+
+        // Only send notification if we're within the notification window
+        return minutesUntilStart <= NOTIFICATION_WINDOW_MINUTES && minutesUntilStart > 0;
     }
 
-    private boolean isNotificationSentRecently(Task task) {
-        return task.getNotificationSent() != null && task.getNotificationSent();
+    private String createNotificationKey(Long userId, Long taskId) {
+        return String.format("%d-%d", userId, taskId);
     }
 
-    private void sendTaskNotification(User user, Task task) {
-        if (user.getToken() == null) {
-            logger.warn("User {} has no FCM token registered", user.getUsername());
-            return;
+    private void sendNotification(User user, Task task, ZonedDateTime now, String notificationKey) {
+        NotificationAttempt attempt = notificationAttempts.get(notificationKey);
+
+        if (attempt != null && !attempt.isExpired()) {
+            if (!attempt.canRetry()) {
+                logger.debug("Skipping notification for task '{}' - max attempts reached or already successful",
+                        task.getTitle());
+                return;
+            }
+            attempt.attempts++;
+        } else {
+            attempt = new NotificationAttempt();
+            notificationAttempts.put(notificationKey, attempt);
         }
 
         try {
-            String message = String.format("Your task '%s' is starting in %d minutes",
-                    task.getTitle(), 15);
-
-            firebaseNotificationService.sendNotification(user.getToken(), task.getTitle(), message);
-
+            // Set notification as sent before actually sending to prevent race conditions
             task.setNotificationSent(true);
-            taskRepository.save(task);
+            task = taskRepository.save(task);
 
-            logger.info("Successfully sent notification for task '{}' to user '{}'",
-                    task.getTitle(), user.getUsername());
+            // Calculate minutes until task starts
+            long minutesUntilStart = ChronoUnit.MINUTES.between(now, task.getScheduledStart());
+            String timeMessage = minutesUntilStart > 1
+                    ? String.format("starts in %d minutes", minutesUntilStart)
+                    : "starts in less than a minute";
+
+            String message = String.format("Your task '%s' %s", task.getTitle(), timeMessage);
+
+            boolean success = firebaseNotificationService.sendNotification(
+                    user.getToken(),
+                    task.getTitle(),
+                    message,
+                    user.getUsername()
+            );
+
+            if (success) {
+                logger.info("Successfully sent notification for task '{}' to user '{}'",
+                        task.getTitle(), user.getUsername());
+                attempt.success = true;
+            } else {
+                // If notification fails, revert the notification sent flag
+                task.setNotificationSent(false);
+                taskRepository.save(task);
+                logger.error("Failed to send notification for task '{}'", task.getTitle());
+            }
 
         } catch (Exception e) {
+            // If notification fails, revert the notification sent flag
+            task.setNotificationSent(false);
+            taskRepository.save(task);
+
             logger.error("Failed to send notification for task '{}' to user '{}': {}",
                     task.getTitle(), user.getUsername(), e.getMessage(), e);
         }
+    }
+
+    private void cleanupOldAttempts() {
+        notificationAttempts.entrySet().removeIf(entry -> entry.getValue().isExpired());
     }
 }

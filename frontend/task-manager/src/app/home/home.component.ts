@@ -3,13 +3,11 @@ import { AuthService } from '../services/auth.service';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
-import { FirebaseMessagingService } from '../services/firebase-messaging.service'; 
-import { getMessaging, getToken } from 'firebase/messaging'; 
-import { environment } from '../../environments/environment'; 
-import { FormsModule } from '@angular/forms'; 
-import { RouterModule } from '@angular/router'; 
-import { CommonModule } from '@angular/common'; 
-import { TasksComponent } from '../tasks/tasks.component'; 
+import { FirebaseMessagingService } from '../services/firebase-messaging.service';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TasksComponent } from '../tasks/tasks.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -24,14 +22,19 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { getApp } from 'firebase/app';
 
+interface User {
+  id: number | string;
+  username: string;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   standalone: true,
   imports: [
-    FormsModule, 
-    RouterModule, 
+    FormsModule,
+    RouterModule,
     CommonModule,
     MatFormFieldModule,
     MatInputModule,
@@ -45,24 +48,17 @@ import { getApp } from 'firebase/app';
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
-
   username: string = '';
   userId: string = '';
   isSidebarCollapsed: boolean = false;
-  fcmToken: string | null = null; 
-
   totalTasks: number = 0;
   totalSubtasks: number = 0;
   pastDeadlineTasks: number = 0;
   completedTasksThisMonth: number = 0;
   totalTasksThisMonth: number = 0;
-
   tasksDueToday: Task[] = [];
-
   recentCompletedTasks: { title: string, timeAgo: string, lastModifiedDate: string }[] = [];
-
   taskStatusChart: Chart | undefined;
-
   private routeSub: Subscription = new Subscription();
 
   // PWA Install Prompt fields
@@ -72,72 +68,95 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private taskService: TaskService,
-    private firebaseMessagingService: FirebaseMessagingService, 
+    private firebaseMessagingService: FirebaseMessagingService,
     public router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog // Inject MatDialog
+    private dialog: MatDialog
   ) {
     Chart.register(...registerables);
 
-    // Attach the `beforeinstallprompt` event listener
     window.addEventListener('beforeinstallprompt', (event: any) => {
-      event.preventDefault(); // Prevent the default prompt
+      event.preventDefault();
       this.deferredPrompt = event;
-      this.canPromptPwaInstall = true; // Enable the install button
+      this.canPromptPwaInstall = true;
       console.log('beforeinstallprompt event fired');
     });
 
-    // Handle app install success or failure
     window.addEventListener('appinstalled', () => {
       console.log('App installed');
-      this.canPromptPwaInstall = false; // Disable install button
+      this.canPromptPwaInstall = false;
     });
   }
 
-  ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.userId = params['userId'];  
-  
+  async ngOnInit(): Promise<void> {
+    console.log('HomeComponent ngOnInit started');
+    
+    this.route.params.subscribe(async params => {
+      this.userId = params['userId'];
+
       if (typeof this.userId !== 'string' || !this.userId) {
-        this.logout(); 
+        await this.logout();
         return;
       }
-  
-      // Store userId in local storage
+
       localStorage.setItem('google_auth_user_id', this.userId);
-  
-      this.authService.getUserDetails().subscribe(user => {
-        if (user.id.toString() === this.userId) {
-          this.username = user.username;
-          this.reloadData(); 
-          this.initializeFirebase();
-        } else {
-          this.logout();
+
+      try {
+        const userResponse = await this.authService.getUserDetails().toPromise() as User | null;
+        
+        if (!userResponse || !this.isValidUser(userResponse)) {
+          console.error('Invalid user data received');
+          await this.logout();
+          return;
         }
-      }, err => {
-        this.router.navigate(['/login']);
-      });
+
+        if (String(userResponse.id) === this.userId) {
+          this.username = userResponse.username;
+          
+          // Ensure Firebase messaging is initialized
+          try {
+            await this.firebaseMessagingService.initialize();
+          } catch (error) {
+            console.error('Error initializing Firebase messaging:', error);
+          }
+          
+          this.reloadData();
+        } else {
+          await this.logout();
+        }
+      } catch (err) {
+        console.error('Error getting user details:', err);
+        await this.router.navigate(['/login']);
+      }
     });
-  
+
+    this.setupRouteListener();
+  }
+
+  private isValidUser(user: any): user is User {
+    return user 
+      && typeof user.id === 'number'
+      && typeof user.username === 'string';
+  }
+
+  private setupRouteListener(): void {
     this.routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
+      .subscribe((event: any) => {
         if (event.urlAfterRedirects === `/home/${this.userId}`) {
-          this.reloadData();  
-          this.resetPwaPrompt(); // Reset prompt state on route change
+          this.reloadData();
+          this.resetPwaPrompt();
         }
       });
   }
 
-  // Reset PWA prompt state
   resetPwaPrompt(): void {
     this.deferredPrompt = null;
     this.canPromptPwaInstall = false;
   }
 
-  // PWA install prompt function
   promptPwaInstall(event: Event): void {
-    event.preventDefault(); // Prevent the default anchor behavior
+    event.preventDefault();
 
     if (this.deferredPrompt) {
       this.deferredPrompt.prompt();
@@ -147,75 +166,25 @@ export class HomeComponent implements OnInit, OnDestroy {
         } else {
           console.log('User dismissed the A2HS prompt');
         }
-        this.deferredPrompt = null; // Reset the deferredPrompt after use
-        this.canPromptPwaInstall = false; // Disable the install button after prompt
+        this.deferredPrompt = null;
+        this.canPromptPwaInstall = false;
       });
     } else {
-      console.log('Install prompt is not available');
       this.dialog.open(SuccessDialogComponent, {
         width: '300px',
-        data: { title: 'Unavailable', message: 'Install prompt is not available. Please check if TaskVantage is already installed.' }
-      });
-    }
-  }
-
-  initializeFirebase(): void {
-    const app = getApp(); 
-    const messaging = getMessaging(app);
-  
-    // Check notification permission status
-    if (Notification.permission === 'denied') {
-      console.log('Notifications are blocked. Please enable them in your browser settings.');
-      return;
-    }
-  
-    // Request FCM token
-    getToken(messaging, { vapidKey: environment.firebaseConfig.vapidKey })
-      .then((currentToken) => {
-        if (currentToken) {
-          this.fcmToken = currentToken;
-          const authToken = this.authService.getAuthToken();
-          
-          // Check if fcmToken and authToken exist
-          if (this.fcmToken && authToken) {
-            this.firebaseMessagingService.sendTokenToServer(this.userId, this.fcmToken, authToken)
-              .subscribe(
-                response => console.log('FCM token sent successfully'),
-                error => console.error('Error sending FCM token to server:', error)
-              );
-          }
-        } else {
-          console.log('No registration token available. Request permission to generate one.');
-          this.requestNotificationPermission();
-        }
-      })
-      .catch((err) => {
-        if (err.code === 'messaging/permission-blocked') {
-          console.warn('Notifications are blocked. Please enable them in your browser settings.');
-          alert('Notifications are blocked. Please enable them in your browser settings.');
-        } else {
-          console.error('An error occurred while retrieving token: ', err);
+        data: {
+          title: 'Unavailable',
+          message: 'Install prompt is not available. Please check if TaskVantage is already installed.'
         }
       });
-  }
-
-  requestNotificationPermission(): void {
-    Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        this.initializeFirebase();
-      } else {
-        console.log('User denied the notification permission');
-      }
-    }).catch((error) => {
-      console.error('Failed to request notification permission', error);
-    });
+    }
   }
 
   reloadData(): void {
-    this.fetchTaskSummary();  
-    this.fetchTasksDueToday(); 
-    this.fetchRecentCompletedTasks();  
-    this.loadWeeklyTaskStatusChart();  
+    this.fetchTaskSummary();
+    this.fetchTasksDueToday();
+    this.fetchRecentCompletedTasks();
+    this.loadWeeklyTaskStatusChart();
   }
 
   ngOnDestroy(): void {
@@ -281,13 +250,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     const days = Math.floor(hours / 24);
     
     if (seconds < 60) {
-        return seconds === 1 ? '1 second ago' : `${seconds} seconds ago`;
+      return seconds === 1 ? '1 second ago' : `${seconds} seconds ago`;
     } else if (minutes < 60) {
-        return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+      return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
     } else if (hours < 24) {
-        return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+      return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
     } else {
-        return days === 1 ? '1 day ago' : `${days} days ago`;
+      return days === 1 ? '1 day ago' : `${days} days ago`;
     }    
   }
 
@@ -370,10 +339,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     return start.getTime();
   }
 
-  logout(): void {
-    this.authService.logout().subscribe(() => {
-      this.router.navigate(['/login']);
-    });
+  async logout(): Promise<void> {
+    try {
+      if (this.username) {
+        const authToken = localStorage.getItem('jwtToken');
+        if (authToken) {
+          await this.firebaseMessagingService
+            .clearTokenFromServer(this.username, authToken)
+            .toPromise();
+        }
+      }
+      
+      await this.authService.logout().toPromise();
+      await this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      await this.router.navigate(['/login']);
+    }
   }
 
   isActive(route: string): boolean {

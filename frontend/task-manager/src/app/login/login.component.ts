@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LoadingDialogComponent } from '../loading-dialog.component';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component'; 
 import { WelcomeDialogComponent } from '../../app/welcome-dialog/welcome-dialog.component';
+import { FirebaseMessagingService } from '../../app/services/firebase-messaging.service';
 
 @Component({
   selector: 'app-login',
@@ -35,7 +36,8 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,  
     private router: Router,  
     private dialog: MatDialog,
-    private route: ActivatedRoute // ActivatedRoute to capture query params
+    private route: ActivatedRoute,
+    private firebaseMessagingService: FirebaseMessagingService
   ) {
     this.signin = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -54,15 +56,12 @@ export class LoginComponent implements OnInit {
   
     welcomeDialogRef.afterClosed().subscribe(result => {
       if (result === false) {
-        // The decline logic is now handled in the dialog component
         return;
       }
-      // Continue with normal flow for accepted users
       this.checkVerification();
     });
   }
   
-  // Separate method for verification check
   private checkVerification(): void {
     setTimeout(() => {
       this.route.queryParams.subscribe(params => {
@@ -86,11 +85,9 @@ export class LoginComponent implements OnInit {
     }, 500);
   }
 
-  // Method to verify the email using the token
   verifyEmail(token: string) {
     this.authService.verifyEmail(token).subscribe(
       (response) => {
-        // Show success dialog after successful verification
         this.dialog.open(SuccessDialogComponent, {
           data: {
             title: 'Email Verified',
@@ -99,7 +96,6 @@ export class LoginComponent implements OnInit {
         });
       },
       (error) => {
-        // Handle the error case, e.g., invalid token
         console.error('Email verification failed:', error);
         this.dialog.open(SuccessDialogComponent, {
           data: {
@@ -127,14 +123,25 @@ export class LoginComponent implements OnInit {
         username: email,
         password
       }).subscribe(
-        (response) => {
+        async (response) => {
           console.log('Login response:', response);
           
-          // Changed from 'token' to 'jwtToken' to match AuthService
           localStorage.setItem('jwtToken', response.token);
           const userId = response.id;
           console.log('User ID after login:', userId);
   
+          try {
+            // Initialize Firebase messaging
+            await this.firebaseMessagingService.initialize();
+            
+            // If permission hasn't been asked before, request it
+            if (Notification.permission === 'default') {
+              await this.firebaseMessagingService.requestPermissionAndGetToken();
+            }
+          } catch (error) {
+            console.error('Error initializing notifications:', error);
+          }
+
           loadingDialogRef.close();
           this.router.navigate([`/home/${userId}`]);
         },

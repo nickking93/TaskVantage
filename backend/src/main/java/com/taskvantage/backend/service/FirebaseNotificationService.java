@@ -1,12 +1,13 @@
 package com.taskvantage.backend.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -19,99 +20,105 @@ public class FirebaseNotificationService {
     private static final int MAX_RETRIES = 3;
     private static final long RETRY_DELAY_MS = 1000; // 1 second
 
-    public void sendNotification(String token, String title, String body) {
-        if (token == null || token.trim().isEmpty()) {
-            logger.error("FCM token is null or empty, cannot send notification.");
-            return;
-        }
+    private final CustomUserDetailsService userService;
 
-        // Create a unique message identifier
-        String messageKey = createMessageKey(token, title, body);
-
-        // Check for duplicate messages
-        if (isDuplicateMessage(messageKey)) {
-            logger.info("Duplicate message detected, skipping notification send.");
-            return;
-        }
-
-        Message message = createMessage(token, title, body);
-        sendMessageWithRetry(message, messageKey);
+    @Autowired
+    public FirebaseNotificationService(CustomUserDetailsService userService) {
+        this.userService = userService;
     }
 
-    private Message createMessage(String token, String title, String body) {
+    public boolean sendNotification(String token, String title, String body, String username) {
+        if (token == null || token.trim().isEmpty()) {
+            logger.error("FCM token is null or empty, cannot send notification.");
+            return false;
+        }
+
+        // Generate a unique messageId for this notification
+        String messageId = generateMessageId();
+
+        // Check for duplicate messages
+        if (isDuplicateMessage(messageId)) {
+            logger.info("Duplicate message detected, skipping notification send.");
+            return true; // Consider this a "success" since we're intentionally skipping
+        }
+
+        // Update the token cache
+        updateTokenCache(token, true);
+        String oldFcmToken = userService.findUserByUsername(username).getToken();
+        updateTokenCache(oldFcmToken, false);
+
+        Message message = createMessage(token, title, body, messageId);
+        return sendMessageWithRetry(message, messageId, token);
+    }
+
+    public void updateTokenCache(String token, boolean isActive) {
+        if (isActive) {
+            sentMessages.put(token, System.currentTimeMillis());
+        } else {
+            sentMessages.remove(token);
+        }
+    }
+
+    private String generateMessageId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private Message createMessage(String token, String title, String body, String messageId) {
         return Message.builder()
                 .setToken(token)
                 .setNotification(Notification.builder()
                         .setTitle(title)
                         .setBody(body)
                         .build())
-                // Add additional data to help with deduplication on client side
+                .putData("messageId", messageId)
                 .putData("timestamp", String.valueOf(System.currentTimeMillis()))
-                .putData("messageId", String.valueOf(System.nanoTime()))
                 .build();
     }
 
-    private void sendMessageWithRetry(Message message, String messageKey) {
-        Exception lastException = null;
-
+    private boolean sendMessageWithRetry(Message message, String messageId, String token) {
         for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
             try {
                 String response = FirebaseMessaging.getInstance().send(message);
-                logger.info("Successfully sent message: {} for key: {}", response, messageKey);
-
-                // Record successful send
-                sentMessages.put(messageKey, System.currentTimeMillis());
-                return;
-
-            } catch (Exception e) {
-                lastException = e;
-                logger.warn("Attempt {} failed to send FCM notification: {}", attempt + 1, e.getMessage());
-
+                logger.info("Successfully sent message: {} for key: {}", response, messageId);
+                sentMessages.put(messageId, System.currentTimeMillis());
+                return true;
+            } catch (FirebaseMessagingException e) {
+                if (e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT ||
+                        e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED) {
+                    logger.warn("Invalid FCM token detected: {}", token);
+                    handleInvalidToken(token);
+                    return false;
+                }
+                logger.warn("Attempt {} failed to send FCM notification: {} (Error code: {})",
+                        attempt + 1, e.getMessage(), e.getMessagingErrorCode());
                 if (attempt < MAX_RETRIES - 1) {
                     try {
-                        Thread.sleep(RETRY_DELAY_MS * (attempt + 1)); // Exponential backoff
-                    } catch (InterruptedException ie) {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
-                        logger.error("Retry delay interrupted", ie);
-                        break;
                     }
                 }
             }
         }
+        logger.error("Failed to send FCM notification after {} attempts.", MAX_RETRIES);
+        return false;
+    }
 
-        // If we get here, all retries failed
-        if (lastException != null) {
-            logger.error("Final attempt to send FCM notification failed after {} retries", MAX_RETRIES, lastException);
+    private void handleInvalidToken(String token) {
+        userService.findUserByFCMToken(token).ifPresent(user -> {
+            logger.info("Clearing invalid FCM token for user: {}", user.getUsername());
+            userService.clearUserToken(user.getUsername());
+        });
+    }
+
+    private boolean isDuplicateMessage(String messageId) {
+        Long lastSentTime = sentMessages.get(messageId);
+        if (lastSentTime != null) {
+            long timeSinceLastMessage = System.currentTimeMillis() - lastSentTime;
+            if (TimeUnit.MILLISECONDS.toMinutes(timeSinceLastMessage) < MESSAGE_EXPIRY_MINUTES) {
+                return true;
+            }
         }
-    }
-
-    private String createMessageKey(String token, String title, String body) {
-        return String.format("%s:%s:%s:%d",
-                token.substring(Math.max(0, token.length() - 10)), // Last 10 chars of token
-                title,
-                body,
-                System.currentTimeMillis() / (1000 * 60 * 15) // 15-minute bucket
-        );
-    }
-
-    private boolean isDuplicateMessage(String messageKey) {
-        Long lastSentTime = sentMessages.get(messageKey);
-
-        if (lastSentTime == null) {
-            return false;
-        }
-
-        long timeSinceLastMessage = System.currentTimeMillis() - lastSentTime;
-
-        // Clean up old messages
-        cleanupOldMessages();
-
-        return TimeUnit.MILLISECONDS.toMinutes(timeSinceLastMessage) < MESSAGE_EXPIRY_MINUTES;
-    }
-
-    private void cleanupOldMessages() {
-        long cutoffTime = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(MESSAGE_EXPIRY_MINUTES);
-
-        sentMessages.entrySet().removeIf(entry -> entry.getValue() < cutoffTime);
+        return false;
     }
 }

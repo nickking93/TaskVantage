@@ -30,7 +30,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             "FROM Task t WHERE t.userId = :userId AND t.status != 'Completed'")
     List<TaskSummary> findNonCompletedTaskSummariesByUserId(@Param("userId") Long userId);
 
-
     @Modifying
     @Query("UPDATE Task t SET t.status = :status WHERE t.userId = :userId AND t.id = :taskId")
     void updateTaskStatus(@Param("status") String status, @Param("userId") Long userId, @Param("taskId") Long taskId);
@@ -40,6 +39,13 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("UPDATE Task t SET t.completionDateTime = :completionDateTime, t.duration = :duration, t.status = 'Completed' WHERE t.id = :taskId")
     void completeTask(@Param("taskId") Long taskId, @Param("completionDateTime") ZonedDateTime completionDateTime, @Param("duration") Duration duration);
 
-    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.scheduledStart >= :startTime AND t.scheduledStart <= :endTime")
-    List<Task> findTasksScheduledBetween(@Param("userId") Long userId, @Param("startTime") ZonedDateTime startTime, @Param("endTime") ZonedDateTime endTime);
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId " +
+            "AND t.scheduledStart >= :startTime " +
+            "AND t.scheduledStart <= :endTime " +
+            "AND (t.notificationSent IS NULL OR t.notificationSent = false) " +
+            "AND t.status != 'Completed'")
+    List<Task> findTasksScheduledBetween(
+            @Param("userId") Long userId,
+            @Param("startTime") ZonedDateTime startTime,
+            @Param("endTime") ZonedDateTime endTime);
 }
