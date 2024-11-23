@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, throwError, from } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { environment } from '../../environments/environment';
 import { JwtHelperService } from '@auth0/angular-jwt'; 
@@ -10,21 +10,135 @@ import { JwtHelperService } from '@auth0/angular-jwt';
   providedIn: 'root'
 })
 export class AuthService {
-
   private apiUrl = environment.apiUrl;
   private socialLoginUrl = `${this.apiUrl}/api/social-login`;
   private loginUrl = `${this.apiUrl}/api/login`;
   private registerUrl = `${this.apiUrl}/api/register`;
+  private refreshTokenUrl = `${this.apiUrl}/api/refresh-token`;
   private userDetails: User | null = null;
   private jwtHelper = new JwtHelperService();
+  private db: IDBDatabase | null = null;
+  private readonly DB_NAME = 'TaskVantageAuth';
+  private readonly STORE_NAME = 'tokens';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.initializeDB();
+  }
 
   /**
-   * Verifies social login using provider and authorization code.
-   * @param authCode The authorization code from the social provider.
-   * @param provider The social login provider (e.g., Google, Facebook).
-   * @returns Observable containing response data.
+   * Initializes IndexedDB for PWA token storage
+   */
+  private async initializeDB(): Promise<void> {
+    if (!this.isPWA()) return;
+
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.DB_NAME, 1);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+
+      request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+          db.createObjectStore(this.STORE_NAME);
+        }
+      };
+    });
+  }
+
+  /**
+   * Checks if the app is running as an installed PWA
+   */
+  private isPWA(): boolean {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone ||
+           document.referrer.includes('android-app://');
+  }
+
+  /**
+   * Stores authentication tokens either in IndexedDB (PWA) or localStorage
+   */
+  private async storeTokens(tokens: { token: string, refreshToken: string }): Promise<void> {
+    if (this.isPWA() && this.db) {
+      const transaction = this.db.transaction(this.STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      await Promise.all([
+        new Promise<void>(resolve => {
+          store.put(tokens.token, 'jwtToken');
+          store.put(tokens.refreshToken, 'refreshToken');
+          transaction.oncomplete = () => resolve();
+        })
+      ]);
+    } else {
+      localStorage.setItem('jwtToken', tokens.token);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+    }
+  }
+
+  /**
+   * Retrieves tokens from storage
+   */
+  private async getStoredTokens(): Promise<{ token: string | null, refreshToken: string | null }> {
+    if (this.isPWA() && this.db) {
+      const transaction = this.db.transaction(this.STORE_NAME, 'readonly');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const token = await new Promise<string | null>(resolve => {
+        const request = store.get('jwtToken');
+        request.onsuccess = () => resolve(request.result);
+      });
+      const refreshToken = await new Promise<string | null>(resolve => {
+        const request = store.get('refreshToken');
+        request.onsuccess = () => resolve(request.result);
+      });
+      return { token, refreshToken };
+    } else {
+      return {
+        token: localStorage.getItem('jwtToken'),
+        refreshToken: localStorage.getItem('refreshToken')
+      };
+    }
+  }
+
+  /**
+   * Clears stored tokens
+   */
+  private async clearTokens(): Promise<void> {
+    if (this.isPWA() && this.db) {
+      const transaction = this.db.transaction(this.STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      await Promise.all([
+        new Promise<void>(resolve => {
+          store.clear();
+          transaction.oncomplete = () => resolve();
+        })
+      ]);
+    }
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+  }
+
+  /**
+ * Sets the persistent login state
+ */
+async setPersistentLogin(enabled: boolean): Promise<void> {
+  if (this.isPWA() && this.db) {
+    const transaction = this.db.transaction(this.STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(this.STORE_NAME);
+    await new Promise<void>(resolve => {
+      store.put(enabled, 'persistentLogin');
+      transaction.oncomplete = () => resolve();
+    });
+  } else {
+    localStorage.setItem('persistentLogin', enabled.toString());
+  }
+}
+
+  /**
+   * Verifies social login using provider and authorization code
    */
   verifySocialLogin(authCode: string, provider: string): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -36,19 +150,17 @@ export class AuthService {
   }
 
   /**
-   * Handles login by sending credentials and storing user data on success.
-   * @param credentials Contains username, password, and optional FCM token.
-   * @returns Observable containing user data.
+   * Handles login by sending credentials and storing user data on success
    */
   login(credentials: { username: string; password: string; fcmToken?: string }): Observable<User> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<User>(this.loginUrl, credentials, { headers }).pipe(
-      map((response: any) => {
+    return this.http.post<any>(this.loginUrl, credentials, { headers }).pipe(
+      switchMap(async (response: any) => {
         const userId = response.userId;
         const username = response.username;
         const token = response.token;
+        const refreshToken = response.refreshToken;
 
-        // Store user details and token in localStorage
         this.userDetails = {
           id: userId,
           username: username,
@@ -56,8 +168,8 @@ export class AuthService {
           token: token
         };
 
-        localStorage.setItem('user', JSON.stringify(this.userDetails));
-        localStorage.setItem('jwtToken', token);
+        await this.storeTokens({ token, refreshToken });
+        await this.storeUserDetails(this.userDetails);
 
         return this.userDetails;
       }),
@@ -66,9 +178,7 @@ export class AuthService {
   }
 
   /**
-   * Registers a new user with username and password.
-   * @param credentials Object containing username and password.
-   * @returns Observable containing response data.
+   * Registers a new user
    */
   register(credentials: { username: string; password: string }): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -85,37 +195,203 @@ export class AuthService {
   }
 
   /**
-   * Retrieves the JWT token from localStorage.
-   * @returns The JWT token or null if not found.
+   * Stores user details in appropriate storage
    */
-  private getToken(): string | null {
-    return localStorage.getItem('jwtToken');
+  private async storeUserDetails(user: User): Promise<void> {
+    if (this.isPWA() && this.db) {
+      const transaction = this.db.transaction(this.STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      await new Promise<void>(resolve => {
+        store.put(JSON.stringify(user), 'userDetails');
+        transaction.oncomplete = () => resolve();
+      });
+    } else {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   }
 
   /**
-   * Gets the authentication token (JWT).
-   * @returns The JWT token or null.
+   * Retrieves stored user details
    */
-  public getAuthToken(): string | null {
-    return this.getToken();
+  private async getStoredUserDetails(): Promise<User | null> {
+    if (this.isPWA() && this.db) {
+      const transaction = this.db.transaction(this.STORE_NAME, 'readonly');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const userStr = await new Promise<string | null>(resolve => {
+        const request = store.get('userDetails');
+        request.onsuccess = () => resolve(request.result);
+      });
+      return userStr ? JSON.parse(userStr) : null;
+    } else {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    }
   }
 
   /**
-   * Creates HTTP headers with the JWT token for authorized requests.
-   * @returns HttpHeaders containing the authorization token.
+   * Refreshes the access token using the refresh token
    */
-  public getAuthHeaders(): HttpHeaders {
-    const token = this.getToken();
+  refreshToken(): Observable<string> {
+    return from(this.getStoredTokens()).pipe(
+      switchMap(({ refreshToken }) => {
+        if (!refreshToken) {
+          return throwError(() => new Error('No refresh token available'));
+        }
+        return this.http.post<{ token: string }>(`${this.refreshTokenUrl}`, { refreshToken });
+      }),
+      map(response => response.token),
+      catchError(error => {
+        console.error('Error refreshing token:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Gets the authentication token
+   */
+  async getAuthToken(): Promise<string | null> {
+    const { token } = await this.getStoredTokens();
+    return token;
+  }
+
+  /**
+   * Creates HTTP headers with authorization token
+   */
+  getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+      throw new Error('JWT token is missing.');
+    }
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`
     });
+  }  
+
+  /**
+   * Checks if the user is authenticated
+   */
+  async isAuthenticated(): Promise<boolean> {
+    const { token } = await this.getStoredTokens();
+    if (!token) {
+      return false;
+    }
+    
+    try {
+      const isExpired = this.jwtHelper.isTokenExpired(token);
+      if (isExpired) {
+        // Try to refresh the token
+        try {
+          await this.refreshToken().toPromise();
+          return true;
+        } catch {
+          await this.clearTokens();
+          return false;
+        }
+      }
+      return true;
+    } catch {
+      await this.clearTokens();
+      return false;
+    }
   }
 
   /**
-   * Handles errors from HTTP requests and provides appropriate error messages.
-   * @param error The HttpErrorResponse object.
-   * @returns Observable throwing an appropriate error message.
+   * Gets user details
+   */
+  getUserDetails(): Observable<User> {
+    return from(this.getStoredUserDetails()).pipe(
+      map(user => {
+        if (!user) {
+          throw new Error('User not authenticated.');
+        }
+        return user;
+      })
+    );
+  }
+
+  /**
+   * Sets user details
+   */
+  async setUserDetails(user: User): Promise<void> {
+    this.userDetails = user;
+    await this.storeUserDetails(user);
+  }
+
+  /**
+   * Handles user logout
+   */
+  logout(): Observable<any> {
+    return from(this.clearTokens()).pipe(
+      map(() => {
+        this.userDetails = null;
+        return true;
+      })
+    );
+  }
+
+  /**
+   * Gets tasks for the authenticated user
+   */
+  getTasks(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.apiUrl}/tasks`, { headers }).pipe(
+      catchError(this.handleError)
+    );
+  }
+  
+
+  /**
+   * Verifies user's email
+   */
+  verifyEmail(token: string): Observable<any> {
+    const url = `${this.apiUrl}/api/verify-email?token=${token}`;
+    return this.http.get(url, { responseType: 'text' }).pipe(
+      map(response => response),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Sends password reset link
+   */
+  sendResetPasswordLink(email: string): Observable<any> {
+    const url = `${this.apiUrl}/api/forgot-password`;
+    console.log('Sending reset password link request to:', url);
+    console.log('Email:', email);
+    return this.http.post(url, { email }).pipe(
+      map(response => {
+        console.log('Reset link sent successfully:', response);
+        return response;
+      }),
+      catchError((error) => {
+        console.error('Error sending reset link:', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  /**
+   * Updates password using reset token
+   */
+  updatePassword(token: string, password: string): Observable<any> {
+    const url = `${this.apiUrl}/api/reset-password`;
+    console.log('Sending password update request to:', url);
+    return this.http.post(url, { token, newPassword: password }).pipe(
+      map(response => {
+        console.log('Password updated successfully:', response);
+        return response;
+      }),
+      catchError((error) => {
+        console.error('Error updating password:', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  /**
+   * Handles HTTP errors
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('Error:', error.message);
@@ -127,133 +403,5 @@ export class AuthService {
     }
 
     return throwError(() => new Error('An unexpected error occurred. Please try again.'));
-  }
-
-  /**
-   * Checks whether the user is authenticated by verifying the JWT token.
-   * @returns Boolean indicating whether the user is authenticated.
-   */
-  isAuthenticated(): boolean {
-    const token = this.getToken();
-
-    if (token) {
-      const isExpired = this.jwtHelper.isTokenExpired(token);
-
-      if (!isExpired) {
-        return true;
-      } else {
-        this.logout();
-      }
-    }
-
-    this.logout();  
-    return false;
-  }
-
-  /**
-   * Retrieves stored user details or fetches from localStorage if available.
-   * @returns Observable containing the user details.
-   */
-  getUserDetails(): Observable<User> {
-    if (!this.userDetails) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        this.userDetails = JSON.parse(storedUser);
-      }
-    }
-    return new Observable((observer) => {
-      if (this.userDetails) {
-        observer.next(this.userDetails);
-      } else {
-        observer.error('User not authenticated.');
-      }
-    });
-  }
-
-  /**
-   * Sets user details and stores them in localStorage.
-   * @param user The user details to be stored.
-   */
-  setUserDetails(user: User): void {
-    this.userDetails = user;
-    localStorage.setItem('user', JSON.stringify(this.userDetails));
-  }
-
-  /**
-   * Logs the user out by clearing localStorage and resetting user details.
-   * @returns Observable indicating logout success.
-   */
-  logout(): Observable<any> {
-    this.userDetails = null;
-    localStorage.removeItem('user');
-    localStorage.removeItem('jwtToken');
-    return new Observable((observer) => observer.next(true));
-  }
-
-  /**
-   * Fetches tasks for the authenticated user.
-   * @returns Observable containing the list of tasks.
-   */
-  getTasks(): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.get(`${this.apiUrl}/tasks`, { headers }).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Verifies the user's email by sending the verification token.
-   * @param token The email verification token.
-   * @returns Observable containing the verification result.
-   */
-  verifyEmail(token: string): Observable<any> {
-    const url = `${this.apiUrl}/api/verify-email?token=${token}`;
-    return this.http.get(url, { responseType: 'text' }).pipe(
-      map(response => response),
-      catchError(this.handleError)
-    );
-  }
-
-/**
- * Sends a password reset link to the user's email address.
- * @param email The user's email address.
- * @returns Observable indicating success or failure.
- */
-sendResetPasswordLink(email: string): Observable<any> {
-  const url = `${this.apiUrl}/api/forgot-password`;
-  console.log('Sending reset password link request to:', url);  // Log the request URL and payload
-  console.log('Email:', email);                                // Log email
-  return this.http.post(url, { email }).pipe(
-    map(response => {
-      console.log('Reset link sent successfully:', response);  // Log success response
-      return response;
-    }),
-    catchError((error) => {
-      console.error('Error sending reset link:', error);       // Log error
-      return this.handleError(error);
-    })
-  );
-}
-
-/**
- * Updates the user's password using the provided reset token and new password.
- * @param token The reset token.
- * @param password The new password.
- * @returns Observable indicating success or failure.
- */
-updatePassword(token: string, password: string): Observable<any> {
-  const url = `${this.apiUrl}/api/reset-password`;
-  console.log('Sending password update request to:', url);  // Log the request URL and payload
-  console.log('Token:', token, 'Password:', password);      // Log token and password
-  return this.http.post(url, { token, newPassword: password }).pipe(
-    map(response => {
-      console.log('Password updated successfully:', response);  // Log success response
-      return response;
-    }),
-    catchError((error) => {
-      console.error('Error updating password:', error);  // Log error
-      return this.handleError(error);
-    })
-  );
   }
 }

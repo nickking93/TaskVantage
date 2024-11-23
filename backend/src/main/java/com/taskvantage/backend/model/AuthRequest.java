@@ -5,6 +5,7 @@ public class AuthRequest {
     private String username;
     private String password;
     private String fcmToken;
+    private Boolean isPwa;
 
     // Getters and Setters
     public String getUsername() {
@@ -30,4 +31,13 @@ public class AuthRequest {
 
     public void setFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
-    }}
+    }
+
+    public Boolean getIsPwa() {
+        return isPwa;
+    }
+
+    public void setIsPwa(Boolean isPwa) {
+        this.isPwa = isPwa;
+    }
+}

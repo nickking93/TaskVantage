@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { MatDialog } from '@angular/material/dialog'; 
+import { MatDialog } from '@angular/material/dialog';
 import { LoadingDialogComponent } from '../loading-dialog.component';
-import { SuccessDialogComponent } from '../success-dialog/success-dialog.component'; 
+import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 import { WelcomeDialogComponent } from '../../app/welcome-dialog/welcome-dialog.component';
 import { FirebaseMessagingService } from '../../app/services/firebase-messaging.service';
 
@@ -15,6 +15,9 @@ import { FirebaseMessagingService } from '../../app/services/firebase-messaging.
 })
 export class LoginComponent implements OnInit {
   currentSlide = 0;
+  returnUrl: string = '/';
+  isPwa: boolean = false;
+  isReturningPwaUser: boolean = false;
 
   carouselHeadings = [
     'Manage Your Tasks with Ease',
@@ -33,35 +36,69 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,  
-    private router: Router,  
+    private authService: AuthService,
+    private router: Router,
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private firebaseMessagingService: FirebaseMessagingService
   ) {
     this.signin = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      rememberMe: [false]
     });
   }
 
-  ngOnInit(): void {
-    // Show the welcome dialog
-    const welcomeDialogRef = this.dialog.open(WelcomeDialogComponent, {
-      disableClose: true,
-      width: '500px',
-      maxWidth: '90vw',
-      panelClass: 'welcome-dialog'
-    });
-  
-    welcomeDialogRef.afterClosed().subscribe(result => {
-      if (result === false) {
-        return;
+  async ngOnInit(): Promise<void> {
+    // Check if running as PWA
+    this.isPwa = window.matchMedia('(display-mode: standalone)').matches ||
+                 window.navigator.standalone ||
+                 document.referrer.includes('android-app://');
+
+    // Check if returning PWA user
+    if (this.isPwa) {
+      this.isReturningPwaUser = await this.authService.isAuthenticated();
+      if (this.isReturningPwaUser) {
+        const userDetails = await this.authService.getUserDetails().toPromise();
+        if (userDetails) {
+          this.router.navigate([`/home/${userDetails.id}`]);
+          return;
+        }
       }
-      this.checkVerification();
-    });
+    }
+
+    // Show welcome dialog for non-PWA users
+    if (!this.isPwa) {
+      const welcomeDialogRef = this.dialog.open(WelcomeDialogComponent, {
+        disableClose: true,
+        width: '500px',
+        maxWidth: '90vw',
+        panelClass: 'welcome-dialog'
+      });
+
+      welcomeDialogRef.afterClosed().subscribe(result => {
+        if (result === false) {
+          return;
+        }
+        this.checkVerification();
+      });
+    }
+
+    // Get return URL from route parameters or default to '/'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+
+    // Check for session expiry message
+    const reason = this.route.snapshot.queryParams['reason'];
+    if (reason === 'session_expired') {
+      this.dialog.open(SuccessDialogComponent, {
+        data: {
+          title: 'Session Expired',
+          message: 'Your session has expired. Please log in again.'
+        }
+      });
+    }
   }
-  
+
   private checkVerification(): void {
     setTimeout(() => {
       this.route.queryParams.subscribe(params => {
@@ -107,7 +144,7 @@ export class LoginComponent implements OnInit {
     );
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.signin.valid) {
       const loadingDialogRef = this.dialog.open(LoadingDialogComponent, {
         disableClose: true,
@@ -118,45 +155,56 @@ export class LoginComponent implements OnInit {
   
       const email = this.signin.get('email')?.value;
       const password = this.signin.get('password')?.value;
+      const rememberMe = this.signin.get('rememberMe')?.value;
   
-      this.authService.login({
-        username: email,
-        password
-      }).subscribe(
-        async (response) => {
-          console.log('Login response:', response);
-          
-          localStorage.setItem('jwtToken', response.token);
-          const userId = response.id;
-          console.log('User ID after login:', userId);
+      try {
+        const response = await this.authService.login({
+          username: email,
+          password
+        }).toPromise();
   
-          try {
-            // Initialize Firebase messaging
-            await this.firebaseMessagingService.initialize();
-            
-            // If permission hasn't been asked before, request it
-            if (Notification.permission === 'default') {
-              await this.firebaseMessagingService.requestPermissionAndGetToken();
-            }
-          } catch (error) {
-            console.error('Error initializing notifications:', error);
-          }
-
-          loadingDialogRef.close();
-          this.router.navigate([`/home/${userId}`]);
-        },
-        error => {
-          loadingDialogRef.close();
-          console.error('Login failed', error);
-  
-          this.dialog.open(SuccessDialogComponent, {
-            data: {
-              title: 'Error',
-              message: error.message
-            }
-          });
+        if (!response) {
+          throw new Error('Login response was empty');
         }
-      );
+  
+        console.log('Login response:', response);
+        
+        if (this.isPwa || rememberMe) {
+          // Store persistent login state
+          await this.authService.setPersistentLogin(true);
+        }
+  
+        try {
+          // Initialize Firebase messaging
+          await this.firebaseMessagingService.initialize();
+          
+          // Request notification permission if not already granted
+          if (Notification.permission === 'default') {
+            await this.firebaseMessagingService.requestPermissionAndGetToken();
+          }
+        } catch (error) {
+          console.error('Error initializing notifications:', error);
+        }
+  
+        loadingDialogRef.close();
+        
+        // Check if response.id exists before using it
+        if (response.id) {
+          this.router.navigate([`/home/${response.id}`]);
+        } else {
+          throw new Error('User ID not found in response');
+        }
+      } catch (error: any) {
+        loadingDialogRef.close();
+        console.error('Login failed', error);
+  
+        this.dialog.open(SuccessDialogComponent, {
+          data: {
+            title: 'Error',
+            message: error.message || 'Login failed. Please try again.'
+          }
+        });
+      }
     } else {
       this.dialog.open(SuccessDialogComponent, {
         data: {
@@ -166,8 +214,33 @@ export class LoginComponent implements OnInit {
       });
     }
   }
-  
+
   onSlideChange(event: any): void {
     this.currentSlide = event.currentSlide;
+  }
+
+  // Add biometric authentication for PWA if supported
+  async checkBiometricAvailability(): Promise<boolean> {
+    if (!this.isPwa) return false;
+    
+    // Check if Web Authentication API is available
+    if (window.PublicKeyCredential) {
+      try {
+        // Check if platform authenticator is available
+        const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        return available;
+      } catch (error) {
+        console.error('Error checking biometric availability:', error);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  // Handle biometric authentication
+  async authenticateWithBiometric(): Promise<void> {
+    // Implementation would go here - requires additional backend support
+    // This is just a placeholder for future implementation
+    console.log('Biometric authentication not yet implemented');
   }
 }
