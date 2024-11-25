@@ -12,7 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
   providedIn: 'root'
 })
 export class TaskService {
-  private tasksUrl = `${environment.apiUrl}/api/tasks`;  // API URL for tasks
+  private tasksUrl = `${environment.apiUrl}/api/tasks`; // API URL for tasks
 
   constructor(
     private http: HttpClient,
@@ -24,7 +24,7 @@ export class TaskService {
   fetchTasks(userId: string, filterCallback: (tasks: Task[]) => void): void {
     this.getTasks(userId).subscribe(
       (tasks: Task[]) => {
-        filterCallback(tasks); // Pass the tasks directly without conversions
+        filterCallback(tasks);
       },
       (error) => {
         console.error('Failed to fetch tasks:', error);
@@ -36,11 +36,7 @@ export class TaskService {
   getTaskById(taskId: string): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}`;
-    return this.http.get<Task>(url, { headers }).pipe(
-      map(response => {
-        console.log('Task fetched successfully:', response);
-        return response;
-      }),
+    return this.http.get<Task>(url, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
@@ -48,11 +44,7 @@ export class TaskService {
   // Method to create a new task
   createTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
-    return this.http.post<Task>(this.tasksUrl, task, { headers }).pipe(
-      map(response => {
-        console.log('Task created successfully:', response);
-        return response;
-      }),
+    return this.http.post<Task>(this.tasksUrl, task, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
@@ -61,10 +53,7 @@ export class TaskService {
   getTaskSummary(userId: string): Observable<any> {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/summary/${userId}`;
-    return this.http.get<any>(url, { headers }).pipe(
-      map(response => {
-        return response;
-      }),
+    return this.http.get<any>(url, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
@@ -73,10 +62,7 @@ export class TaskService {
   getTasks(userId: string): Observable<Task[]> {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/user/${userId}`;
-    return this.http.get<Task[]>(url, { headers }).pipe(
-      map(response => {
-        return response;
-      }),
+    return this.http.get<Task[]>(url, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
@@ -98,20 +84,18 @@ export class TaskService {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}/start`;
   
-    // Updating task status and start date before sending
     task.status = 'In Progress';
     task.startDate = new Date().toISOString();
   
-    // Send the full Task object as the body for the PUT request
-    this.http.put<Task>(url, task, { headers }).subscribe(
+    this.http.put<Task>(url, task, { headers, responseType: 'json' }).subscribe(
       (response) => {
         console.log('Task started successfully:', response);
       },
       (error) => {
         if (error.status === 400) {
-          console.error('Bad Request: ', error.error.message);
+          console.error('Bad Request:', error.error.message);
         } else if (error.status === 404) {
-          console.error('Task not found (404): ', error.error.message);
+          console.error('Task not found (404):', error.error.message);
         } else {
           console.error('An unexpected error occurred:', error);
         }
@@ -121,7 +105,6 @@ export class TaskService {
 
   // Method to handle starting a task and reloading the data after success
   handleStartTask(task: Task, callback: () => void): void {
-    // Update task status to 'In Progress' and set the actual start date
     task.status = 'In Progress';
     task.startDate = new Date().toISOString();
   
@@ -129,7 +112,7 @@ export class TaskService {
       (response: Task | null) => {
         if (response) {
           console.log('Task started successfully:', response);
-          callback(); // Reload data after successful update
+          callback();
         } else {
           console.error('Failed to start task. Response was null.');
         }
@@ -144,27 +127,16 @@ export class TaskService {
   updateTask(task: Task): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${task.id}`;
-  
-    // Use PUT for full update
-    return this.http.put<Task>(url, task, { headers }).pipe(
-      map(response => {
-        console.log('Task updated successfully:', response);
-        return response;
-      }),
+    return this.http.put<Task>(url, task, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
 
   // Method to mark a task as completed
   markTaskAsCompleted(taskId: string): Observable<void> {
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + localStorage.getItem('token'));
+    const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}/complete`;
-
-    return this.http.patch<void>(url, null, { headers }).pipe(
-      map(response => {
-        console.log('Task marked as completed:', response);
-        return response;
-      }),
+    return this.http.patch<void>(url, null, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
@@ -179,7 +151,7 @@ export class TaskService {
             message: 'Task has been marked as completed!'
           }
         }).afterClosed().subscribe(() => {
-          refreshCallback(); // Call the refresh function passed by the component
+          refreshCallback();
         });
       },
       (error) => {
@@ -192,12 +164,7 @@ export class TaskService {
   deleteTask(taskId: string): Observable<void> {
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}`;
-
-    return this.http.delete<void>(url, { headers }).pipe(
-      map(response => {
-        console.log('Task deleted successfully');
-        return response;
-      }),
+    return this.http.delete<void>(url, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }
@@ -206,11 +173,7 @@ export class TaskService {
   saveToken(token: string): Observable<any> {
     const url = `${this.tasksUrl}/save-token`;  
     const headers = this.authService.getAuthHeaders();
-    return this.http.post(url, { token }, { headers }).pipe(
-      map(response => {
-        console.log('Token saved successfully:', response);
-        return response;
-      }),
+    return this.http.post(url, { token }, { headers, responseType: 'json' }).pipe(
       catchError(this.handleError)
     );
   }

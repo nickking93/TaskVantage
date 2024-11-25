@@ -39,12 +39,6 @@ public class AuthController {
     @Autowired
     private FirebaseNotificationService firebaseNotificationService;
 
-    /**
-     * Authenticates the user and generates a JWT token if successful.
-     *
-     * @param authRequest Contains the username and password.
-     * @return A response entity with the login result and JWT token.
-     */
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody AuthRequest authRequest) {
         logger.info("Login request received for user: {}", authRequest.getUsername());
@@ -66,8 +60,15 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
 
-            // Generate JWT token
-            String token = jwtUtil.generateToken(userDetails, user.getId());
+            // Check if this is a PWA request
+            boolean isPwa = authRequest.getIsPwa() != null && authRequest.getIsPwa();
+
+            // Generate tokens
+            Map<String, String> tokens = jwtUtil.generateTokens(userDetails, user.getId(), isPwa);
+
+            // Store refresh token
+            user.setRefreshToken(tokens.get("refreshToken"));
+            customUserDetailsService.saveUser(user);
 
             // Handle FCM token if provided
             if (authRequest.getFcmToken() != null && !authRequest.getFcmToken().isEmpty()) {
@@ -84,7 +85,9 @@ public class AuthController {
             response.put("message", "Login successful");
             response.put("username", user.getUsername());
             response.put("userId", user.getId());
-            response.put("token", token);
+            response.put("token", tokens.get("accessToken"));
+            response.put("refreshToken", tokens.get("refreshToken"));
+            response.put("isPwa", isPwa);
 
             logger.info("Login successful for user: {}", user.getUsername());
 
@@ -98,12 +101,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Registers a new user and sends a verification email.
-     *
-     * @param authRequest Contains the username and password for registration.
-     * @return A response entity with the registration result.
-     */
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody AuthRequest authRequest) {
         String result = customUserDetailsService.registerUser(authRequest);
@@ -118,51 +115,68 @@ public class AuthController {
         }
     }
 
-    /**
-     * Updates the Firebase Cloud Messaging (FCM) token for the authenticated user.
-     *
-     * @param request Contains the FCM token to be updated.
-     * @param authentication The authentication object representing the currently authenticated user.
-     * @return A response entity with the result of the update. Returns:
-     *         - 200 OK: If the FCM token is updated successfully.
-     *         - 400 Bad Request: If the FCM token is missing or invalid.
-     *         - 401 Unauthorized: If the user is not authenticated.
-     *         - 500 Internal Server Error: If an error occurs while updating the token.
-     */
-    @PostMapping("/update-fcm-token")
-    public ResponseEntity<Map<String, Object>> updateFCMToken(@RequestBody Map<String, String> request, Authentication authentication) {
+    @PostMapping("/refresh-token")
+    public ResponseEntity<Map<String, Object>> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        logger.info("Token refresh request received");
         Map<String, Object> response = new HashMap<>();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            response.put("message", "User not authenticated");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        }
-
-        String fcmToken = request.get("fcmToken");
-        if (fcmToken == null || fcmToken.trim().isEmpty()) {
-            response.put("message", "FCM token is required");
-            return ResponseEntity.badRequest().body(response);
-        }
-
         try {
-            String username = authentication.getName();
-            customUserDetailsService.updateUserToken(username, fcmToken);
+            if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
+                throw new IllegalArgumentException("Invalid refresh token format");
+            }
 
-            response.put("message", "FCM token updated successfully");
+            String token = refreshToken.substring(7);
+            if (!jwtUtil.isRefreshToken(token)) {
+                throw new IllegalArgumentException("Token is not a refresh token");
+            }
+
+            String username = jwtUtil.getUsernameFromToken(token);
+            User user = customUserDetailsService.findUserByUsername(username);
+
+            if (!token.equals(user.getRefreshToken())) {
+                throw new IllegalArgumentException("Invalid refresh token");
+            }
+
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            String newAccessToken = jwtUtil.generateTokenFromRefreshToken(token, userDetails);
+
+            response.put("token", newAccessToken);
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            logger.error("Error updating FCM token", e);
-            response.put("message", "Failed to update FCM token");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            logger.error("Token refresh failed: {}", e.getMessage());
+            response.put("message", "Token refresh failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 
-    /**
-     * Clears the FCM (Firebase Cloud Messaging) token for a user.
-     *
-     * @param username The username of the user whose FCM token should be cleared.
-     * @return A response entity with the result.
-     */
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(@RequestHeader("Authorization") String token) {
+        logger.info("Logout request received");
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            if (token != null && token.startsWith("Bearer ")) {
+                String jwtToken = token.substring(7);
+                String username = jwtUtil.getUsernameFromToken(jwtToken);
+                User user = customUserDetailsService.findUserByUsername(username);
+
+                // Clear refresh token
+                user.setRefreshToken(null);
+                customUserDetailsService.saveUser(user);
+
+                response.put("message", "Logout successful");
+                return ResponseEntity.ok(response);
+            }
+
+            throw new IllegalArgumentException("Invalid token format");
+        } catch (Exception e) {
+            logger.error("Logout failed: {}", e.getMessage());
+            response.put("message", "Logout failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @PostMapping("/users/{username}/clear-fcm-token")
     public ResponseEntity<?> clearFcmToken(@PathVariable("username") String username) {
         try {
@@ -173,12 +187,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Verifies a user's email using a verification token.
-     *
-     * @param token The verification token sent to the user's email.
-     * @return A response entity with the result of the verification.
-     */
     @PostMapping("/verify-email")
     public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
         try {
@@ -206,12 +214,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Sends a password reset link to the user's email address.
-     *
-     * @param email The email address of the user requesting the password reset.
-     * @return A response entity with the result of the request.
-     */
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, Object>> sendResetPasswordLink(@RequestBody Map<String, String> requestBody) {
         String email = requestBody.get("email");
@@ -243,12 +245,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Resets the user's password using the provided reset token.
-     *
-     * @param requestBody Contains the reset token and the new password.
-     * @return A response entity with the result of the password reset.
-     */
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody Map<String, String> requestBody) {
         String token = requestBody.get("token");
@@ -283,12 +279,34 @@ public class AuthController {
         }
     }
 
-    /**
-     * Fetch user settings (whether Google is connected and task sync is enabled).
-     *
-     * @param principal The currently authenticated user's details.
-     * @return A response entity with the user's settings.
-     */
+    @PostMapping("/update-fcm-token")
+    public ResponseEntity<Map<String, Object>> updateFCMToken(@RequestBody Map<String, String> request, Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            response.put("message", "User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        String fcmToken = request.get("fcmToken");
+        if (fcmToken == null || fcmToken.trim().isEmpty()) {
+            response.put("message", "FCM token is required");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            String username = authentication.getName();
+            customUserDetailsService.updateUserToken(username, fcmToken);
+
+            response.put("message", "FCM token updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error updating FCM token", e);
+            response.put("message", "Failed to update FCM token");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     @GetMapping("/user/settings")
     public ResponseEntity<Map<String, Object>> getUserSettings(Authentication principal) {
         User user = customUserDetailsService.findUserByUsername(principal.getName());

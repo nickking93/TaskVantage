@@ -52,7 +52,17 @@ public class User {
     @Column(nullable = false)
     private boolean taskSyncEnabled = false; // Default value can be set as needed
 
-    // Getter and Setter for googleEmail
+    @Column(nullable = true)
+    private String refreshToken;
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
     public String getGoogleEmail() {
         return googleEmail;
     }
