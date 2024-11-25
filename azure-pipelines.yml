@@ -36,6 +36,8 @@ stages:
             displayName: 'Install Node.js 20.x'
 
           - script: |
+              echo "Sourcing ~/.bashrc to load environment variables..."
+              source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 1: Navigating to frontend directory..."
               cd /home/nickking93/agents/myagent/_work/1/s/frontend/task-manager
 
@@ -43,11 +45,9 @@ stages:
               npm install
             displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
           
-          # This step is optional if firebase and @angular/fire are already in package.json
-          - script: npm install firebase @angular/fire --save
-            displayName: 'Install Firebase and AngularFire'
-
           - script: |
+              echo "Sourcing ~/.bashrc to load environment variables..."
+              source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 3: Building Angular app..."
               cd /home/nickking93/agents/myagent/_work/1/s/frontend/task-manager
               npm run build --prod || (echo "Build failed" && exit 1)
@@ -78,6 +78,8 @@ stages:
               secureFile: '$(firebaseConfigFileName)'
 
           - script: |
+              echo "Sourcing ~/.bashrc to load environment variables..."
+              source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo Writing Firebase JSON config to resources directory...
               mkdir -p $(backendPath)/src/main/resources
               cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
@@ -86,14 +88,11 @@ stages:
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
             displayName: 'Write Firebase Config to Resources Directory'
 
-          - task: Maven@4
-            inputs:
-              mavenPomFile: '$(backendPath)/pom.xml'
-              mavenOptions: '-Xmx3072m'
-              javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '17'
-              jdkArchitectureOption: 'x64'
-              goals: 'clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)'
+          - script: |
+              echo "Sourcing ~/.bashrc to load environment variables..."
+              source ~/.bashrc || echo "Failed to source ~/.bashrc"
+              echo "Building Spring Boot app..."
+              mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)
             displayName: 'Build Spring Boot app'
 
           - task: AzureWebApp@1
