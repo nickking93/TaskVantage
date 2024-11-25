@@ -4,7 +4,9 @@ trigger:
       - main
 
 pool:
-  name: 'Self-Hosted Agents'
+  name: Default  
+  demands:
+    - Agent.OS -equals Linux
 
 variables:
   SYSTEM_DEBUG: true  # Consider disabling this in production for less verbose logs
