@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  name: Default  
+  name: Default  # Replace with your Linux self-hosted agent pool name
   demands:
     - Agent.OS -equals Linux
 
@@ -64,68 +64,69 @@ stages:
   - stage: Build_And_Deploy_Backend
     dependsOn: Build_And_Deploy_Frontend
     jobs:
-    - job: Build_Backend
-      displayName: 'Build and Deploy Spring Boot Backend'
-      steps:
-        - checkout: self
-          clean: false
-          fetchDepth: 1
-          displayName: 'Checkout Latest Commit'
+      - job: Build_Backend
+        displayName: 'Build and Deploy Spring Boot Backend'
+        steps:
+          - checkout: self
+            clean: false
+            fetchDepth: 1
+            displayName: 'Checkout Latest Commit'
 
-        - task: DownloadSecureFile@1
-          name: DownloadFirebaseConfig
-          inputs:
-            secureFile: '$(firebaseConfigFileName)'
+          - task: DownloadSecureFile@1
+            name: DownloadFirebaseConfig
+            inputs:
+              secureFile: '$(firebaseConfigFileName)'
 
-        - script: |
-            echo "Sourcing ~/.bashrc to load environment variables..."
-            source ~/.bashrc || echo "Failed to source ~/.bashrc"
-            echo Writing Firebase JSON config to resources directory...
-            mkdir -p $(backendPath)/src/main/resources
-            cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
-            echo Firebase JSON file is written to $(firebaseConfigPath)
-            echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
-            echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
-          displayName: 'Write Firebase Config to Resources Directory'
+          - script: |
+              echo "Sourcing ~/.bashrc to load environment variables..."
+              source ~/.bashrc || echo "Failed to source ~/.bashrc"
+              echo Writing Firebase JSON config to resources directory...
+              mkdir -p $(backendPath)/src/main/resources
+              cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
+              echo Firebase JSON file is written to $(firebaseConfigPath)
+              echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
+              echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
+            displayName: 'Write Firebase Config to Resources Directory'
 
-        - script: |
-            echo "Sourcing ~/.bashrc to load environment variables..."
-            source ~/.bashrc || echo "Failed to source ~/.bashrc"
-            echo "Checking environment variables..."
-            printenv | grep -i "db\|firebase\|spring"
-            echo "Building Spring Boot app..."
-            mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)
-          displayName: 'Build Spring Boot app'
-          env:
-            DB_URL: $(DB_URL)
-            DB_USERNAME: $(DB_USERNAME)
-            DB_PASSWORD: $(DB_PASSWORD)
-            FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
-            SPRING_PROFILES_ACTIVE: $(SPRING_PROFILES_ACTIVE)
+          - script: |
+              echo "Sourcing ~/.bashrc to load environment variables..."
+              source ~/.bashrc || echo "Failed to source ~/.bashrc"
+              echo "Checking environment variables..."
+              printenv | grep -i "db\|firebase\|spring"
+              echo "Building Spring Boot app with tests..."
+              mvn -f $(backendPath)/pom.xml clean package \
+                  -Dspring.profiles.active=test
+            displayName: 'Build and Test Spring Boot App'
+            env:
+              DB_URL: $(DB_URL)
+              DB_USERNAME: $(DB_USERNAME)
+              DB_PASSWORD: $(DB_PASSWORD)
+              FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
+              SPRING_PROFILES_ACTIVE: test
 
-        - script: |
-            echo "Checking built JAR file..."
-            ls -la $(backendJar)
-          displayName: 'Verify Backend Build Artifacts'
+          - script: |
+              echo "Checking built JAR file..."
+              ls -la $(backendJar)
+            displayName: 'Verify Backend Build Artifacts'
 
-        - task: AzureWebApp@1
-          inputs:
-            azureSubscription: '$(azureSubscription)'
-            appName: '$(backendAppService)'
-            package: '$(backendJar)'
-            appType: 'webApp'
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(backendAppService)'
+              package: '$(backendJar)'
+              appType: 'webApp'
 
-        - task: AzureAppServiceSettings@1
-          inputs:
-            azureSubscription: '$(azureSubscription)'
-            resourceGroupName: 'TaskVantage'
-            appName: '$(backendAppService)'
-            appSettings: |
-              {
-                "DB_URL": "$(DB_URL)",
-                "DB_USERNAME": "$(DB_USERNAME)",
-                "DB_PASSWORD": "$(DB_PASSWORD)",
-                "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
-                "JAVA_OPTS": "-Duser.timezone=UTC"
-              }
-          displayName: 'Deploy Spring Boot app to Azure App Service'
+          - task: AzureAppServiceSettings@1
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              resourceGroupName: 'TaskVantage'
+              appName: '$(backendAppService)'
+              appSettings: |
+                {
+                  "DB_URL": "$(DB_URL)",
+                  "DB_USERNAME": "$(DB_USERNAME)",
+                  "DB_PASSWORD": "$(DB_PASSWORD)",
+                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
+                  "JAVA_OPTS": "-Duser.timezone=UTC"
+                }
+            displayName: 'Deploy Spring Boot app to Azure App Service'
