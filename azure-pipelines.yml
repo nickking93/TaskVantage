@@ -91,9 +91,16 @@ stages:
           - script: |
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
+              echo "Checking environment variables..."
+              printenv | grep -i "db\|firebase\|spring"
               echo "Building Spring Boot app..."
               mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)
             displayName: 'Build Spring Boot app'
+
+          - script: |
+              echo "Checking built JAR file..."
+              ls -la $(backendJar)
+            displayName: 'Verify Backend Build Artifacts'
 
           - task: AzureWebApp@1
             inputs:
@@ -109,9 +116,9 @@ stages:
               appName: '$(backendAppService)'
               appSettings: |
                 {
-                  "spring.datasource.url": "$(dbUrl)",
-                  "spring.datasource.username": "$(dbUsername)",
-                  "spring.datasource.password": "$(dbPassword)",
+                  "DB_URL": "$(dbUrl)",
+                  "DB_USERNAME": "$(dbUsername)",
+                  "DB_PASSWORD": "$(dbPassword)",
                   "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
                   "JAVA_OPTS": "-Duser.timezone=UTC"
                 }
