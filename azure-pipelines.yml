@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  name: Default  
+  name: Default  # Replace with your Linux self-hosted agent pool name
   demands:
     - Agent.OS -equals Linux
 
@@ -13,11 +13,11 @@ variables:
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
-  backendPath: 'C:\agents\_work\1\s\backend'
-  backendJar: '$(backendPath)\target\*.jar'
+  backendPath: '/home/azure-agent/_work/1/s/backend'
+  backendJar: '$(backendPath)/target/*.jar'
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
-  firebaseConfigPath: '$(backendPath)\src\main\resources\$(firebaseConfigFileName)'
+  firebaseConfigPath: '$(backendPath)/src/main/resources/$(firebaseConfigFileName)'
 
 stages:
   - stage: Build_And_Deploy_Frontend
@@ -37,10 +37,10 @@ stages:
 
           - script: |
               echo "Step 1: Navigating to frontend directory..."
-              cd /d C:\agents\_work\1\s\frontend\task-manager
-              
+              cd $(Agent.BuildDirectory)/frontend/task-manager
+
               echo "Step 2: Installing npm dependencies..."
-              npm install || exit /b 1
+              npm install
             displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
           
           # This step is optional if firebase and @angular/fire are already in package.json
@@ -49,15 +49,15 @@ stages:
 
           - script: |
               echo "Step 3: Building Angular app..."
-              cd /d C:\agents\_work\1\s\frontend\task-manager
-              npm run build --prod > build_output.txt 2>&1 || (echo "Build failed, output:" && type build_output.txt && exit /b 1)
+              cd $(Agent.BuildDirectory)/frontend/task-manager
+              npm run build --prod || (echo "Build failed" && exit 1)
             displayName: 'Build Angular app'
 
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(frontendAppService)'
-              package: 'C:\agents\_work\1\s\frontend\task-manager\dist\task-manager\browser'
+              package: '$(Agent.BuildDirectory)/frontend/task-manager/dist/task-manager/browser'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
 
@@ -79,8 +79,8 @@ stages:
 
           - script: |
               echo Writing Firebase JSON config to resources directory...
-              mkdir "$(backendPath)\src\main\resources"
-              copy "$(Agent.TempDirectory)\$(firebaseConfigFileName)" "$(firebaseConfigPath)"
+              mkdir -p $(backendPath)/src/main/resources
+              cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
               echo Firebase JSON file is written to $(firebaseConfigPath)
               echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
@@ -88,7 +88,7 @@ stages:
 
           - task: Maven@4
             inputs:
-              mavenPomFile: '$(backendPath)\pom.xml'
+              mavenPomFile: '$(backendPath)/pom.xml'
               mavenOptions: '-Xmx3072m'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '17'
