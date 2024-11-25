@@ -6,4 +6,8 @@ spring.datasource.driver-class-name=org.h2.Driver
 spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
 
-logging.level.org.hibernate=INFO
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Activate the test profile
+spring.profiles.active=test

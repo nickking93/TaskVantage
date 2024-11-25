@@ -1,15 +1,15 @@
 package com.taskvantage.backend;
 
-import com.taskvantage.backend.config.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ContextConfiguration(classes = {BackendApplication.class, TestSecurityConfig.class})
+@ActiveProfiles("test")
 class BackendApplicationTests {
 
     @Test
     void contextLoads() {
+        // Test if the application context loads successfully
     }
 }
