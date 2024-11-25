@@ -4,20 +4,18 @@ trigger:
       - main
 
 pool:
-  name: Default  # Replace with your Linux self-hosted agent pool name
-  demands:
-    - Agent.OS -equals Linux
+  name: 'Self-Hosted Agents'
 
 variables:
   SYSTEM_DEBUG: true  # Consider disabling this in production for less verbose logs
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
-  backendPath: '/home/nickking93/agents/myagent/_work/1/s/backend'
-  backendJar: '$(backendPath)/target/*.jar'
+  backendPath: 'C:\agents\_work\1\s\backend'
+  backendJar: '$(backendPath)\target\*.jar'
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
-  firebaseConfigPath: '$(backendPath)/src/main/resources/$(firebaseConfigFileName)'
+  firebaseConfigPath: '$(backendPath)\src\main\resources\$(firebaseConfigFileName)'
 
 stages:
   - stage: Build_And_Deploy_Frontend
@@ -36,90 +34,96 @@ stages:
             displayName: 'Install Node.js 20.x'
 
           - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
-              source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 1: Navigating to frontend directory..."
-              cd /home/nickking93/agents/myagent/_work/1/s/frontend/task-manager
-
+              cd /d C:\agents\_work\1\s\frontend\task-manager
+              
               echo "Step 2: Installing npm dependencies..."
-              npm install
+              npm install || exit /b 1
             displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
           
+          # This step is optional if firebase and @angular/fire are already in package.json
+          - script: npm install firebase @angular/fire --save
+            displayName: 'Install Firebase and AngularFire'
+
           - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
-              source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 3: Building Angular app..."
-              cd /home/nickking93/agents/myagent/_work/1/s/frontend/task-manager
-              npm run build --prod || (echo "Build failed" && exit 1)
+              cd /d C:\agents\_work\1\s\frontend\task-manager
+              npm run build --prod > build_output.txt 2>&1 || (echo "Build failed, output:" && type build_output.txt && exit /b 1)
             displayName: 'Build Angular app'
 
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(frontendAppService)'
-              package: '/home/nickking93/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager/browser'
+              package: 'C:\agents\_work\1\s\frontend\task-manager\dist\task-manager\browser'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
-
+            
   - stage: Build_And_Deploy_Backend
     dependsOn: Build_And_Deploy_Frontend
     jobs:
-      - job: Build_Backend
-        displayName: 'Build and Deploy Spring Boot Backend'
-        steps:
-          - checkout: self
-            clean: false
-            fetchDepth: 1
-            displayName: 'Checkout Latest Commit'
+    - job: Build_Backend
+      displayName: 'Build and Deploy Spring Boot Backend'
+      steps:
+        - checkout: self
+          clean: false
+          fetchDepth: 1
+          displayName: 'Checkout Latest Commit'
 
-          - task: DownloadSecureFile@1
-            name: DownloadFirebaseConfig
-            inputs:
-              secureFile: '$(firebaseConfigFileName)'
+        - task: DownloadSecureFile@1
+          name: DownloadFirebaseConfig
+          inputs:
+            secureFile: '$(firebaseConfigFileName)'
 
-          - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
-              source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo Writing Firebase JSON config to resources directory...
-              mkdir -p $(backendPath)/src/main/resources
-              cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
-              echo Firebase JSON file is written to $(firebaseConfigPath)
-              echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
-              echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
-            displayName: 'Write Firebase Config to Resources Directory'
+        - script: |
+            echo "Sourcing ~/.bashrc to load environment variables..."
+            source ~/.bashrc || echo "Failed to source ~/.bashrc"
+            echo Writing Firebase JSON config to resources directory...
+            mkdir -p $(backendPath)/src/main/resources
+            cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
+            echo Firebase JSON file is written to $(firebaseConfigPath)
+            echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
+            echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
+          displayName: 'Write Firebase Config to Resources Directory'
 
-          - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
-              source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo "Checking environment variables..."
-              printenv | grep -i "db\|firebase\|spring"
-              echo "Building Spring Boot app..."
-              mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)
-            displayName: 'Build Spring Boot app'
+        - script: |
+            echo "Sourcing ~/.bashrc to load environment variables..."
+            source ~/.bashrc || echo "Failed to source ~/.bashrc"
+            echo "Checking environment variables..."
+            printenv | grep -i "db\|firebase\|spring"
+            echo "Building Spring Boot app..."
+            mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=$(SPRING_PROFILES_ACTIVE)
+          displayName: 'Build Spring Boot app'
+          env:
+            DB_URL: $(DB_URL)
+            DB_USERNAME: $(DB_USERNAME)
+            DB_PASSWORD: $(DB_PASSWORD)
+            FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
+            SPRING_PROFILES_ACTIVE: $(SPRING_PROFILES_ACTIVE)
 
-          - script: |
-              echo "Checking built JAR file..."
-              ls -la $(backendJar)
-            displayName: 'Verify Backend Build Artifacts'
+        - script: |
+            echo "Checking built JAR file..."
+            ls -la $(backendJar)
+          displayName: 'Verify Backend Build Artifacts'
 
-          - task: AzureWebApp@1
-            inputs:
-              azureSubscription: '$(azureSubscription)'
-              appName: '$(backendAppService)'
-              package: '$(backendJar)'
-              appType: 'webApp'
+        - task: AzureWebApp@1
+          inputs:
+            azureSubscription: '$(azureSubscription)'
+            appName: '$(backendAppService)'
+            package: '$(backendJar)'
+            appType: 'webApp'
 
-          - task: AzureAppServiceSettings@1
-            inputs:
-              azureSubscription: '$(azureSubscription)'
-              resourceGroupName: 'TaskVantage'
-              appName: '$(backendAppService)'
-              appSettings: |
-                {
-                  "DB_URL": "$(dbUrl)",
-                  "DB_USERNAME": "$(dbUsername)",
-                  "DB_PASSWORD": "$(dbPassword)",
-                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
-                  "JAVA_OPTS": "-Duser.timezone=UTC"
-                }
-            displayName: 'Deploy Spring Boot app to Azure App Service'
+        - task: AzureAppServiceSettings@1
+          inputs:
+            azureSubscription: '$(azureSubscription)'
+            resourceGroupName: 'TaskVantage'
+            appName: '$(backendAppService)'
+            appSettings: |
+              {
+                "DB_URL": "$(DB_URL)",
+                "DB_USERNAME": "$(DB_USERNAME)",
+                "DB_PASSWORD": "$(DB_PASSWORD)",
+                "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
+                "JAVA_OPTS": "-Duser.timezone=UTC"
+              }
+          displayName: 'Deploy Spring Boot app to Azure App Service'
