@@ -88,6 +88,7 @@ stages:
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
             displayName: 'Write Firebase Config to Resources Directory'
 
+          # Updated Maven Build and Test step
           - script: |
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
@@ -95,12 +96,17 @@ stages:
               printenv | grep -i "db\|firebase\|spring"
               echo "Building Spring Boot app with tests..."
               mvn -f $(backendPath)/pom.xml clean package \
-                  -Dspring.profiles.active=test
+                  -Dspring.profiles.active=test \
+                  -Dspring.datasource.url=jdbc:h2:mem:testdb \
+                  -Dspring.jpa.database-platform=org.hibernate.dialect.H2Dialect \
+                  -Dspring.datasource.username=sa \
+                  -Dspring.datasource.password= \
+                  -Dspring.datasource.driver-class-name=org.h2.Driver \
+                  -Dspring.jpa.hibernate.ddl-auto=create-drop \
+                  -Dspring.jpa.show-sql=true \
+                  -Dspring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults=false
             displayName: 'Build and Test Spring Boot App'
             env:
-              DB_URL: $(DB_URL)
-              DB_USERNAME: $(DB_USERNAME)
-              DB_PASSWORD: $(DB_PASSWORD)
               FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
               SPRING_PROFILES_ACTIVE: test
 
@@ -108,6 +114,20 @@ stages:
               echo "Checking built JAR file..."
               ls -la $(backendJar)
             displayName: 'Verify Backend Build Artifacts'
+
+          # Production build for deployment
+          - script: |
+              echo "Building production JAR..."
+              mvn -f $(backendPath)/pom.xml clean package \
+                  -Dspring.profiles.active=prod \
+                  -DskipTests
+            displayName: 'Build Production JAR'
+            env:
+              DB_URL: $(DB_URL)
+              DB_USERNAME: $(DB_USERNAME)
+              DB_PASSWORD: $(DB_PASSWORD)
+              FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
+              SPRING_PROFILES_ACTIVE: prod
 
           - task: AzureWebApp@1
             inputs:
