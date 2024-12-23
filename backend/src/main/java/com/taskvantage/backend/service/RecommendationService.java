@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.AbstractMap;
+import java.util.Optional;
 
 @Service
 public class RecommendationService {
@@ -17,8 +19,9 @@ public class RecommendationService {
     private final SentenceEmbeddingClient embeddingClient;
 
     // Constructor for production
-    public RecommendationService(SentenceEmbeddingClient embeddingClient) {
+    public RecommendationService(SentenceEmbeddingClient embeddingClient, TaskRepository taskRepository) {
         this.embeddingClient = embeddingClient;
+        this.taskRepository = taskRepository;
     }
 
     public double computeTextualSimilarity(String text1, String text2) {
@@ -44,5 +47,27 @@ public class RecommendationService {
         }
 
         return dotProduct / (Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB));
+    }
+
+    public List<Task> getRecommendedTasks(Long taskId, int limit) {
+        Task targetTask = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+        List<Task> allTasks = taskRepository.findAll();
+
+        // Debug print
+        System.out.println("Target task description: " + targetTask.getDescription());
+
+        return allTasks.stream()
+                .filter(task -> !task.getId().equals(taskId))
+                .map(task -> {
+                    double similarity = computeTextualSimilarity(targetTask.getDescription(), task.getDescription());
+                    System.out.println("Task " + task.getId() + " similarity: " + similarity); // Debug print
+                    return new AbstractMap.SimpleEntry<>(task, similarity);
+                })
+                .sorted((entry1, entry2) -> Double.compare(entry2.getValue(), entry1.getValue()))
+                .limit(limit)
+                .map(AbstractMap.SimpleEntry::getKey)
+                .collect(Collectors.toList());
     }
 }
