@@ -16,17 +16,17 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +  // Placeholder values for summary fields
+    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +
             "t.id, t.title, t.description, t.priority, t.status, " +
-            "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, " +
-            "SIZE(t.subtasks)) " +
+            "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, SIZE(t.subtasks), " +
+            "null, null) " + // Pass null for recommendationDetails and batchableWith
             "FROM Task t WHERE t.userId = :userId")
     List<TaskSummary> findTaskSummariesByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +  // Placeholder values for summary fields
+    @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +
             "t.id, t.title, t.description, t.priority, t.status, " +
-            "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, " +
-            "SIZE(t.subtasks)) " +
+            "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, SIZE(t.subtasks), " +
+            "null, null) " + // Pass null for recommendationDetails and batchableWith
             "FROM Task t WHERE t.userId = :userId AND t.status != 'Completed'")
     List<TaskSummary> findNonCompletedTaskSummariesByUserId(@Param("userId") Long userId);
 

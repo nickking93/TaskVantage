@@ -35,11 +35,13 @@ public class TaskSummary {
     private List<Long> batchableWith;
 
     // Constructor
-    public TaskSummary(long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
-                       Long id, String title, String description, TaskPriority priority, String status,
-                       ZonedDateTime dueDate, ZonedDateTime creationDate, ZonedDateTime lastModifiedDate,
-                       ZonedDateTime scheduledStart, ZonedDateTime completionDateTime, Duration duration,
-                       int totalSubtasks, String recommendationDetails, List<Long> batchableWith) {
+    public TaskSummary(
+            long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
+            Long id, String title, String description, TaskPriority priority, String status,
+            ZonedDateTime dueDate, ZonedDateTime creationDate, ZonedDateTime lastModifiedDate,
+            ZonedDateTime scheduledStart, ZonedDateTime completionDateTime, Duration duration, int totalSubtasks,
+            String recommendationDetails, List<Long> batchableWith // Include these fields
+    ) {
         this.totalTasks = totalTasks;
         this.pastDeadlineTasks = pastDeadlineTasks;
         this.completedTasksThisMonth = completedTasksThisMonth;
@@ -56,8 +58,8 @@ public class TaskSummary {
         this.completionDateTime = completionDateTime;
         this.duration = duration;
         this.totalSubtasks = totalSubtasks;
-        this.recommendationDetails = recommendationDetails;
-        this.batchableWith = batchableWith;
+        this.recommendationDetails = recommendationDetails; // Initialize
+        this.batchableWith = batchableWith;                 // Initialize
     }
 
     // No-argument constructor
