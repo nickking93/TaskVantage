@@ -18,8 +18,6 @@ variables:
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
   firebaseConfigPath: '$(backendPath)/src/main/resources/$(firebaseConfigFileName)'
-  azure.cognitive.endpoint: 'https://taskvantage-cognitive.openai.azure.com/'
-  azure.cognitive.apiKey: '$(AZURE_COGNITIVE_APIKEY)'
 
 stages:
   - stage: Build_And_Deploy_Frontend
@@ -130,8 +128,6 @@ stages:
               DB_PASSWORD: $(DB_PASSWORD)
               FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
               SPRING_PROFILES_ACTIVE: prod
-              azure.cognitive.endpoint: $(azure.cognitive.endpoint)
-              azure.cognitive.apiKey: $(azure.cognitive.apiKey)
 
           - task: AzureWebApp@1
             inputs:
@@ -140,18 +136,17 @@ stages:
               package: '$(backendJar)'
               appType: 'webApp'
 
-          - task: AzureCLI@2
-            displayName: 'Update App Settings via Azure CLI'
+          - task: AzureAppServiceSettings@1
             inputs:
               azureSubscription: '$(azureSubscription)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az webapp config appsettings set --name $(backendAppService) --resource-group TaskVantage --settings \
-                  spring.datasource.url="$(DB_URL)" \
-                  spring.datasource.username="$(DB_USERNAME)" \
-                  spring.datasource.password="$(DB_PASSWORD)" \
-                  FIREBASE_CONFIG_PATH="src/main/resources/$(firebaseConfigFileName)" \
-                  azure.cognitive.endpoint="$(azure.cognitive.endpoint)" \
-                  azure.cognitive.apiKey="$(azure.cognitive.apiKey)" \
-                  JAVA_OPTS="-Duser.timezone=UTC"
+              resourceGroupName: 'TaskVantage'
+              appName: '$(backendAppService)'
+              appSettings: |
+                {
+                  "spring.datasource.url": "$(dbUrl)",
+                  "spring.datasource.username": "$(dbUsername)", 
+                  "spring.datasource.password": "$(dbPassword)",
+                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
+                  "JAVA_OPTS": "-Duser.timezone=UTC"
+                }
+            displayName: 'Deploy Spring Boot app to Azure App Service'
