@@ -145,14 +145,5 @@ stages:
               azureSubscription: '$(azureSubscription)'
               resourceGroupName: 'TaskVantage'
               appName: '$(backendAppService)'
-              appSettings: >-
-                {
-                  "spring.datasource.url": "$(DB_URL)",
-                  "spring.datasource.username": "$(DB_USERNAME)",
-                  "spring.datasource.password": "$(DB_PASSWORD)",
-                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
-                  "azure.cognitive.endpoint": "$(azure.cognitive.endpoint)",
-                  "azure.cognitive.apiKey": "$(azure.cognitive.apiKey)",
-                  "JAVA_OPTS": "-Duser.timezone=UTC"
-                }
+              appSettings: '{"spring.datasource.url": "$(DB_URL)", "spring.datasource.username": "$(DB_USERNAME)", "spring.datasource.password": "$(DB_PASSWORD)", "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)", "azure.cognitive.endpoint": "$(azure.cognitive.endpoint)", "azure.cognitive.apiKey": "$(azure.cognitive.apiKey)", "JAVA_OPTS": "-Duser.timezone=UTC"}'
             displayName: 'Deploy Spring Boot app to Azure App Service'
