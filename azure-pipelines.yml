@@ -140,10 +140,18 @@ stages:
               package: '$(backendJar)'
               appType: 'webApp'
 
-          - task: AzureAppServiceSettings@1
+          - task: AzureCLI@2
+            displayName: 'Update App Settings via Azure CLI'
             inputs:
               azureSubscription: '$(azureSubscription)'
-              resourceGroupName: 'TaskVantage'
-              appName: '$(backendAppService)'
-              appSettings: '{"spring.datasource.url": "$(DB_URL)", "spring.datasource.username": "$(DB_USERNAME)", "spring.datasource.password": "$(DB_PASSWORD)", "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)", "azure.cognitive.endpoint": "$(azure.cognitive.endpoint)", "azure.cognitive.apiKey": "$(azure.cognitive.apiKey)", "JAVA_OPTS": "-Duser.timezone=UTC"}'
-            displayName: 'Deploy Spring Boot app to Azure App Service'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az webapp config appsettings set --name $(backendAppService) --resource-group TaskVantage --settings \
+                  spring.datasource.url="$(DB_URL)" \
+                  spring.datasource.username="$(DB_USERNAME)" \
+                  spring.datasource.password="$(DB_PASSWORD)" \
+                  FIREBASE_CONFIG_PATH="src/main/resources/$(firebaseConfigFileName)" \
+                  azure.cognitive.endpoint="$(azure.cognitive.endpoint)" \
+                  azure.cognitive.apiKey="$(azure.cognitive.apiKey)" \
+                  JAVA_OPTS="-Duser.timezone=UTC"
