@@ -146,13 +146,40 @@ stages:
               resourceGroupName: 'TaskVantage'
               appName: '$(backendAppService)'
               appSettings: |
-                {
-                  "spring.datasource.url": "$(DB_URL)",
-                  "spring.datasource.username": "$(DB_USERNAME)", 
-                  "spring.datasource.password": "$(DB_PASSWORD)",
-                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
-                  "azure.cognitive.endpoint": "$(azure.cognitive.endpoint)",
-                  "azure.cognitive.apiKey": "$(azure.cognitive.apiKey)",
-                  "JAVA_OPTS": "-Duser.timezone=UTC"
-                }
-            displayName: 'Deploy Spring Boot app to Azure App Service'
+                [
+                  {
+                    "name": "spring.datasource.url",
+                    "value": "$(DB_URL)",
+                    "slotSetting": false
+                  },
+                  {
+                    "name": "spring.datasource.username",
+                    "value": "$(DB_USERNAME)",
+                    "slotSetting": false
+                  },
+                  {
+                    "name": "spring.datasource.password",
+                    "value": "$(DB_PASSWORD)",
+                    "slotSetting": false
+                  },
+                  {
+                    "name": "FIREBASE_CONFIG_PATH",
+                    "value": "src/main/resources/$(firebaseConfigFileName)",
+                    "slotSetting": false
+                  },
+                  {
+                    "name": "azure.cognitive.endpoint",
+                    "value": "$(azure.cognitive.endpoint)",
+                    "slotSetting": false
+                  },
+                  {
+                    "name": "azure.cognitive.apiKey",
+                    "value": "$(azure.cognitive.apiKey)",
+                    "slotSetting": false
+                  },
+                  {
+                    "name": "JAVA_OPTS",
+                    "value": "-Duser.timezone=UTC",
+                    "slotSetting": false
+                  }
+                ]
