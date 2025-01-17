@@ -41,17 +41,17 @@ stages:
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 1: Navigating to frontend directory..."
-              cd /home/agents/myagent/_work/1/s/frontend/task-manager
+              cd $(System.DefaultWorkingDirectory)/frontend/task-manager
 
               echo "Step 2: Installing npm dependencies..."
               npm install
             displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
-          
+
           - script: |
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 3: Building Angular app..."
-              cd /home/agents/myagent/_work/1/s/frontend/task-manager
+              cd $(System.DefaultWorkingDirectory)/frontend/task-manager
               npm run build --prod || (echo "Build failed" && exit 1)
             displayName: 'Build Angular app'
 
