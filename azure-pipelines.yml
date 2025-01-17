@@ -59,7 +59,7 @@ stages:
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(frontendAppService)'
-              package: '/home/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager/browser'
+              package: '$(System.DefaultWorkingDirectory)/frontend/task-manager/dist/task-manager'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
 
