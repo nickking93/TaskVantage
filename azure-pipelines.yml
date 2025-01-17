@@ -4,12 +4,12 @@ trigger:
       - main
 
 pool:
-  name: Default  # Replace with your Linux self-hosted agent pool name
+  name: Default  
   demands:
     - Agent.OS -equals Linux
 
 variables:
-  SYSTEM_DEBUG: true  # Consider disabling this in production for less verbose logs
+  SYSTEM_DEBUG: true  # Verbose Logging
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
@@ -62,6 +62,18 @@ stages:
               package: '$(System.DefaultWorkingDirectory)/frontend/task-manager/dist/task-manager'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
+
+          - task: AzureCLI@2
+            displayName: 'Fix Deployment Structure'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Fixing deployment folder structure..."
+                mv /home/site/wwwroot/browser/* /home/site/wwwroot/ || echo "Failed to move files"
+                rm -rf /home/site/wwwroot/browser || echo "Failed to remove browser folder"
+                echo "Deployment structure fixed."
 
   - stage: Build_And_Deploy_Backend
     dependsOn: Build_And_Deploy_Frontend
