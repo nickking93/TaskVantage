@@ -13,7 +13,7 @@ variables:
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
-  backendPath: '/home/agents/myagent/_work/1/s/backend'
+  backendPath: '/home/quigonwhiskey/agents/myagent/_work/1/s/backend'
   backendJar: '$(backendPath)/target/*.jar'
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
@@ -34,7 +34,7 @@ stages:
 
           - task: NodeTool@0
             inputs:
-              versionSpec: '20.x' 
+              versionSpec: '20.x'
             displayName: 'Install Node.js 20.x'
 
           - script: |
@@ -90,12 +90,15 @@ stages:
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
             displayName: 'Write Firebase Config to Resources Directory'
 
+          - script: |
+              echo "Checking backend directory contents..."
+              ls -la $(backendPath)
+            displayName: 'Verify Backend Directory'
+
           # Updated Maven Build and Test step
           - script: |
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo "Checking environment variables..."
-              printenv | grep -i "db\|firebase\|spring"
               echo "Building Spring Boot app with tests..."
               mvn -f $(backendPath)/pom.xml clean package \
                   -Dspring.profiles.active=test \
