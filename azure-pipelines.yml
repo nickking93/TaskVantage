@@ -28,7 +28,7 @@ stages:
         displayName: 'Build and Deploy Angular Frontend'
         steps:
           - checkout: self
-            clean: false
+            clean: true
             fetchDepth: 1
             displayName: 'Checkout Latest Commit'
 
@@ -82,7 +82,7 @@ stages:
         displayName: 'Build and Deploy Spring Boot Backend'
         steps:
           - checkout: self
-            clean: false
+            clean: true
             fetchDepth: 1
             displayName: 'Checkout Latest Commit'
 
