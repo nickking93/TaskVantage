@@ -2,6 +2,7 @@ package com.taskvantage.backend.repository;
 
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -48,4 +49,24 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("userId") Long userId,
             @Param("startTime") ZonedDateTime startTime,
             @Param("endTime") ZonedDateTime endTime);
+
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId ORDER BY t.lastModifiedDate DESC")
+    List<Task> findRecentTasksByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT t FROM Task t WHERE t.userId != :userId AND t.status != 'Completed'")
+    List<Task> findPotentialTasksForUser(@Param("userId") Long userId);
+
+    @Query("SELECT t FROM Task t WHERE t.status != 'Completed' ORDER BY t.recommendationScore DESC")
+    List<Task> findPopularTasks(Pageable pageable);
+
+    // Helper method to convert limit to Pageable
+    default List<Task> findPopularTasks(int limit) {
+        return findPopularTasks(Pageable.ofSize(limit));
+    }
+
+    @Query("SELECT t FROM Task t WHERE t.id != :taskId AND " +
+            "(LOWER(t.title) LIKE LOWER(CONCAT('%', :title, '%')) " +
+            "OR LOWER(t.description) LIKE LOWER(CONCAT('%', :description, '%'))) " +
+            "ORDER BY t.lastModifiedDate DESC")
+    List<Task> findRelatedTasks(@Param("taskId") Long taskId, @Param("title") String title, @Param("description") String description);
 }

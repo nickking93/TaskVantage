@@ -2,118 +2,99 @@ package com.taskvantage.backend.service;
 
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.repository.TaskRepository;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RecommendationServiceTest {
 
-    private static RecommendationService recommendationService;
-    private static SentenceEmbeddingClient embeddingClientMock;
-    private static TaskRepository taskRepositoryMock;
+    private RecommendationService recommendationService;
+    private SentenceEmbeddingClient embeddingClientMock;
+    private TaskRepository taskRepositoryMock;
 
-    @BeforeAll
-    public static void setUp() {
-        // Mock SentenceEmbeddingClient and TaskRepository
+    @BeforeEach
+    public void setUp() {
         embeddingClientMock = Mockito.mock(SentenceEmbeddingClient.class);
         taskRepositoryMock = Mockito.mock(TaskRepository.class);
-
-        // Inject mocks into RecommendationService
         recommendationService = new RecommendationService(embeddingClientMock, taskRepositoryMock);
     }
 
     @Test
-    public void testComputeTextualSimilarity_SimilarTexts() {
-        String text1 = "Complete the project documentation";
-        String text2 = "Finalize the documentation for the project";
+    public void testGetRecommendationsForUser_WithHistory() {
+        Long userId = 1L;
 
-        // Similar embeddings
-        when(embeddingClientMock.getSentenceEmbedding(text1))
-                .thenReturn(new double[]{0.1, 0.2, 0.3, 0.4});
-        when(embeddingClientMock.getSentenceEmbedding(text2))
-                .thenReturn(new double[]{0.1, 0.2, 0.29, 0.41});
+        // Create user's historical tasks
+        Task task1 = new Task(1L, "API Documentation", "Write API documentation");
+        task1.setUserId(userId);
+        task1.setStatus("Completed");
+        task1.setLastModifiedDate(ZonedDateTime.now().minusDays(1));
 
-        double similarity = recommendationService.computeTextualSimilarity(text1, text2);
+        Task task2 = new Task(2L, "Database Schema", "Create database documentation");
+        task2.setUserId(userId);
+        task2.setStatus("Completed");
+        task2.setLastModifiedDate(ZonedDateTime.now().minusDays(2));
 
-        System.out.println("Computed similarity for similar texts: " + similarity);
+        List<Task> userHistory = List.of(task1, task2);
 
-        assertTrue(similarity > 0.8 && similarity <= 1.0, "Expected similarity above 0.8 for similar texts");
-    }
+        // Create candidate tasks for recommendations
+        Task task3 = new Task(3L, "Update API Docs", "Review and update API documentation");
+        Task task4 = new Task(4L, "Code Review", "Review pull requests");
+        Task task5 = new Task(5L, "Buy Groceries", "Get weekly groceries");
 
-    @Test
-    public void testComputeTextualSimilarity_NonSimilarTexts() {
-        String text1 = "The weather is sunny.";
-        String text2 = "Quantum computing is fascinating.";
+        List<Task> candidateTasks = List.of(task3, task4, task5);
 
-        // Modified embeddings to produce a small non-zero similarity
-        when(embeddingClientMock.getSentenceEmbedding(text1))
-                .thenReturn(new double[]{0.8, 0.1, 0.1, 0.1});
-        when(embeddingClientMock.getSentenceEmbedding(text2))
-                .thenReturn(new double[]{0.1, 0.8, 0.1, 0.1});
+        // Mock repository responses
+        when(taskRepositoryMock.findRecentTasksByUserId(userId)).thenReturn(userHistory);
+        when(taskRepositoryMock.findPotentialTasksForUser(userId)).thenReturn(candidateTasks);
 
-        double similarity = recommendationService.computeTextualSimilarity(text1, text2);
-
-        System.out.println("Computed similarity for non-similar texts: " + similarity);
-
-        assertTrue(similarity > 0.0 && similarity < 0.3,
-                "Expected similarity between 0.0 and 0.3 for dissimilar texts");
-    }
-
-    @Test
-    public void testGetRecommendedTasks() {
-        Task targetTask = new Task(1L, "Complete the project", "Finish writing all the documentation");
-        Task task1 = new Task(2L, "Write documentation", "Start the documentation draft");
-        Task task2 = new Task(3L, "Plan the project", "Create a timeline for the project");
-        Task task3 = new Task(4L, "Unrelated task", "Buy groceries");
-
-        List<Task> mockTasks = List.of(targetTask, task1, task2, task3);
-
-        when(taskRepositoryMock.findById(1L)).thenReturn(Optional.of(targetTask));
-        when(taskRepositoryMock.findAll()).thenReturn(mockTasks);
-
-        // Target vector pointing mostly in x and y directions (documentation-related)
-        when(embeddingClientMock.getSentenceEmbedding(targetTask.getDescription()))
+        // Mock embeddings for historical tasks
+        when(embeddingClientMock.getSentenceEmbedding("API Documentation Write API documentation"))
                 .thenReturn(new double[]{0.7, 0.7, 0.1, 0.1});
+        when(embeddingClientMock.getSentenceEmbedding("Database Schema Create database documentation"))
+                .thenReturn(new double[]{0.6, 0.8, 0.1, 0.1});
 
-        // Very similar vector (also documentation-related)
-        when(embeddingClientMock.getSentenceEmbedding(task1.getDescription()))
-                .thenReturn(new double[]{0.65, 0.75, 0.1, 0.1});  // Should give ~0.99 similarity
+        // Mock embeddings for candidate tasks
+        when(embeddingClientMock.getSentenceEmbedding("Update API Docs Review and update API documentation"))
+                .thenReturn(new double[]{0.75, 0.65, 0.1, 0.1});
+        when(embeddingClientMock.getSentenceEmbedding("Code Review Review pull requests"))
+                .thenReturn(new double[]{0.4, 0.4, 0.6, 0.4});
+        when(embeddingClientMock.getSentenceEmbedding("Buy Groceries Get weekly groceries"))
+                .thenReturn(new double[]{0.1, 0.1, 0.7, 0.7});
 
-        // Somewhat different vector (project-related but not documentation)
-        when(embeddingClientMock.getSentenceEmbedding(task2.getDescription()))
-                .thenReturn(new double[]{0.4, 0.4, 0.6, 0.4});    // Should give ~0.75 similarity
+        // Get recommendations
+        List<Task> recommendations = recommendationService.getRecommendationsForUser(userId, 2);
 
-        // Very different vector (groceries - completely different topic)
-        when(embeddingClientMock.getSentenceEmbedding(task3.getDescription()))
-                .thenReturn(new double[]{0.1, 0.1, 0.7, 0.7});    // Should give ~0.3 similarity
+        // Verify results
+        assertEquals(2, recommendations.size(), "Should return requested number of recommendations");
+        assertEquals("Update API Docs", recommendations.get(0).getTitle(),
+                "First recommendation should be most similar to user's documentation history");
+        assertEquals("Code Review", recommendations.get(1).getTitle(),
+                "Second recommendation should be somewhat related to development work");
+    }
 
-        List<Task> recommendedTasks = recommendationService.getRecommendedTasks(1L, 2);
+    @Test
+    public void testGetRecommendationsForUser_NoHistory() {
+        Long userId = 1L;
 
-        // Debug print all similarities
-        System.out.println("Similarities:");
-        double sim1 = recommendationService.computeTextualSimilarity(targetTask.getDescription(), task1.getDescription());
-        double sim2 = recommendationService.computeTextualSimilarity(targetTask.getDescription(), task2.getDescription());
-        double sim3 = recommendationService.computeTextualSimilarity(targetTask.getDescription(), task3.getDescription());
-        System.out.printf("Task1 (documentation): %.3f%n", sim1);
-        System.out.printf("Task2 (project): %.3f%n", sim2);
-        System.out.printf("Task3 (groceries): %.3f%n", sim3);
+        // Mock empty user history
+        when(taskRepositoryMock.findRecentTasksByUserId(userId)).thenReturn(List.of());
 
-        // Basic size assertion
-        assertEquals(2, recommendedTasks.size());
+        // Mock popular tasks
+        Task task1 = new Task(1L, "Get Started", "Complete onboarding tasks");
+        Task task2 = new Task(2L, "First Project", "Begin your first project");
 
-        // Verify order
-        assertEquals(task1, recommendedTasks.get(0));
-        assertEquals(task2, recommendedTasks.get(1));
+        List<Task> popularTasks = List.of(task1, task2);
+        when(taskRepositoryMock.findPopularTasks(anyInt())).thenReturn(popularTasks);
 
-        // Verify similarity ranges
-        assertTrue(sim1 > 0.95, "Documentation tasks should be very similar");
-        assertTrue(sim2 > 0.6 && sim2 < 0.9, "Project planning should be moderately similar");
-        assertTrue(sim3 < 0.5, "Groceries should be very different");
+        List<Task> recommendations = recommendationService.getRecommendationsForUser(userId, 2);
+
+        assertEquals(2, recommendations.size(), "Should return default recommendations");
+        assertEquals("Get Started", recommendations.get(0).getTitle(),
+                "Should return onboarding tasks for new users");
     }
 }
