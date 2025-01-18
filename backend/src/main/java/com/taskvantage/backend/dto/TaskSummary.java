@@ -4,35 +4,44 @@ import com.taskvantage.backend.model.TaskPriority;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class TaskSummary {
 
-    // Fields for summary data
+    // Summary of all tasks, useful for dashboard overviews.
     private long totalTasks;
     private long pastDeadlineTasks;
     private long completedTasksThisMonth;
     private long totalTasksThisMonth;
 
-    // Fields for detailed task data
+    // Task-specific details
     private Long id;
     private String title;
     private String description;
-    private TaskPriority priority; // Changed to TaskPriority enum
+    private TaskPriority priority;
     private String status;
-    private ZonedDateTime dueDate;  // Changed from LocalDateTime to ZonedDateTime
-    private ZonedDateTime creationDate;  // Changed from LocalDateTime to ZonedDateTime
-    private ZonedDateTime lastModifiedDate;  // Changed from LocalDateTime to ZonedDateTime
-    private ZonedDateTime scheduledStart;  // Changed from LocalDateTime to ZonedDateTime
-    private ZonedDateTime completionDateTime;  // Changed from LocalDateTime to ZonedDateTime
+    private ZonedDateTime dueDate;
+    private ZonedDateTime creationDate;
+    private ZonedDateTime lastModifiedDate;
+    private ZonedDateTime scheduledStart;
+    private ZonedDateTime completionDateTime;
     private Duration duration;
-    private int totalSubtasks; // Changed to int to match SIZE(t.subtasks)
+    private int totalSubtasks;
 
-    // Full constructor including all parameters
-    public TaskSummary(long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
-                       Long id, String title, String description, TaskPriority priority, String status,
-                       ZonedDateTime dueDate, ZonedDateTime creationDate, ZonedDateTime lastModifiedDate,
-                       ZonedDateTime scheduledStart, ZonedDateTime completionDateTime, Duration duration,
-                       int totalSubtasks) {
+    // Provides explanation for why a task is recommended.
+    private String recommendationDetails;
+
+    // A list of other task IDs that can be batch-processed with this task.
+    private List<Long> batchableWith;
+
+    // Constructor
+    public TaskSummary(
+            long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
+            Long id, String title, String description, TaskPriority priority, String status,
+            ZonedDateTime dueDate, ZonedDateTime creationDate, ZonedDateTime lastModifiedDate,
+            ZonedDateTime scheduledStart, ZonedDateTime completionDateTime, Duration duration, int totalSubtasks,
+            String recommendationDetails, List<Long> batchableWith // Include these fields
+    ) {
         this.totalTasks = totalTasks;
         this.pastDeadlineTasks = pastDeadlineTasks;
         this.completedTasksThisMonth = completedTasksThisMonth;
@@ -49,10 +58,29 @@ public class TaskSummary {
         this.completionDateTime = completionDateTime;
         this.duration = duration;
         this.totalSubtasks = totalSubtasks;
+        this.recommendationDetails = recommendationDetails; // Initialize
+        this.batchableWith = batchableWith;                 // Initialize
     }
 
     // No-argument constructor
     public TaskSummary() {
+    }
+
+    // Getters and setters
+    public String getRecommendationDetails() {
+        return recommendationDetails;
+    }
+
+    public void setRecommendationDetails(String recommendationDetails) {
+        this.recommendationDetails = recommendationDetails;
+    }
+
+    public List<Long> getBatchableWith() {
+        return batchableWith;
+    }
+
+    public void setBatchableWith(List<Long> batchableWith) {
+        this.batchableWith = batchableWith;
     }
 
     // Getters and setters for summary data

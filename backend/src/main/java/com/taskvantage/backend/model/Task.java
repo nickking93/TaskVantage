@@ -1,14 +1,24 @@
 package com.taskvantage.backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Table(name = "tasks")
+@Table(
+        name = "tasks",
+        indexes = {
+                @Index(name = "idx_is_recommended", columnList = "is_recommended"),
+                @Index(name = "idx_recommendation_score", columnList = "recommendation_score")
+        }
+)
 public class Task {
 
     @Id
@@ -91,12 +101,63 @@ public class Task {
     @Column(name = "is_all_day")
     private Boolean isAllDay = false;
 
-    // Updated getter to follow naming conventions
+    // Score representing how relevant a task is as a recommendation (0.0 to 1.0).
+    @Column(name = "recommendation_score")
+    @Min(0) @Max(1)
+    private Float recommendationScore;
+
+    // Identifies the method or source used for the recommendation (e.g., CollaborativeFiltering, NLP).
+    @Column(name = "recommended_by")
+    private String recommendedBy;
+
+    // Indicates whether the task is currently recommended.
+    @Column(name = "is_recommended")
+    private Boolean isRecommended = false;
+
+    // Timestamp for when this task was last recommended.
+    @Column(name = "last_recommended_on")
+    private ZonedDateTime lastRecommendedOn;
+
+    // Getters and Setters
+    public ZonedDateTime getLastRecommendedOn() {
+        return lastRecommendedOn;
+    }
+
+    public void setLastRecommendedOn(ZonedDateTime lastRecommendedOn) {
+        this.lastRecommendedOn = lastRecommendedOn;
+    }
+
+    public Boolean getRecommended() {
+        return isRecommended;
+    }
+
+    public void setRecommended(Boolean recommended) {
+        isRecommended = recommended;
+    }
+
+    public String getRecommendedBy() {
+        return recommendedBy;
+    }
+
+    public void setRecommendedBy(String recommendedBy) {
+        this.recommendedBy = recommendedBy;
+    }
+
+    public Float getRecommendationScore() {
+        return recommendationScore;
+    }
+
+    public void setRecommendationScore(Float recommendationScore) {
+        if (recommendationScore < 0 || recommendationScore > 1) {
+            throw new IllegalArgumentException("Recommendation score must be between 0.0 and 1.0.");
+        }
+        this.recommendationScore = recommendationScore;
+    }
+
     public Boolean isAllDay() {
         return isAllDay;
     }
 
-    // Setter remains unchanged
     public void setIsAllDay(Boolean isAllDay) {
         this.isAllDay = isAllDay;
     }
@@ -291,5 +352,28 @@ public class Task {
 
     public void setNotificationSent(Boolean notificationSent) {
         this.notificationSent = notificationSent;
+    }
+
+    public Task(){}
+
+    public Task(Long id, String title, String description) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(id, task.id) &&
+                Objects.equals(title, task.title) &&
+                Objects.equals(description, task.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description);
     }
 }

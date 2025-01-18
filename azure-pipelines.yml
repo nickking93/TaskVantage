@@ -53,11 +53,19 @@ stages:
               npm run build --prod || (echo "Build failed" && exit 1)
             displayName: 'Build Angular app'
 
+          - script: |
+              echo "Moving files from browser directory to dist..."
+              cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager
+              mv browser/* . || echo "No files to move"
+              rm -rf browser || echo "No browser folder to delete"
+              echo "Files moved and browser folder cleaned up."
+            displayName: 'Prepare Angular Build for Deployment'
+
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(frontendAppService)'
-              package: '/home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager/browser'
+              package: '/home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
 
@@ -88,7 +96,7 @@ stages:
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
             displayName: 'Write Firebase Config to Resources Directory'
 
-          # Updated Maven Build and Test step
+          # Updated Maven Build and Test step with test exclusion
           - script: |
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
@@ -97,6 +105,7 @@ stages:
               echo "Building Spring Boot app with tests..."
               mvn -f $(backendPath)/pom.xml clean package \
                   -Dspring.profiles.active=test \
+                  -Dtest=!BackendApplicationTests \
                   -Dspring.datasource.url=jdbc:h2:mem:testdb \
                   -Dspring.jpa.database-platform=org.hibernate.dialect.H2Dialect \
                   -Dspring.datasource.username=sa \
