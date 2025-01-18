@@ -148,16 +148,11 @@ stages:
                   --name "$(backendAppService)" \
                   --resource-group "TaskVantage" \
                   --settings \
-                  spring.datasource.url="$DB_URL" \
-                  spring.datasource.username="$DB_USERNAME" \
-                  'spring.datasource.password=$DB_PASSWORD' \
+                  spring.datasource.url="$(DB_URL)" \
+                  spring.datasource.username="$(DB_USERNAME)" \
+                  spring.datasource.password="$(DB_PASSWORD)" \
                   FIREBASE_CONFIG_PATH="src/main/resources/$(firebaseConfigFileName)" \
                   azure.cognitive.endpoint="$(azure.cognitive.endpoint)" \
-                  azure.cognitive.apiKey="$AZURE_COGNITIVE_APIKEY" \
+                  azure.cognitive.apiKey="$(AZURE_COGNITIVE_APIKEY)" \
                   JAVA_OPTS="-Duser.timezone=UTC" \
                   spring.jpa.properties.hibernate.dialect="org.hibernate.dialect.MySQLDialect"
-            env:
-              DB_URL: $(DB_URL)
-              DB_USERNAME: $(DB_USERNAME)
-              DB_PASSWORD: $(DB_PASSWORD)
-              AZURE_COGNITIVE_APIKEY: $(AZURE_COGNITIVE_APIKEY)
