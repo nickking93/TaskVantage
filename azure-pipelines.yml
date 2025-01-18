@@ -4,16 +4,16 @@ trigger:
       - main
 
 pool:
-  name: Default  # Replace with your Linux self-hosted agent pool name
+  name: Default
   demands:
     - Agent.OS -equals Linux
 
 variables:
-  SYSTEM_DEBUG: true  # Consider disabling this in production for less verbose logs
+  SYSTEM_DEBUG: true
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
-  backendPath: '/home/quigonwhiskey/agents/myagent/_work/1/s/backend'
+  backendPath: '$(Agent.BuildDirectory)/s/backend'
   backendJar: '$(backendPath)/target/*.jar'
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
@@ -39,7 +39,7 @@ stages:
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 1: Navigating to frontend directory..."
-              cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager
+              cd $(Agent.BuildDirectory)/s/frontend/task-manager
 
               echo "Step 2: Installing npm dependencies..."
               npm install
@@ -49,7 +49,7 @@ stages:
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 3: Building Angular app..."
-              cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager
+              cd $(Agent.BuildDirectory)/s/frontend/task-manager
               npm run build --prod || (echo "Build failed" && exit 1)
             displayName: 'Build Angular app'
 
@@ -57,9 +57,9 @@ stages:
               echo "Current directory:"
               pwd
               echo "Listing dist directory before move:"
-              ls -la /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager
+              ls -la $(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager
               echo "Moving files from browser directory..."
-              cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager
+              cd $(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager
               if [ -d "browser" ]; then
                 mv browser/* . && rm -rf browser && echo "Files moved successfully"
               else
@@ -79,7 +79,7 @@ stages:
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(frontendAppService)'
-              package: '/home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager'
+              package: '$(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
 
@@ -110,7 +110,6 @@ stages:
               echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
             displayName: 'Write Firebase Config to Resources Directory'
 
-          # Updated Maven Build and Test step with test exclusion
           - script: |
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
@@ -138,7 +137,6 @@ stages:
               ls -la $(backendJar)
             displayName: 'Verify Backend Build Artifacts'
 
-          # Production build for deployment
           - script: |
               echo "Building production JAR..."
               mvn -f $(backendPath)/pom.xml clean package \
