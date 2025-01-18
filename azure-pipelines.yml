@@ -13,7 +13,7 @@ variables:
   azureSubscription: 'taskvantage'
   frontendAppService: 'taskvantage-frontend'
   backendAppService: 'taskvantage-backend'
-  backendPath: '/home/nickking93/agents/myagent/_work/1/s/backend'
+  backendPath: '/home/quigonwhiskey/agents/myagent/_work/1/s/backend'
   backendJar: '$(backendPath)/target/*.jar'
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
@@ -39,7 +39,7 @@ stages:
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 1: Navigating to frontend directory..."
-              cd /home/nickking93/agents/myagent/_work/1/s/frontend/task-manager
+              cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager
 
               echo "Step 2: Installing npm dependencies..."
               npm install
@@ -49,7 +49,7 @@ stages:
               echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
               echo "Step 3: Building Angular app..."
-              cd /home/nickking93/agents/myagent/_work/1/s/frontend/task-manager
+              cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager
               npm run build --prod || (echo "Build failed" && exit 1)
             displayName: 'Build Angular app'
 
@@ -57,7 +57,7 @@ stages:
             inputs:
               azureSubscription: '$(azureSubscription)'
               appName: '$(frontendAppService)'
-              package: '/home/nickking93/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager/browser'
+              package: '/home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager/browser'
               appType: 'webApp'
             displayName: 'Deploy Angular app to Azure App Service'
 
