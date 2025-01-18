@@ -54,11 +54,25 @@ stages:
             displayName: 'Build Angular app'
 
           - script: |
-              echo "Moving files from browser directory to dist..."
+              echo "Current directory:"
+              pwd
+              echo "Listing dist directory before move:"
+              ls -la /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager
+              echo "Moving files from browser directory..."
               cd /home/quigonwhiskey/agents/myagent/_work/1/s/frontend/task-manager/dist/task-manager
-              mv browser/* . || echo "No files to move"
-              rm -rf browser || echo "No browser folder to delete"
-              echo "Files moved and browser folder cleaned up."
+              if [ -d "browser" ]; then
+                mv browser/* . && rm -rf browser && echo "Files moved successfully"
+              else
+                echo "ERROR: browser directory not found!"
+                exit 1
+              fi
+              echo "Final contents of dist directory:"
+              ls -la
+              echo "Checking for critical files:"
+              if [ ! -f "index.html" ]; then
+                echo "ERROR: index.html not found!"
+                exit 1
+              fi
             displayName: 'Prepare Angular Build for Deployment'
 
           - task: AzureWebApp@1
