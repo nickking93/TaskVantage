@@ -3,6 +3,8 @@ package com.taskvantage.backend.service;
 import com.taskvantage.backend.dto.RecommendationResponse;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.repository.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,130 +17,171 @@ import java.util.stream.Stream;
 
 @Service
 public class RecommendationService {
+    private static final Logger logger = LoggerFactory.getLogger(RecommendationService.class);
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
     private final SentenceEmbeddingClient embeddingClient;
 
+    @Autowired
     public RecommendationService(SentenceEmbeddingClient embeddingClient, TaskRepository taskRepository) {
         this.embeddingClient = embeddingClient;
         this.taskRepository = taskRepository;
+        logger.info("RecommendationService initialized with embedding client and task repository");
     }
 
     public List<Task> getRecommendationsForUser(Long userId, int limit) {
-        // 1. Get user's recent tasks
+        logger.info("Generating recommendations for user: {}, limit: {}", userId, limit);
+
+        // Get user's recent tasks
         List<Task> userRecentTasks = taskRepository.findRecentTasksByUserId(userId);
+        logger.debug("Found {} recent tasks for user {}", userRecentTasks.size(), userId);
+
         if (userRecentTasks.isEmpty()) {
-            // If user has no history, return popular or general tasks
+            logger.info("No recent tasks found for user {}. Returning default recommendations.", userId);
             return getDefaultRecommendations(limit);
         }
 
-        // 2. Build user's task profile from their recent tasks
-        Map<String, Double> userTaskProfile = buildUserTaskProfile(userRecentTasks);
+        try {
+            // Build user's task profile
+            Map<String, Double> userTaskProfile = buildUserTaskProfile(userRecentTasks);
+            logger.debug("Built user profile with {} dimensions", userTaskProfile.size());
 
-        // 3. Get potential tasks to recommend
-        List<Task> candidateTasks = taskRepository.findPotentialTasksForUser(userId);
+            // Get potential tasks
+            List<Task> candidateTasks = taskRepository.findPotentialTasksForUser(userId);
+            logger.debug("Found {} candidate tasks for recommendations", candidateTasks.size());
 
-        // 4. Score and rank candidate tasks
-        return candidateTasks.stream()
-                .map(task -> new AbstractMap.SimpleEntry<>(task, computeTaskScore(task, userTaskProfile)))
-                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
-                .limit(limit)
-                .map(AbstractMap.SimpleEntry::getKey)
-                .collect(Collectors.toList());
+            // Score and rank tasks
+            List<Task> recommendations = candidateTasks.stream()
+                    .map(task -> {
+                        double score = computeTaskScore(task, userTaskProfile);
+                        logger.trace("Task {}: score = {}", task.getId(), score);
+                        return new AbstractMap.SimpleEntry<>(task, score);
+                    })
+                    .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
+                    .limit(limit)
+                    .map(AbstractMap.SimpleEntry::getKey)
+                    .collect(Collectors.toList());
+
+            logger.info("Successfully generated {} recommendations for user {}", recommendations.size(), userId);
+            return recommendations;
+
+        } catch (Exception e) {
+            logger.error("Error generating recommendations for user {}: {}", userId, e.getMessage(), e);
+            throw e;
+        }
     }
 
     private Map<String, Double> buildUserTaskProfile(List<Task> userTasks) {
+        logger.debug("Building user profile from {} tasks", userTasks.size());
         Map<String, Double> profile = new HashMap<>();
 
         for (Task task : userTasks) {
-            // Combine title and description for better context
-            String taskContent = task.getTitle() + " " + task.getDescription();
-            double[] embedding = embeddingClient.getSentenceEmbedding(taskContent);
+            try {
+                String taskContent = task.getTitle() + " " + task.getDescription();
+                double[] embedding = embeddingClient.getSentenceEmbedding(taskContent);
+                double weight = calculateRecencyWeight(task);
 
-            // Aggregate embeddings with weights based on recency
-            // More recent tasks have higher weight
-            updateProfile(profile, embedding, calculateRecencyWeight(task));
+                logger.trace("Task {}: recency weight = {}", task.getId(), weight);
+                updateProfile(profile, embedding, weight);
+
+            } catch (Exception e) {
+                logger.warn("Failed to process task {} for profile: {}", task.getId(), e.getMessage());
+                // Continue processing other tasks
+            }
         }
 
         return profile;
     }
 
     double calculateRecencyWeight(Task task) {
-        // Get the most recent timestamp between lastModifiedDate and completionDateTime
-        // If neither exists, fall back to creationDate
         ZonedDateTime mostRecentTimestamp = Stream.of(
                         task.getLastModifiedDate(),
                         task.getCompletionDateTime(),
-                        task.getCreationDate()  // This is never null as it's set on creation
+                        task.getCreationDate()
                 )
                 .filter(Objects::nonNull)
                 .max(ZonedDateTime::compareTo)
                 .orElse(task.getCreationDate());
 
-        // Calculate the age of the task in days
-        double ageInDays = Duration.between(mostRecentTimestamp, ZonedDateTime.now(ZoneOffset.UTC))
-                .toDays();
+        double ageInDays = Duration.between(mostRecentTimestamp, ZonedDateTime.now(ZoneOffset.UTC)).toDays();
 
-        // Use exponential decay formula: weight = e^(-lambda * t)
-        // lambda = ln(2)/halfLife: we'll set halfLife to 30 days
-        double halfLife = 30.0; // tasks older than 30 days will have less than 0.5 weight
+        double halfLife = 30.0;
         double lambda = Math.log(2) / halfLife;
+        double weight = Math.exp(-lambda * ageInDays);
 
-        return Math.exp(-lambda * ageInDays);
+        logger.trace("Calculated recency weight {} for task {} (age: {} days)", weight, task.getId(), ageInDays);
+
+        return weight;
     }
 
     private double computeTaskScore(Task candidateTask, Map<String, Double> userProfile) {
-        String taskContent = candidateTask.getTitle() + " " + candidateTask.getDescription();
-        double[] taskEmbedding = embeddingClient.getSentenceEmbedding(taskContent);
+        logger.debug("Computing score for task {} against user profile", candidateTask.getId());
+        try {
+            String taskContent = candidateTask.getTitle() + " " + candidateTask.getDescription();
+            double[] taskEmbedding = embeddingClient.getSentenceEmbedding(taskContent);
+            double similarity = computeSimilarityWithProfile(taskEmbedding, userProfile);
 
-        // Compare task embedding with user profile
-        return computeSimilarityWithProfile(taskEmbedding, userProfile);
+            logger.trace("Task {} similarity score: {}", candidateTask.getId(), similarity);
+            return similarity;
+        } catch (Exception e) {
+            logger.warn("Failed to compute score for task {}: {}", candidateTask.getId(), e.getMessage());
+            return 0.0;
+        }
     }
 
     private List<Task> getDefaultRecommendations(int limit) {
-        // Return popular or starter tasks when user has no history
-        return taskRepository.findPopularTasks(limit);
+        logger.debug("Fetching default recommendations with limit {}", limit);
+        try {
+            List<Task> popularTasks = taskRepository.findPopularTasks(limit);
+            logger.info("Retrieved {} default recommendations", popularTasks.size());
+            return popularTasks;
+        } catch (Exception e) {
+            logger.error("Error fetching default recommendations: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 
     double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
-        // Convert user profile map back to array format to match task embedding
+        logger.trace("Computing similarity with profile of size {}", userProfile.size());
+
+        // Convert user profile map back to array format
         double[] profileVector = new double[taskEmbedding.length];
         for (int i = 0; i < taskEmbedding.length; i++) {
             profileVector[i] = userProfile.getOrDefault("dim_" + i, 0.0);
         }
 
-        // Calculate cosine similarity between task embedding and profile
+        // Calculate cosine similarity
         double similarity = cosineSimilarity(taskEmbedding, profileVector);
+        // Normalize to [0,1] range
+        double normalizedSimilarity = (similarity + 1.0) / 2.0;
 
-        // Normalize similarity to range [0,1] in case of negative values
-        // Cosine similarity range is [-1,1], we shift to [0,1]
-        return (similarity + 1.0) / 2.0;
+        logger.trace("Computed similarity: {} (normalized: {})", similarity, normalizedSimilarity);
+        return normalizedSimilarity;
     }
 
     void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
-        // If profile is empty, initialize it with the first embedding
+        logger.trace("Updating profile with embedding of length {} and weight {}", embedding.length, weight);
+
+        // Initialize empty profile
         if (profile.isEmpty()) {
             for (int i = 0; i < embedding.length; i++) {
                 profile.put("dim_" + i, embedding[i] * weight);
             }
+            logger.trace("Initialized new profile with {} dimensions", embedding.length);
             return;
         }
 
-        // Update each dimension of the profile with weighted average
+        // Update existing profile
+        double alpha = 0.7; // Weight for new value vs historical values
         for (int i = 0; i < embedding.length; i++) {
             String dimKey = "dim_" + i;
-            // Get current value or 0.0 if dimension doesn't exist
             double currentValue = profile.getOrDefault(dimKey, 0.0);
-            // Update with weighted contribution of new embedding
-            // Using exponential moving average formula
-            double alpha = 0.7; // Weight for new value vs historical values
             double newValue = (alpha * embedding[i] * weight) + ((1 - alpha) * currentValue);
             profile.put(dimKey, newValue);
         }
+        logger.trace("Updated existing profile dimensions");
     }
 
-    // Keep the original cosineSimilarity method as it's still useful
     private double cosineSimilarity(double[] vectorA, double[] vectorB) {
         double dotProduct = 0.0;
         double magnitudeA = 0.0;
@@ -158,30 +201,39 @@ public class RecommendationService {
     }
 
     public RecommendationResponse getRecommendedTasks(Long userId, Long taskId, int limit) {
+        logger.info("Getting recommended tasks for user: {}, taskId: {}, limit: {}", userId, taskId, limit);
+
         RecommendationResponse response = new RecommendationResponse();
-        List<Task> recommendations;
 
         try {
+            List<Task> recommendations;
             if (taskId != null) {
-                // If taskId is provided, find recommendations related to the specific task
-                Task targetTask = taskRepository.findById(taskId).orElseThrow(() ->
-                        new IllegalArgumentException("Task not found for ID: " + taskId));
-                // Use the findRelatedTasks with the correct signature
-                recommendations = taskRepository.findRelatedTasks(taskId, targetTask.getTitle(), targetTask.getDescription());
+                Task targetTask = taskRepository.findById(taskId).orElseThrow(() -> {
+                    logger.error("Task not found with ID: {}", taskId);
+                    return new IllegalArgumentException("Task not found for ID: " + taskId);
+                });
+
+                logger.debug("Finding tasks related to task: {}", taskId);
+                recommendations = taskRepository.findRelatedTasks(
+                        taskId, targetTask.getTitle(), targetTask.getDescription());
             } else {
-                // Otherwise, get user-based recommendations
+                logger.debug("Getting user-based recommendations for user: {}", userId);
                 recommendations = getRecommendationsForUser(userId, limit);
             }
 
-            // Set all fields of the response
             response.setRecommendations(recommendations);
             response.setStatus("success");
             response.setMessage("Recommendations fetched successfully.");
+
+            logger.info("Successfully generated recommendations response with {} items", recommendations.size());
+
         } catch (IllegalArgumentException e) {
+            logger.error("Invalid request for recommendations: {}", e.getMessage());
             response.setStatus("error");
             response.setMessage("Invalid request: " + e.getMessage());
             response.setRecommendations(Collections.emptyList());
         } catch (Exception e) {
+            logger.error("Error generating recommendations: {}", e.getMessage(), e);
             response.setStatus("error");
             response.setMessage("Failed to fetch recommendations: " + e.getMessage());
             response.setRecommendations(Collections.emptyList());
