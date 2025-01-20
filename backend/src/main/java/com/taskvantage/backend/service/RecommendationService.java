@@ -6,8 +6,12 @@ import com.taskvantage.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class RecommendationService {
@@ -60,10 +64,28 @@ public class RecommendationService {
         return profile;
     }
 
-    private double calculateRecencyWeight(Task task) {
-        // Implement recency weighting logic
-        // More recent tasks should have higher weights
-        return 1.0; // Placeholder - implement actual weighting logic
+    double calculateRecencyWeight(Task task) {
+        // Get the most recent timestamp between lastModifiedDate and completionDateTime
+        // If neither exists, fall back to creationDate
+        ZonedDateTime mostRecentTimestamp = Stream.of(
+                        task.getLastModifiedDate(),
+                        task.getCompletionDateTime(),
+                        task.getCreationDate()  // This is never null as it's set on creation
+                )
+                .filter(Objects::nonNull)
+                .max(ZonedDateTime::compareTo)
+                .orElse(task.getCreationDate());
+
+        // Calculate the age of the task in days
+        double ageInDays = Duration.between(mostRecentTimestamp, ZonedDateTime.now(ZoneOffset.UTC))
+                .toDays();
+
+        // Use exponential decay formula: weight = e^(-lambda * t)
+        // lambda = ln(2)/halfLife: we'll set halfLife to 30 days
+        double halfLife = 30.0; // tasks older than 30 days will have less than 0.5 weight
+        double lambda = Math.log(2) / halfLife;
+
+        return Math.exp(-lambda * ageInDays);
     }
 
     private double computeTaskScore(Task candidateTask, Map<String, Double> userProfile) {
@@ -79,16 +101,41 @@ public class RecommendationService {
         return taskRepository.findPopularTasks(limit);
     }
 
-    private double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
-        // Implement similarity computation between task and user profile
-        // This could use various similarity metrics depending on your needs
-        return 0.0; // Placeholder - implement actual similarity computation
+    double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
+        // Convert user profile map back to array format to match task embedding
+        double[] profileVector = new double[taskEmbedding.length];
+        for (int i = 0; i < taskEmbedding.length; i++) {
+            profileVector[i] = userProfile.getOrDefault("dim_" + i, 0.0);
+        }
+
+        // Calculate cosine similarity between task embedding and profile
+        double similarity = cosineSimilarity(taskEmbedding, profileVector);
+
+        // Normalize similarity to range [0,1] in case of negative values
+        // Cosine similarity range is [-1,1], we shift to [0,1]
+        return (similarity + 1.0) / 2.0;
     }
 
-    private void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
-        // Update the user profile with new task embedding
-        // This could involve various aggregation strategies
-        // Placeholder implementation
+    void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
+        // If profile is empty, initialize it with the first embedding
+        if (profile.isEmpty()) {
+            for (int i = 0; i < embedding.length; i++) {
+                profile.put("dim_" + i, embedding[i] * weight);
+            }
+            return;
+        }
+
+        // Update each dimension of the profile with weighted average
+        for (int i = 0; i < embedding.length; i++) {
+            String dimKey = "dim_" + i;
+            // Get current value or 0.0 if dimension doesn't exist
+            double currentValue = profile.getOrDefault(dimKey, 0.0);
+            // Update with weighted contribution of new embedding
+            // Using exponential moving average formula
+            double alpha = 0.7; // Weight for new value vs historical values
+            double newValue = (alpha * embedding[i] * weight) + ((1 - alpha) * currentValue);
+            profile.put(dimKey, newValue);
+        }
     }
 
     // Keep the original cosineSimilarity method as it's still useful
