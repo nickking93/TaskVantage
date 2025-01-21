@@ -16,14 +16,17 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-
     private final Key SECRET_KEY;
     private static final long ACCESS_TOKEN_VALIDITY = 10 * 60 * 60 * 1000; // 10 hours
     private static final long REFRESH_TOKEN_VALIDITY = 30 * 24 * 60 * 60 * 1000; // 30 days
     private static final long PWA_TOKEN_VALIDITY = 90 * 24 * 60 * 60 * 1000; // 90 days
 
+    protected String getEnvVariable(String name) {
+        return System.getenv(name);
+    }
+
     public JwtUtil() {
-        String secret = System.getenv("JWT_SECRET");
+        String secret = getEnvVariable("JWT_SECRET");
 
         if (secret == null) {
             throw new IllegalArgumentException("JWT_SECRET environment variable is not set.");

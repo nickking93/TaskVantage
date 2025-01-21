@@ -1,5 +1,6 @@
 package com.taskvantage.backend.service;
 
+import com.taskvantage.backend.Security.JwtUtil;
 import com.taskvantage.backend.config.AppConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,15 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 class SentenceEmbeddingClientIntegrationTest {
-
-    // Move the static block here, before Spring context initialization
-    static {
-        if (System.getenv("JWT_SECRET") == null) {
-            String encodedSecret = Base64.getEncoder().encodeToString("test-jwt-secret-key-for-testing-purposes-only".getBytes());
-            System.setProperty("JWT_SECRET", encodedSecret);
-        }
-    }
-
     private static final Logger logger = Logger.getLogger(SentenceEmbeddingClientIntegrationTest.class.getName());
 
     @TestConfiguration
@@ -46,6 +39,22 @@ class SentenceEmbeddingClientIntegrationTest {
         @Primary
         public PasswordEncoder passwordEncoder() {
             return NoOpPasswordEncoder.getInstance();
+        }
+
+        @Bean
+        @Primary
+        public JwtUtil jwtUtil() {
+            return new JwtUtil() {
+                @Override
+                protected String getEnvVariable(String name) {
+                    if ("JWT_SECRET".equals(name)) {
+                        return Base64.getEncoder().encodeToString(
+                                "test-jwt-secret-key-for-testing-purposes-only".getBytes()
+                        );
+                    }
+                    return super.getEnvVariable(name);
+                }
+            };
         }
     }
 
