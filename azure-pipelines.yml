@@ -18,6 +18,8 @@ variables:
   SPRING_PROFILES_ACTIVE: 'prod'
   firebaseConfigFileName: 'taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json'
   firebaseConfigPath: '$(backendPath)/src/main/resources/$(firebaseConfigFileName)'
+  AZURE_COGNITIVE_APIKEY: '$(AZURE_COGNITIVE_APIKEY)'
+  AZURE_COGNITIVE_ENDPOINT: '$(AZURE_COGNITIVE_ENDPOINT)'
 
 stages:
   - stage: Build_And_Deploy_Frontend
@@ -168,6 +170,8 @@ stages:
                   "spring.datasource.username": "$(dbUsername)", 
                   "spring.datasource.password": "$(dbPassword)",
                   "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
-                  "JAVA_OPTS": "-Duser.timezone=UTC"
+                  "JAVA_OPTS": "-Duser.timezone=UTC",
+                  "AZURE_COGNITIVE_APIKEY": "$(AZURE_COGNITIVE_APIKEY)",
+                  "AZURE_COGNITIVE_ENDPOINT": "$(AZURE_COGNITIVE_ENDPOINT)"
                 }
             displayName: 'Deploy Spring Boot app to Azure App Service'
