@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +27,14 @@ class SentenceEmbeddingClientIntegrationTest {
 
     @TestConfiguration
     static class TestConfig {
+        static {
+            // Set JWT_SECRET for tests
+            if (System.getenv("JWT_SECRET") == null) {
+                String encodedSecret = Base64.getEncoder().encodeToString("test-jwt-secret-key-for-testing-purposes-only".getBytes());
+                System.setProperty("JWT_SECRET", encodedSecret);
+            }
+        }
+
         @Bean
         public SentenceEmbeddingClient sentenceEmbeddingClient(
                 @Value("${azure.cognitive.endpoint}") String endpoint,

@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 @Service
 public class RecommendationService {
     private static final Logger logger = LoggerFactory.getLogger(RecommendationService.class);
+    private static final double MAX_DAY_BOOST = 1.5; // Maximum possible day boost
+    private static final double MAX_TIME_BOOST = 1.0; // Maximum possible time boost
 
     private final TaskRepository taskRepository;
     private final SentenceEmbeddingClient embeddingClient;
@@ -72,7 +74,8 @@ public class RecommendationService {
                         double baseScore = computeTaskScore(task, userTaskProfile);
                         double dayBoost = computeDayOfWeekBoost(task, currentDayOfWeek);
                         double timeBoost = computeTimeOfDayBoost(task);
-                        double finalScore = baseScore * dayBoost * timeBoost;
+                        double rawScore = baseScore * dayBoost * timeBoost;
+                        double finalScore = normalizeScore(rawScore);
 
                         task.setRecommendationScore((float)finalScore);
                         task.setRecommended(true);
@@ -134,7 +137,8 @@ public class RecommendationService {
                         double baseScore = computeTaskScore(task, userTaskProfile);
                         double dayBoost = computeDayOfWeekBoost(task, currentDayOfWeek);
                         double timeBoost = computeTimeOfDayBoost(task);
-                        double finalScore = baseScore * dayBoost * timeBoost;
+                        double rawScore = baseScore * dayBoost * timeBoost;
+                        double finalScore = normalizeScore(rawScore);
 
                         task.setRecommendationScore((float)finalScore);
                         task.setRecommended(true);
@@ -410,5 +414,10 @@ public class RecommendationService {
             logger.warn("Failed to compute content similarity: {}", e.getMessage());
             return 0.0;
         }
+    }
+
+    private double normalizeScore(double rawScore) {
+        double maxPossibleScore = 1.0 * MAX_DAY_BOOST * MAX_TIME_BOOST;
+        return Math.min(1.0, Math.max(0.0, rawScore / maxPossibleScore));
     }
 }
