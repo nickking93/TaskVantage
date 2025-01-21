@@ -36,44 +36,15 @@ stages:
             displayName: 'Install Node.js 20.x'
 
           - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo "Step 1: Navigating to frontend directory..."
               cd $(Agent.BuildDirectory)/s/frontend/task-manager
-
-              echo "Step 2: Installing npm dependencies..."
               npm install
-            displayName: 'Navigate to Frontend Directory and Install NPM Dependencies'
-          
-          - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
-              source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo "Step 3: Building Angular app..."
-              cd $(Agent.BuildDirectory)/s/frontend/task-manager
-              npm run build --prod || (echo "Build failed" && exit 1)
-            displayName: 'Build Angular app'
+            displayName: 'Install NPM Dependencies'
 
           - script: |
-              echo "Current directory:"
-              pwd
-              echo "Listing dist directory before move:"
-              ls -la $(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager
-              echo "Moving files from browser directory..."
-              cd $(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager
-              if [ -d "browser" ]; then
-                mv browser/* . && rm -rf browser && echo "Files moved successfully"
-              else
-                echo "ERROR: browser directory not found!"
-                exit 1
-              fi
-              echo "Final contents of dist directory:"
-              ls -la
-              echo "Checking for critical files:"
-              if [ ! -f "index.html" ]; then
-                echo "ERROR: index.html not found!"
-                exit 1
-              fi
-            displayName: 'Prepare Angular Build for Deployment'
+              cd $(Agent.BuildDirectory)/s/frontend/task-manager
+              npm run build --prod
+            displayName: 'Build Angular App'
 
           - task: AzureWebApp@1
             inputs:
@@ -81,7 +52,7 @@ stages:
               appName: '$(frontendAppService)'
               package: '$(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager'
               appType: 'webApp'
-            displayName: 'Deploy Angular app to Azure App Service'
+            displayName: 'Deploy Angular App'
 
   - stage: Build_And_Deploy_Backend
     dependsOn: Build_And_Deploy_Frontend
@@ -100,59 +71,33 @@ stages:
               secureFile: '$(firebaseConfigFileName)'
 
           - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
-              source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo Writing Firebase JSON config to resources directory...
               mkdir -p $(backendPath)/src/main/resources
               cp $(Agent.TempDirectory)/$(firebaseConfigFileName) $(firebaseConfigPath)
-              echo Firebase JSON file is written to $(firebaseConfigPath)
               echo ##vso[task.setvariable variable=FIREBASE_CONFIG_PATH]$(firebaseConfigPath)
-              echo FIREBASE_CONFIG_PATH is set to $(FIREBASE_CONFIG_PATH)
-            displayName: 'Write Firebase Config to Resources Directory'
+            displayName: 'Setup Firebase Config'
 
           - script: |
-              echo "Sourcing ~/.bashrc to load environment variables..."
               source ~/.bashrc || echo "Failed to source ~/.bashrc"
-              echo "Checking environment variables..."
-              printenv | grep -i "db\|firebase\|spring\|azure"
-              echo "Building Spring Boot app with tests..."
+              printenv | grep -i "db\|firebase\|azure"
               mvn -f $(backendPath)/pom.xml clean package \
                   -Dspring.profiles.active=test \
-                  -Dtest=!BackendApplicationTests \
                   -Dspring.datasource.url=jdbc:h2:mem:testdb \
-                  -Dspring.jpa.database-platform=org.hibernate.dialect.H2Dialect \
                   -Dspring.datasource.username=sa \
                   -Dspring.datasource.password= \
-                  -Dspring.datasource.driver-class-name=org.h2.Driver \
-                  -Dspring.jpa.hibernate.ddl-auto=create-drop \
-                  -Dspring.jpa.show-sql=true \
-                  -Dspring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults=false
+                  -Dspring.datasource.driver-class-name=org.h2.Driver
             displayName: 'Build and Test Spring Boot App'
             env:
+              AZURE_COGNITIVE_APIKEY: $(AZURE_COGNITIVE_APIKEY_SECRET)
+              AZURE_COGNITIVE_ENDPOINT: $(AZURE_COGNITIVE_ENDPOINT_SECRET)
               FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
               SPRING_PROFILES_ACTIVE: test
-              AZURE_COGNITIVE_APIKEY: $(AZURE_COGNITIVE_APIKEY)
-              AZURE_COGNITIVE_ENDPOINT: $(AZURE_COGNITIVE_ENDPOINT)
 
           - script: |
-              echo "Checking built JAR file..."
-              ls -la $(backendJar)
-            displayName: 'Verify Backend Build Artifacts'
-
-          - script: |
-              echo "Building production JAR..."
-              mvn -f $(backendPath)/pom.xml clean package \
-                  -Dspring.profiles.active=prod \
-                  -DskipTests
+              mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=prod -DskipTests
             displayName: 'Build Production JAR'
             env:
-              DB_URL: $(DB_URL)
-              DB_USERNAME: $(DB_USERNAME)
-              DB_PASSWORD: $(DB_PASSWORD)
-              FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
-              SPRING_PROFILES_ACTIVE: prod
-              AZURE_COGNITIVE_APIKEY: $(AZURE_COGNITIVE_APIKEY)
-              AZURE_COGNITIVE_ENDPOINT: $(AZURE_COGNITIVE_ENDPOINT)
+              AZURE_COGNITIVE_APIKEY: $(AZURE_COGNITIVE_APIKEY_SECRET)
+              AZURE_COGNITIVE_ENDPOINT: $(AZURE_COGNITIVE_ENDPOINT_SECRET)
 
           - task: AzureWebApp@1
             inputs:
@@ -168,12 +113,11 @@ stages:
               appName: '$(backendAppService)'
               appSettings: |
                 {
-                  "spring.datasource.url": "$(dbUrl)",
-                  "spring.datasource.username": "$(dbUsername)", 
-                  "spring.datasource.password": "$(dbPassword)",
-                  "FIREBASE_CONFIG_PATH": "src/main/resources/$(firebaseConfigFileName)",
-                  "JAVA_OPTS": "-Duser.timezone=UTC",
-                  "AZURE_COGNITIVE_APIKEY": "$(AZURE_COGNITIVE_APIKEY)",
-                  "AZURE_COGNITIVE_ENDPOINT": "$(AZURE_COGNITIVE_ENDPOINT)"
+                  "spring.datasource.url": "$(DB_URL)",
+                  "spring.datasource.username": "$(DB_USERNAME)",
+                  "spring.datasource.password": "$(DB_PASSWORD)",
+                  "FIREBASE_CONFIG_PATH": "$(firebaseConfigFileName)",
+                  "AZURE_COGNITIVE_APIKEY": "$(AZURE_COGNITIVE_APIKEY_SECRET)",
+                  "AZURE_COGNITIVE_ENDPOINT": "$(AZURE_COGNITIVE_ENDPOINT_SECRET)"
                 }
-            displayName: 'Deploy Spring Boot app to Azure App Service'
+            displayName: 'Configure Azure App Settings'
