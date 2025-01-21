@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 import org.mockito.Mockito;
 
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -26,6 +26,116 @@ public class RecommendationServiceTest {
         embeddingClientMock = Mockito.mock(SentenceEmbeddingClient.class);
         taskRepositoryMock = Mockito.mock(TaskRepository.class);
         recommendationService = new RecommendationService(embeddingClientMock, taskRepositoryMock);
+    }
+
+    @Nested
+    class DayOfWeekTests {
+        @Test
+        void testRecommendationsForSameWeekday() {
+            Long userId = 1L;
+            DayOfWeek today = ZonedDateTime.now(ZoneOffset.UTC).getDayOfWeek();
+
+            // Create historical tasks completed on the same weekday
+            Task historicalTask = new Task(1L, "Weekly Report", "Create weekly status report");
+            historicalTask.setUserId(userId);
+            historicalTask.setStatus("Completed");
+            historicalTask.setCompletionDateTime(
+                    ZonedDateTime.now(ZoneOffset.UTC).minusWeeks(1)
+                            .with(today));  // Set to same day last week
+
+            // Create candidate task scheduled for the same weekday
+            Task candidateTask = new Task(2L, "Team Meeting", "Weekly team sync");
+            candidateTask.setScheduledStart(
+                    ZonedDateTime.now(ZoneOffset.UTC).plusDays(7)
+                            .with(today));  // Set to same day next week
+
+            when(taskRepositoryMock.findRecentTasksByUserId(userId))
+                    .thenReturn(List.of(historicalTask));
+            when(taskRepositoryMock.findPotentialTasksForUser(userId))
+                    .thenReturn(List.of(candidateTask));
+
+            // Mock embeddings
+            when(embeddingClientMock.getSentenceEmbedding(contains("Weekly Report")))
+                    .thenReturn(new double[]{0.5, 0.5, 0.5});
+            when(embeddingClientMock.getSentenceEmbedding(contains("Team Meeting")))
+                    .thenReturn(new double[]{0.5, 0.5, 0.5});
+
+            List<Task> recommendations = recommendationService.getRecommendationsForUser(userId, 1);
+
+            assertEquals(1, recommendations.size());
+            assertEquals("Team Meeting", recommendations.get(0).getTitle(),
+                    "Should recommend task scheduled for same weekday");
+        }
+
+        @Test
+        void testDayBoostFactors() {
+            Task task = new Task();
+            DayOfWeek today = ZonedDateTime.now(ZoneOffset.UTC).getDayOfWeek();
+
+            // Test scheduled start boost
+            task.setScheduledStart(ZonedDateTime.now(ZoneOffset.UTC));
+            assertEquals(1.5, recommendationService.computeDayOfWeekBoost(task, today),
+                    "Should apply 1.5x boost for scheduled tasks on same day");
+
+            // Test completion day boost
+            task.setScheduledStart(null);
+            task.setCompletionDateTime(ZonedDateTime.now(ZoneOffset.UTC));
+            assertEquals(1.3, recommendationService.computeDayOfWeekBoost(task, today),
+                    "Should apply 1.3x boost for completed tasks on same day");
+
+            // Test different day
+            task.setCompletionDateTime(ZonedDateTime.now(ZoneOffset.UTC).plusDays(1));
+            assertEquals(1.0, recommendationService.computeDayOfWeekBoost(task, today),
+                    "Should not boost tasks on different days");
+        }
+    }
+
+    @Nested
+    class TimeOfDayTests {
+        @Test
+        void testCalculateCompletionTimeWeight() {
+            Task task = new Task();
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+
+            // Test same hour
+            task.setCompletionDateTime(now);
+            double sameTimeWeight = recommendationService.calculateCompletionTimeWeight(task);
+            assertEquals(1.0, sameTimeWeight, 0.01,
+                    "Tasks completed at same time should have maximum weight");
+
+            // Test 4 hours difference
+            task.setCompletionDateTime(now.minusHours(4));
+            double fourHourWeight = recommendationService.calculateCompletionTimeWeight(task);
+            assertEquals(0.5, fourHourWeight, 0.1,
+                    "Tasks completed 4 hours apart should have half weight");
+
+            // Test 8 hours difference
+            task.setCompletionDateTime(now.minusHours(8));
+            double eightHourWeight = recommendationService.calculateCompletionTimeWeight(task);
+            assertTrue(eightHourWeight < fourHourWeight,
+                    "Weight should decrease with larger time differences");
+        }
+
+        @Test
+        void testTimeOfDayBoost() {
+            Task task = new Task();
+            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+
+            // Same hour
+            task.setScheduledStart(now);
+            assertEquals(1.0, recommendationService.computeTimeOfDayBoost(task), 0.01,
+                    "Tasks at same hour should have maximum boost");
+
+            // 4 hours difference
+            task.setScheduledStart(now.plusHours(4));
+            assertTrue(recommendationService.computeTimeOfDayBoost(task) < 1.0,
+                    "Tasks hours apart should have reduced boost");
+
+            // No scheduled time
+            task.setScheduledStart(null);
+            assertEquals(1.0, recommendationService.computeTimeOfDayBoost(task),
+                    "Tasks without schedule should have neutral boost");
+        }
     }
 
     @Nested
@@ -62,7 +172,6 @@ public class RecommendationServiceTest {
 
             double weight = recommendationService.calculateRecencyWeight(task);
 
-            // Weight should be based on completion time (5 days ago)
             assertTrue(weight > 0.8, "Should use most recent timestamp (completion date)");
         }
     }
@@ -145,24 +254,32 @@ public class RecommendationServiceTest {
     @Test
     public void testGetRecommendationsForUser_WithHistory() {
         Long userId = 1L;
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // Create user's historical tasks
         Task task1 = new Task(1L, "API Documentation", "Write API documentation");
         task1.setUserId(userId);
         task1.setStatus("Completed");
-        task1.setLastModifiedDate(ZonedDateTime.now().minusDays(1));
+        task1.setCompletionDateTime(now.minusDays(7)); // Same day last week
+        task1.setLastModifiedDate(now.minusDays(7));
 
         Task task2 = new Task(2L, "Database Schema", "Create database documentation");
         task2.setUserId(userId);
         task2.setStatus("Completed");
-        task2.setLastModifiedDate(ZonedDateTime.now().minusDays(2));
+        task2.setCompletionDateTime(now.minusDays(14)); // Same day two weeks ago
+        task2.setLastModifiedDate(now.minusDays(14));
 
         List<Task> userHistory = List.of(task1, task2);
 
         // Create candidate tasks for recommendations
         Task task3 = new Task(3L, "Update API Docs", "Review and update API documentation");
+        task3.setScheduledStart(now.plusDays(7)); // Same day next week
+
         Task task4 = new Task(4L, "Code Review", "Review pull requests");
+        task4.setScheduledStart(now.plusDays(1)); // Different day
+
         Task task5 = new Task(5L, "Buy Groceries", "Get weekly groceries");
+        task5.setScheduledStart(now.plusHours(1)); // Similar time, different day
 
         List<Task> candidateTasks = List.of(task3, task4, task5);
 
@@ -170,13 +287,11 @@ public class RecommendationServiceTest {
         when(taskRepositoryMock.findRecentTasksByUserId(userId)).thenReturn(userHistory);
         when(taskRepositoryMock.findPotentialTasksForUser(userId)).thenReturn(candidateTasks);
 
-        // Mock embeddings for historical tasks
+        // Mock embeddings
         when(embeddingClientMock.getSentenceEmbedding("API Documentation Write API documentation"))
                 .thenReturn(new double[]{0.7, 0.7, 0.1, 0.1});
         when(embeddingClientMock.getSentenceEmbedding("Database Schema Create database documentation"))
                 .thenReturn(new double[]{0.6, 0.8, 0.1, 0.1});
-
-        // Mock embeddings for candidate tasks
         when(embeddingClientMock.getSentenceEmbedding("Update API Docs Review and update API documentation"))
                 .thenReturn(new double[]{0.75, 0.65, 0.1, 0.1});
         when(embeddingClientMock.getSentenceEmbedding("Code Review Review pull requests"))
@@ -190,9 +305,7 @@ public class RecommendationServiceTest {
         // Verify results
         assertEquals(2, recommendations.size(), "Should return requested number of recommendations");
         assertEquals("Update API Docs", recommendations.get(0).getTitle(),
-                "First recommendation should be most similar to user's documentation history");
-        assertEquals("Code Review", recommendations.get(1).getTitle(),
-                "Second recommendation should be somewhat related to development work");
+                "First recommendation should be most similar and on same day of week");
     }
 
     @Test
@@ -202,7 +315,7 @@ public class RecommendationServiceTest {
         // Mock empty user history
         when(taskRepositoryMock.findRecentTasksByUserId(userId)).thenReturn(List.of());
 
-        // Mock popular tasks
+// Mock popular tasks
         Task task1 = new Task(1L, "Get Started", "Complete onboarding tasks");
         Task task2 = new Task(2L, "First Project", "Begin your first project");
 

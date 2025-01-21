@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared.module';
-
-import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -21,40 +21,26 @@ import { UpdateTaskComponent } from '../update-task/update-task.component';
   imports: [
     CommonModule,
     FormsModule,
+    SharedModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatDividerModule,
+    MatSlideToggleModule,
+    MatButtonModule,
+    MatSnackBarModule,
     RouterModule.forChild([
       {
         path: '',
         component: HomeComponent,
         children: [
-          {
-            path: 'tasks',
-            component: TasksComponent,
-          },
-          {
-            path: 'settings',
-            component: SettingsComponent,
-          },
-          {
-            path: 'help-page',
-            component: HelpPageComponent,
-          },
-          {
-            path: 'add-task',
-            component: AddTaskComponent,
-          },
-          {
-            path: 'update-task/:taskId',
-            component: UpdateTaskComponent,
-          },
-        ],
-      },
-    ]),
-    SharedModule,
-    MatDividerModule,
-    MatIconModule,
-    MatSlideToggleModule,
-    MatButtonModule,
-    MatSnackBarModule
+          { path: 'tasks', component: TasksComponent },
+          { path: 'settings', component: SettingsComponent },
+          { path: 'help-page', component: HelpPageComponent },
+          { path: 'add-task', component: AddTaskComponent },
+          { path: 'update-task/:taskId', component: UpdateTaskComponent }
+        ]
+      }
+    ])
   ]
 })
 export class HomeModule {}

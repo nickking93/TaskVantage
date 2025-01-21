@@ -85,7 +85,7 @@
                 style="margin-left: 8px; margin-right: 8px;">
                 {{ task.status }}
               </span> 
-              - Due by {{ task.dueDate | date: 'shortTime' }} <!-- Directly using human-readable dueDate -->
+              - Due by {{ task.dueDate | date: 'shortTime' }}
               
               <!-- Button for marking task completed -->
               <button 
@@ -111,6 +111,11 @@
               No tasks due today.
             </li>
           </ul>
+        </div>
+
+        <!-- Recommendations Section -->
+        <div class="chart" id="recommendations">
+          <app-recommendations [userId]="userId"></app-recommendations>
         </div>
 
         <!-- Weekly Tasks Status Bar Chart -->

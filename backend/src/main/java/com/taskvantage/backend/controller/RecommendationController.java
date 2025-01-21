@@ -2,7 +2,6 @@ package com.taskvantage.backend.controller;
 
 import com.taskvantage.backend.Security.JwtUtil;
 import com.taskvantage.backend.dto.RecommendationResponse;
-import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.service.RecommendationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +26,24 @@ public class RecommendationController {
         this.jwtUtil = jwtUtil;
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<RecommendationResponse> getRecommendationsForUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "3") int limit) {
+        try {
+            RecommendationResponse response = recommendationService.getRecommendedTasks(userId, null, limit);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error retrieving recommendations for user {}: {}", userId, e.getMessage());
+            RecommendationResponse errorResponse = new RecommendationResponse();
+            errorResponse.setStatus("error");
+            errorResponse.setMessage("Failed to retrieve recommendations");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     @GetMapping("/user/{userId}/task/{taskId}")
-    public ResponseEntity<RecommendationResponse> getRecommendations(
+    public ResponseEntity<RecommendationResponse> getRecommendationsForTask(
             @PathVariable Long userId,
             @PathVariable Long taskId,
             @RequestParam(defaultValue = "3") int limit) {
@@ -37,6 +52,22 @@ public class RecommendationController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error retrieving recommendations for Task ID {}: {}", taskId, e.getMessage());
+            RecommendationResponse errorResponse = new RecommendationResponse();
+            errorResponse.setStatus("error");
+            errorResponse.setMessage("Failed to retrieve recommendations");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/user/{userId}/weekday")
+    public ResponseEntity<RecommendationResponse> getWeekdayRecommendations(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "3") int limit) {
+        try {
+            RecommendationResponse response = recommendationService.getRecommendedTasksByWeekday(userId, limit);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error retrieving weekday recommendations for user {}: {}", userId, e.getMessage());
             RecommendationResponse errorResponse = new RecommendationResponse();
             errorResponse.setStatus("error");
             errorResponse.setMessage("Failed to retrieve recommendations");

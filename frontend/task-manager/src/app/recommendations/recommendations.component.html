@@ -1,0 +1,38 @@
+<!-- recommendations.component.html -->
+<div class="recommendations-card">
+    <div class="card-header">
+      <h2>Recommended Tasks</h2>
+    </div>
+    
+    <div class="card-content">
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+  
+      <div *ngIf="error" class="error-state">
+        {{ error }}
+      </div>
+  
+      <div *ngIf="!loading && !error && recommendations.length === 0" class="empty-state">
+        No recommendations available
+      </div>
+  
+      <div *ngIf="!loading && !error && recommendations.length > 0" class="recommendations-list">
+        <div *ngFor="let task of recommendations" class="recommendation-item">
+          <div class="recommendation-content">
+            <mat-icon [class]="'icon-' + getRecommendationIcon(task.recommendedBy)">
+              {{ getRecommendationIcon(task.recommendedBy) }}
+            </mat-icon>
+            
+            <div class="task-details">
+              <h3>{{ task.title }}</h3>
+              <p class="recommendation-meta">
+                {{ task.recommendedBy.toLowerCase().replace('_', ' ') }} •
+                Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
