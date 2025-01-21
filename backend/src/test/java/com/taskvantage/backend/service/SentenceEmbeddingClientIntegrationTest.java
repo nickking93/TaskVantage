@@ -20,21 +20,21 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@ActiveProfiles("test") // This will load application-test.properties
+@ActiveProfiles("test")
 class SentenceEmbeddingClientIntegrationTest {
+
+    // Move the static block here, before Spring context initialization
+    static {
+        if (System.getenv("JWT_SECRET") == null) {
+            String encodedSecret = Base64.getEncoder().encodeToString("test-jwt-secret-key-for-testing-purposes-only".getBytes());
+            System.setProperty("JWT_SECRET", encodedSecret);
+        }
+    }
 
     private static final Logger logger = Logger.getLogger(SentenceEmbeddingClientIntegrationTest.class.getName());
 
     @TestConfiguration
     static class TestConfig {
-        static {
-            // Set JWT_SECRET for tests
-            if (System.getenv("JWT_SECRET") == null) {
-                String encodedSecret = Base64.getEncoder().encodeToString("test-jwt-secret-key-for-testing-purposes-only".getBytes());
-                System.setProperty("JWT_SECRET", encodedSecret);
-            }
-        }
-
         @Bean
         public SentenceEmbeddingClient sentenceEmbeddingClient(
                 @Value("${azure.cognitive.endpoint}") String endpoint,
@@ -45,12 +45,13 @@ class SentenceEmbeddingClientIntegrationTest {
         @Bean
         @Primary
         public PasswordEncoder passwordEncoder() {
-            return NoOpPasswordEncoder.getInstance(); // Use NoOpPasswordEncoder for test simplicity
+            return NoOpPasswordEncoder.getInstance();
         }
     }
 
     @MockBean
-    private AppConfig appConfig;  // Mock the app config to avoid bean conflicts
+    private AppConfig appConfig;
+
     @Autowired
     private SentenceEmbeddingClient embeddingClient;
 
