@@ -10,10 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class AppConfig {
 
-    @Value("${azure.cognitive.endpoint}")
+    @Value("${azure.cognitive.endpoint:#{null}}")
     private String azureEndpoint;
 
-    @Value("${azure.cognitive.apiKey}")
+    @Value("${azure.cognitive.apiKey:#{null}}")
     private String azureApiKey;
 
     @Bean
@@ -23,6 +23,13 @@ public class AppConfig {
 
     @Bean
     public SentenceEmbeddingClient sentenceEmbeddingClient() {
-        return new SentenceEmbeddingClient(azureEndpoint, azureApiKey);
+        String endpoint = (azureEndpoint != null) ? azureEndpoint : System.getenv("AZURE_COGNITIVE_ENDPOINT");
+        String apiKey = (azureApiKey != null) ? azureApiKey : System.getenv("AZURE_COGNITIVE_APIKEY");
+
+        if (endpoint == null || apiKey == null) {
+            throw new IllegalArgumentException("Azure Cognitive Services configuration is missing. Ensure 'AZURE_COGNITIVE_ENDPOINT' and 'AZURE_COGNITIVE_APIKEY' are set.");
+        }
+
+        return new SentenceEmbeddingClient(endpoint, apiKey);
     }
 }
