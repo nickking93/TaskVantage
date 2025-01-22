@@ -118,6 +118,8 @@ stages:
                   "spring.datasource.password": "$(DB_PASSWORD)",
                   "FIREBASE_CONFIG_PATH": "$(firebaseConfigFileName)",
                   "AZURE_COGNITIVE_APIKEY": "$(AZURE_COGNITIVE_APIKEY_SECRET)",
-                  "AZURE_COGNITIVE_ENDPOINT": "$(AZURE_COGNITIVE_ENDPOINT_SECRET)"
+                  "AZURE_COGNITIVE_ENDPOINT": "$(AZURE_COGNITIVE_ENDPOINT_SECRET)",
+                  "JWT_SECRET": "$(JWT_SECRET)"
+
                 }
             displayName: 'Configure Azure App Settings'
