@@ -8,14 +8,10 @@
       <h1>TaskVantage</h1>
     </div>
     <ul class="menu">
-      <li 
-        class="menu-item" 
-        [class.active]="isActive('/home/' + userId)">
+      <li class="menu-item" [class.active]="isActive('/home/' + userId)">
         <a [routerLink]="['/home', userId]" (click)="reloadData()">Home</a>
       </li>
-      <li 
-        class="menu-item" 
-        [class.active]="isActive('/home/' + userId + '/add-task')">
+      <li class="menu-item" [class.active]="isActive('/home/' + userId + '/add-task')">
         <a [routerLink]="['/home', userId, 'add-task']">Add Task</a>
       </li>
       <li class="menu-item" [class.active]="isActive('/home/' + userId + '/tasks')">
@@ -34,7 +30,6 @@
       <br>
       <br>
       <h3>Get the App</h3>
-      <!-- Add to Home Screen Button -->
       <li class="menu-item">
         <a href="#" class="install-pwa-link" (click)="promptPwaInstall($event)">Install TaskVantage</a>
       </li>
@@ -43,108 +38,106 @@
   
   <!-- Main Content Area -->
   <div class="content-area" [class.expanded]="isSidebarCollapsed">
-    <!-- Render the main dashboard content if no specific child route is active -->
     <ng-container *ngIf="router.url === '/home/' + userId; else contentOutlet">
-      <div class="main-dashboard">
-        <!-- Info Section -->
-        <div class="info-section">
-          <div class="info-item">
-            <span class="info-label">Tasks</span>
-            <span class="info-value">{{ totalTasks }}</span>
-          </div>
-          <div class="divider-vertical"></div>
-          <div class="info-item">
-            <span class="info-label">Subtasks</span>
-            <span class="info-value">{{ totalSubtasks }}</span>
-          </div>
-          <div class="divider-vertical"></div>
-          <div class="info-item">
-            <span class="info-label">Past Deadline</span>
-            <span class="info-value">{{ pastDeadlineTasks }}</span>
-          </div>
-          <div class="divider-vertical"></div>
-          <div class="info-item">
-            <span class="info-label">Monthly Tasks</span>
-            <span class="info-value">{{ completedTasksThisMonth }}/{{ totalTasksThisMonth }}</span>
-          </div>
+      <!-- Info Section -->
+      <div class="info-section">
+        <div class="info-item">
+          <span class="info-label">Tasks</span>
+          <span class="info-value">{{ totalTasks }}</span>
         </div>
-    
-        <!-- Today's Tasks Section -->
-        <div class="chart" id="todays-tasks">
-          <h2>Today's Tasks</h2>
-          <ul class="today">
-            <li 
-              *ngFor="let task of tasksDueToday" 
-              style="display: flex; align-items: center;">
-              {{ task.title }}: 
-              <span 
-                [ngClass]="{
-                  'status-pending': task.status === 'Pending',
-                  'status-in-progress': task.status === 'In Progress'
-                }" 
-                style="margin-left: 8px; margin-right: 8px;">
-                {{ task.status }}
-              </span> 
-              - Due by {{ task.dueDate | date: 'shortTime' }}
-              
-              <!-- Button for marking task completed -->
-              <button 
-                mat-raised-button 
-                *ngIf="task.status === 'In Progress'" 
-                (click)="markTaskAsCompleted(task)" 
-                style="background-color: #28a745; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
-                Mark Completed
-              </button>
-
-              <!-- Button for starting the task -->
-              <button 
-                mat-raised-button 
-                *ngIf="task.status === 'Pending'" 
-                (click)="startTask(task)" 
-                style="background-color: #ffc107; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
-                Start Task
-              </button>
-              <br>
-              <br>
-            </li>
-            <li *ngIf="tasksDueToday.length === 0">
-              No tasks due today.
-            </li>
-          </ul>
+        <div class="divider-vertical"></div>
+        <div class="info-item">
+          <span class="info-label">Subtasks</span>
+          <span class="info-value">{{ totalSubtasks }}</span>
         </div>
-
-        <!-- Recommendations Section -->
-        <div class="chart" id="recommendations">
-          <app-recommendations [userId]="userId"></app-recommendations>
+        <div class="divider-vertical"></div>
+        <div class="info-item">
+          <span class="info-label">Past Deadline</span>
+          <span class="info-value">{{ pastDeadlineTasks }}</span>
         </div>
-
-        <!-- Weekly Tasks Status Bar Chart -->
-        <div class="chart responsive-chart" id="weekly-tasks-bar-chart">
-          <h2>Weekly Task Status</h2>
-          <div class="chart-container">
-            <canvas id="taskStatusChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Calendar Section -->
-        <div class="chart" id="calendar-section">
-          <h2>Calendar</h2>
-          <p>Coming soon!</p>
+        <div class="divider-vertical"></div>
+        <div class="info-item">
+          <span class="info-label">Monthly Tasks</span>
+          <span class="info-value">{{ completedTasksThisMonth }}/{{ totalTasksThisMonth }}</span>
         </div>
       </div>
-    
-      <!-- Activity Section -->
-      <div class="activity">
-        <h2>Activity</h2>
-        <ul>
-          <li *ngFor="let task of recentCompletedTasks">
-            Task <b>{{ task.title }}</b> completed <b>{{ task.timeAgo }}</b>
-          </li>
-        </ul>
+
+      <div class="dashboard-grid">
+        <!-- Left Column -->
+        <div class="dashboard-left">
+          <!-- Today's Tasks Section -->
+          <div class="chart" id="todays-tasks">
+            <h2>Today's Tasks</h2>
+            <ul class="today">
+              <li *ngFor="let task of tasksDueToday" style="display: flex; align-items: center;">
+                {{ task.title }}: 
+                <span [ngClass]="{
+                  'status-pending': task.status === 'Pending',
+                  'status-in-progress': task.status === 'In Progress'
+                }" style="margin-left: 8px; margin-right: 8px;">
+                  {{ task.status }}
+                </span> 
+                - Due by {{ task.dueDate | date: 'shortTime' }}
+                
+                <button mat-raised-button 
+                  *ngIf="task.status === 'In Progress'" 
+                  (click)="markTaskAsCompleted(task)" 
+                  style="background-color: #28a745; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
+                  Mark Completed
+                </button>
+
+                <button mat-raised-button 
+                  *ngIf="task.status === 'Pending'" 
+                  (click)="startTask(task)" 
+                  style="background-color: #ffc107; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
+                  Start Task
+                </button>
+              </li>
+              <li *ngIf="tasksDueToday.length === 0">
+                No tasks due today.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Recommendations Section -->
+          <div class="chart" id="recommendations">
+            <app-recommendations [userId]="userId"></app-recommendations>
+          </div>
+
+          <!-- Calendar Section -->
+          <div class="chart" id="calendar-section">
+            <h2>Calendar</h2>
+            <p>Coming soon!</p>
+          </div>
+        </div>
+
+        <!-- Middle Column -->
+        <div class="dashboard-middle">
+          <!-- Weekly Tasks Status Bar Chart -->
+          <div class="chart" id="weekly-tasks-bar-chart">
+            <h2>Weekly Task Status</h2>
+            <div class="chart-container">
+              <canvas id="taskStatusChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="dashboard-right">
+          <!-- Activity Section -->
+          <div class="activity">
+            <h2>Activity</h2>
+            <ul>
+              <li *ngFor="let task of recentCompletedTasks">
+                Task <b>{{ task.title }}</b> completed <b>{{ task.timeAgo }}</b>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </ng-container>
 
-    <!-- Router outlet for child components like tasks and settings -->
+    <!-- Router outlet for child components -->
     <ng-template #contentOutlet>
       <ng-container *ngIf="router.url === '/home/' + userId + '/tasks'; else defaultOutlet">
         <app-tasks [userId]="userId"></app-tasks>
