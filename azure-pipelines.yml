@@ -46,6 +46,28 @@ stages:
               npm run build --prod
             displayName: 'Build Angular App'
 
+          - script: |
+              echo "Current directory:"
+              pwd
+              echo "Listing dist directory before move:"
+              ls -la $(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager
+              echo "Moving files from browser directory..."
+              cd $(Agent.BuildDirectory)/s/frontend/task-manager/dist/task-manager
+              if [ -d "browser" ]; then
+                mv browser/* . && rm -rf browser && echo "Files moved successfully"
+              else
+                echo "ERROR: browser directory not found!"
+                exit 1
+              fi
+              echo "Final contents of dist directory:"
+              ls -la
+              echo "Checking for critical files:"
+              if [ ! -f "index.html" ]; then
+                echo "ERROR: index.html not found!"
+                exit 1
+              fi
+            displayName: 'Prepare Angular Build for Deployment'
+
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(azureSubscription)'
