@@ -203,7 +203,7 @@ public class RecommendationService {
         return response;
     }
 
-    private Map<String, Double> buildUserTaskProfile(List<Task> userTasks) {
+    protected Map<String, Double> buildUserTaskProfile(List<Task> userTasks) {
         logger.debug("Building user profile from {} tasks", userTasks.size());
         Map<String, Double> profile = new HashMap<>();
 
@@ -265,7 +265,7 @@ public class RecommendationService {
         }
     }
 
-    private double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
+    protected double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
         logger.trace("Computing similarity with profile of size {}", userProfile.size());
 
         // Convert user profile map back to array format
@@ -283,7 +283,7 @@ public class RecommendationService {
         return normalizedSimilarity;
     }
 
-    private void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
+    protected void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
         logger.trace("Updating profile with embedding of length {} and weight {}", embedding.length, weight);
 
         // Initialize empty profile
@@ -306,7 +306,7 @@ public class RecommendationService {
         logger.trace("Updated existing profile dimensions");
     }
 
-    private double cosineSimilarity(double[] vectorA, double[] vectorB) {
+    protected double cosineSimilarity(double[] vectorA, double[] vectorB) {
         double dotProduct = 0.0;
         double magnitudeA = 0.0;
         double magnitudeB = 0.0;
