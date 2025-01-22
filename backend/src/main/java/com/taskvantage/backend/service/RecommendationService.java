@@ -363,7 +363,7 @@ public class RecommendationService {
 
                 logger.debug("Finding tasks related to task: {}", taskId);
                 List<Task> relatedTasks = taskRepository.findRelatedTasks(
-                        taskId, targetTask.getTitle(), targetTask.getDescription());
+                        taskId, userId, targetTask.getTitle(), targetTask.getDescription());
 
                 recommendations = relatedTasks.stream()
                         .map(task -> {
