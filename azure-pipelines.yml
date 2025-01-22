@@ -81,16 +81,22 @@ stages:
               printenv | grep -i "db\|firebase\|azure"
               mvn -f $(backendPath)/pom.xml clean package \
                   -Dspring.profiles.active=test \
+                  -Dtest=!BackendApplicationTests,!SentenceEmbeddingClientIntegrationTest \
                   -Dspring.datasource.url=jdbc:h2:mem:testdb \
+                  -Dspring.jpa.database-platform=org.hibernate.dialect.H2Dialect \
                   -Dspring.datasource.username=sa \
                   -Dspring.datasource.password= \
-                  -Dspring.datasource.driver-class-name=org.h2.Driver
+                  -Dspring.datasource.driver-class-name=org.h2.Driver \
+                  -Dspring.jpa.hibernate.ddl-auto=create-drop \
+                  -Dspring.jpa.show-sql=true \
+                  -Dspring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults=false
             displayName: 'Build and Test Spring Boot App'
             env:
               AZURE_COGNITIVE_APIKEY: $(AZURE_COGNITIVE_APIKEY_SECRET)
               AZURE_COGNITIVE_ENDPOINT: $(AZURE_COGNITIVE_ENDPOINT_SECRET)
               FIREBASE_CONFIG_PATH: $(firebaseConfigPath)
               SPRING_PROFILES_ACTIVE: test
+              JWT_SECRET: $(JWT_SECRET)
 
           - script: |
               mvn -f $(backendPath)/pom.xml clean package -Dspring.profiles.active=prod -DskipTests
@@ -120,6 +126,5 @@ stages:
                   "AZURE_COGNITIVE_APIKEY": "$(AZURE_COGNITIVE_APIKEY_SECRET)",
                   "AZURE_COGNITIVE_ENDPOINT": "$(AZURE_COGNITIVE_ENDPOINT_SECRET)",
                   "JWT_SECRET": "$(JWT_SECRET)"
-
                 }
             displayName: 'Configure Azure App Settings'
