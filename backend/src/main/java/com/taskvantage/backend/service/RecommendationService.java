@@ -15,14 +15,14 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RecommendationService {
     private static final Logger logger = LoggerFactory.getLogger(RecommendationService.class);
-    private static final double MAX_DAY_BOOST = 1.5; // Maximum possible day boost
-    private static final double MAX_TIME_BOOST = 1.0; // Maximum possible time boost
+    private static final double MAX_DAY_BOOST = 2.0; // Increased for more impact
+    private static final double BASE_DAY_BOOST = 1.0;
+    private static final int FREQUENCY_THRESHOLD_HIGH = 5; // Tasks done 5+ times are considered highly frequent
+    private static final int FREQUENCY_THRESHOLD_MEDIUM = 3; // Tasks done 3-4 times are considered moderately frequent
 
     private final TaskRepository taskRepository;
     private final SentenceEmbeddingClient embeddingClient;
@@ -43,46 +43,74 @@ public class RecommendationService {
 
         if (userRecentTasks.isEmpty()) {
             logger.info("No recent tasks found for user {}. Returning default recommendations.", userId);
-            List<Task> defaultRecs = getDefaultRecommendations(limit);
-            defaultRecs.forEach(task -> {
-                task.setRecommendationScore(1.0f);
-                task.setRecommendedBy("POPULAR");
-                task.setRecommended(true);
-            });
-            return defaultRecs;
+            return getDefaultRecommendations(limit);
         }
 
         try {
-            // Get current day of week
             DayOfWeek currentDayOfWeek = ZonedDateTime.now(ZoneOffset.UTC).getDayOfWeek();
-
-            // Find tasks completed on the same day of week
-            List<Task> sameDayTasks = userRecentTasks.stream()
-                    .filter(task -> task.getCompletionDateTime() != null)
-                    .filter(task -> task.getCompletionDateTime().getDayOfWeek() == currentDayOfWeek)
-                    .collect(Collectors.toList());
-
-            logger.debug("Found {} tasks completed on {}", sameDayTasks.size(), currentDayOfWeek);
-
-            // Build user's task profile
-            Map<String, Double> userTaskProfile = buildUserTaskProfile(sameDayTasks);
             List<Task> candidateTasks = taskRepository.findPotentialTasksForUser(userId);
 
-            // Score and rank tasks with day-of-week boost
-            List<Task> recommendations = candidateTasks.stream()
-                    .map(task -> {
-                        double baseScore = computeTaskScore(task, userTaskProfile);
-                        double dayBoost = computeDayOfWeekBoost(task, currentDayOfWeek);
-                        double timeBoost = computeTimeOfDayBoost(task);
-                        double rawScore = baseScore * dayBoost * timeBoost;
-                        double finalScore = normalizeScore(rawScore);
+            // Group tasks by title and description to avoid duplicates
+            Map<String, List<Task>> groupedTasks = candidateTasks.stream()
+                    .collect(Collectors.groupingBy(task -> task.getTitle().toLowerCase() + "::" + task.getDescription().toLowerCase()));
 
-                        task.setRecommendationScore((float)finalScore);
-                        task.setRecommended(true);
-                        task.setRecommendedBy(dayBoost > 1.0 ? "SAME_DAY" : "SIMILAR_CONTENT");
-                        task.setLastRecommendedOn(ZonedDateTime.now(ZoneOffset.UTC));
+            // Score and rank tasks
+            List<Task> recommendations = groupedTasks.values().stream()
+                    .map(group -> {
+                        Task representativeTask = group.get(0);
+                        double dayBoost = computeDayOfWeekBoost(representativeTask, currentDayOfWeek);
+                        double recencyWeight = calculateRecencyWeight(representativeTask);
+                        double frequencyWeight = calculateFrequencyWeight(representativeTask, userRecentTasks);
 
-                        return task;
+                        // Calculate base scores for each component
+                        double dayComponent = (dayBoost > BASE_DAY_BOOST) ? 0.4 : 0.1;
+                        double frequencyComponent = Math.min(0.3, (frequencyWeight - 1.0) * 0.1);
+                        double recencyComponent = Math.min(0.15, recencyWeight * 0.5);
+
+                        // Combine scores with priority tiers
+                        double finalScore;
+                        String recommendationReason;
+
+                        if (dayBoost > BASE_DAY_BOOST && frequencyWeight > 2.0) {
+                            // Highest tier: Same day AND frequently repeated (0.85-0.99)
+                            finalScore = 0.85 + (frequencyComponent * 0.1) + (recencyComponent * 0.05);
+                            recommendationReason = "High Priority: Regular task for " + currentDayOfWeek;
+                        } else if (dayBoost > BASE_DAY_BOOST) {
+                            // Second tier: Same day but not frequent (0.65-0.89)
+                            finalScore = 0.65 + (frequencyComponent * 0.15) + (recencyComponent * 0.1);
+                            recommendationReason = "Medium Priority: Scheduled for " + currentDayOfWeek;
+                        } else if (frequencyWeight > 2.0) {
+                            // Third tier: Frequent but different day (0.45-0.79)
+                            finalScore = 0.45 + (frequencyComponent * 0.2) + (recencyComponent * 0.15);
+                            recommendationReason = "Medium Priority: Frequently Repeated Task";
+                        } else {
+                            // Lowest tier: Neither same day nor frequent (0.25-0.74)
+                            finalScore = 0.25 + (frequencyComponent * 0.3) + (recencyComponent * 0.2);
+                            recommendationReason = "Regular Priority Task";
+                        }
+
+                        // Ensure score is between 0 and 0.99
+                        finalScore = Math.min(0.99, Math.max(0.01, finalScore));
+
+                        // Log detailed scoring breakdown
+                        logger.debug(
+                                "Score breakdown for task '{}': dayBoost={}, frequencyWeight={}, recencyWeight={}, " +
+                                        "finalScore={}, tier={}",
+                                representativeTask.getTitle(),
+                                dayBoost,
+                                frequencyWeight,
+                                recencyWeight,
+                                finalScore,
+                                recommendationReason
+                        );
+
+                        // Update task metadata
+                        representativeTask.setRecommendationScore((float) finalScore);
+                        representativeTask.setRecommended(true);
+                        representativeTask.setRecommendedBy(recommendationReason);
+                        representativeTask.setLastRecommendedOn(ZonedDateTime.now(ZoneOffset.UTC));
+
+                        return representativeTask;
                     })
                     .sorted((t1, t2) -> Float.compare(t2.getRecommendationScore(), t1.getRecommendationScore()))
                     .limit(limit)
@@ -97,64 +125,74 @@ public class RecommendationService {
         }
     }
 
+    double computeDayOfWeekBoost(Task task, DayOfWeek targetDay) {
+        // Check scheduled start day if available
+        if (task.getScheduledStart() != null &&
+                task.getScheduledStart().getDayOfWeek() == targetDay) {
+            return MAX_DAY_BOOST; // Highest boost for explicitly scheduled tasks
+        }
+
+        // Check completion history
+        if (task.getCompletionDateTime() != null &&
+                task.getCompletionDateTime().getDayOfWeek() == targetDay) {
+            return MAX_DAY_BOOST - 0.2; // Slightly lower boost for historical pattern
+        }
+
+        // Default case - no day-based boost
+        return BASE_DAY_BOOST;
+    }
+
+    double calculateFrequencyWeight(Task task, List<Task> userHistory) {
+        // Count exact matches (same title and description)
+        long exactMatches = userHistory.stream()
+                .filter(historyTask ->
+                        historyTask.getTitle().equalsIgnoreCase(task.getTitle()) &&
+                                historyTask.getDescription().equalsIgnoreCase(task.getDescription()))
+                .count();
+
+        // Apply tiered frequency weighting
+        if (exactMatches >= FREQUENCY_THRESHOLD_HIGH) {
+            return 3.0; // High frequency weight
+        } else if (exactMatches >= FREQUENCY_THRESHOLD_MEDIUM) {
+            return 2.0; // Medium frequency weight
+        } else {
+            return 1.0 + (exactMatches * 0.2); // Linear scaling for lower frequencies
+        }
+    }
+
+    double calculateRecencyWeight(Task task) {
+        ZonedDateTime mostRecentTimestamp = Stream.of(
+                        task.getLastModifiedDate(),
+                        task.getCompletionDateTime(),
+                        task.getCreationDate()
+                )
+                .filter(Objects::nonNull)
+                .max(ZonedDateTime::compareTo)
+                .orElse(task.getCreationDate());
+
+        double ageInDays = Duration.between(mostRecentTimestamp, ZonedDateTime.now(ZoneOffset.UTC)).toDays();
+
+        // Exponential decay with 14-day half-life (more aggressive than before)
+        double halfLife = 14.0;
+        double lambda = Math.log(2) / halfLife;
+        double weight = Math.exp(-lambda * ageInDays);
+
+        logger.trace("Calculated recency weight {} for task {} (age: {} days)", weight, task.getId(), ageInDays);
+        return weight;
+    }
     public RecommendationResponse getRecommendedTasksByWeekday(Long userId, int limit) {
         logger.info("Getting weekday recommendations for user: {}, limit: {}", userId, limit);
 
         RecommendationResponse response = new RecommendationResponse();
         try {
-            // Get current day of week
-            DayOfWeek currentDayOfWeek = ZonedDateTime.now(ZoneOffset.UTC).getDayOfWeek();
+            // Use getRecommendationsForUser with the user's ID and limit
+            List<Task> recommendations = getRecommendationsForUser(userId, limit);
 
-            // Get user's recent tasks completed on this day of week
-            List<Task> userRecentTasks = taskRepository.findRecentTasksByUserId(userId);
-            List<Task> sameDayTasks = userRecentTasks.stream()
-                    .filter(task -> task.getCompletionDateTime() != null)
-                    .filter(task -> task.getCompletionDateTime().getDayOfWeek() == currentDayOfWeek)
-                    .collect(Collectors.toList());
-
-            if (sameDayTasks.isEmpty()) {
-                logger.info("No tasks found for day: {}. Returning default recommendations.", currentDayOfWeek);
-                List<Task> defaultRecs = getDefaultRecommendations(limit);
-                defaultRecs.forEach(task -> {
-                    task.setRecommendationScore(1.0f);
-                    task.setRecommendedBy("POPULAR");
-                    task.setRecommended(true);
-                    task.setLastRecommendedOn(ZonedDateTime.now(ZoneOffset.UTC));
-                });
-                response.setRecommendations(defaultRecs);
-                response.setStatus("success");
-                response.setMessage("No historical tasks found for " + currentDayOfWeek);
-                return response;
-            }
-
-            // Build profile from same-day tasks
-            Map<String, Double> userTaskProfile = buildUserTaskProfile(sameDayTasks);
-            List<Task> candidateTasks = taskRepository.findPotentialTasksForUser(userId);
-
-            // Score and rank tasks with emphasis on day matching
-            List<Task> recommendations = candidateTasks.stream()
-                    .map(task -> {
-                        double baseScore = computeTaskScore(task, userTaskProfile);
-                        double dayBoost = computeDayOfWeekBoost(task, currentDayOfWeek);
-                        double timeBoost = computeTimeOfDayBoost(task);
-                        double rawScore = baseScore * dayBoost * timeBoost;
-                        double finalScore = normalizeScore(rawScore);
-
-                        task.setRecommendationScore((float)finalScore);
-                        task.setRecommended(true);
-                        task.setRecommendedBy("WEEKDAY_MATCH");
-                        task.setLastRecommendedOn(ZonedDateTime.now(ZoneOffset.UTC));
-
-                        return task;
-                    })
-                    .sorted((t1, t2) -> Float.compare(t2.getRecommendationScore(), t1.getRecommendationScore()))
-                    .limit(limit)
-                    .collect(Collectors.toList());
-
+            // Prepare response
             response.setRecommendations(recommendations);
             response.setStatus("success");
-            response.setMessage("Recommendations for " + currentDayOfWeek + " generated successfully");
-
+            response.setMessage("Recommendations for the current weekday fetched successfully.");
+            logger.info("Weekday recommendations generated successfully for user: {}", userId);
         } catch (Exception e) {
             logger.error("Error generating weekday recommendations: {}", e.getMessage(), e);
             response.setStatus("error");
@@ -193,26 +231,6 @@ public class RecommendationService {
         return profile;
     }
 
-    double calculateRecencyWeight(Task task) {
-        ZonedDateTime mostRecentTimestamp = Stream.of(
-                        task.getLastModifiedDate(),
-                        task.getCompletionDateTime(),
-                        task.getCreationDate()
-                )
-                .filter(Objects::nonNull)
-                .max(ZonedDateTime::compareTo)
-                .orElse(task.getCreationDate());
-
-        double ageInDays = Duration.between(mostRecentTimestamp, ZonedDateTime.now(ZoneOffset.UTC)).toDays();
-
-        double halfLife = 30.0; // 30-day half-life for base recency
-        double lambda = Math.log(2) / halfLife;
-        double weight = Math.exp(-lambda * ageInDays);
-
-        logger.trace("Calculated recency weight {} for task {} (age: {} days)", weight, task.getId(), ageInDays);
-        return weight;
-    }
-
     double calculateCompletionTimeWeight(Task task) {
         if (task.getCompletionDateTime() == null) {
             return 1.0;
@@ -235,48 +253,6 @@ public class RecommendationService {
         return Math.exp(-lambda * timeDiff);
     }
 
-    double computeDayOfWeekBoost(Task task, DayOfWeek targetDay) {
-        // Check scheduled start day if available
-        if (task.getScheduledStart() != null) {
-            return task.getScheduledStart().getDayOfWeek() == targetDay ? 1.5 : 1.0;
-        }
-
-        // Check completion day if available
-        if (task.getCompletionDateTime() != null) {
-            return task.getCompletionDateTime().getDayOfWeek() == targetDay ? 1.3 : 1.0;
-        }
-
-        return 1.0; // No boost if no day information available
-    }
-
-    double computeTimeOfDayBoost(Task task) {
-        if (task.getScheduledStart() != null) {
-            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-            int taskHour = task.getScheduledStart().getHour();
-            int currentHour = now.getHour();
-
-            // Higher boost for tasks scheduled around the same time of day
-            int hourDiff = Math.abs(taskHour - currentHour);
-            return Math.exp(-hourDiff / 4.0); // Exponential decay with 4-hour characteristic time
-        }
-        return 1.0;
-    }
-
-    private double computeTaskScore(Task candidateTask, Map<String, Double> userProfile) {
-        logger.debug("Computing score for task {} against user profile", candidateTask.getId());
-        try {
-            String taskContent = candidateTask.getTitle() + " " + candidateTask.getDescription();
-            double[] taskEmbedding = embeddingClient.getSentenceEmbedding(taskContent);
-            double similarity = computeSimilarityWithProfile(taskEmbedding, userProfile);
-
-            logger.trace("Task {} similarity score: {}", candidateTask.getId(), similarity);
-            return similarity;
-        } catch (Exception e) {
-            logger.warn("Failed to compute score for task {}: {}", candidateTask.getId(), e.getMessage());
-            return 0.0;
-        }
-    }
-
     private List<Task> getDefaultRecommendations(int limit) {
         logger.debug("Fetching default recommendations with limit {}", limit);
         try {
@@ -289,7 +265,7 @@ public class RecommendationService {
         }
     }
 
-    double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
+    private double computeSimilarityWithProfile(double[] taskEmbedding, Map<String, Double> userProfile) {
         logger.trace("Computing similarity with profile of size {}", userProfile.size());
 
         // Convert user profile map back to array format
@@ -307,7 +283,7 @@ public class RecommendationService {
         return normalizedSimilarity;
     }
 
-    void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
+    private void updateProfile(Map<String, Double> profile, double[] embedding, double weight) {
         logger.trace("Updating profile with embedding of length {} and weight {}", embedding.length, weight);
 
         // Initialize empty profile
@@ -355,22 +331,23 @@ public class RecommendationService {
 
         try {
             List<Task> recommendations;
+
             if (taskId != null) {
+                // Task-based recommendations
                 Task targetTask = taskRepository.findById(taskId).orElseThrow(() -> {
                     logger.error("Task not found with ID: {}", taskId);
                     return new IllegalArgumentException("Task not found for ID: " + taskId);
                 });
 
-                logger.debug("Finding tasks related to task: {}", taskId);
                 List<Task> relatedTasks = taskRepository.findRelatedTasks(
                         taskId, userId, targetTask.getTitle(), targetTask.getDescription());
 
                 recommendations = relatedTasks.stream()
                         .map(task -> {
-                            double similarity = computeContentSimilarity(targetTask, task);
-                            task.setRecommendationScore((float)similarity);
+                            double similarityScore = computeContentSimilarity(targetTask, task);
+                            task.setRecommendationScore((float) similarityScore);
                             task.setRecommended(true);
-                            task.setRecommendedBy("TASK_SIMILARITY");
+                            task.setRecommendedBy(similarityScore > 0.7 ? "HIGHLY_SIMILAR" : "RELATED_TASK");
                             task.setLastRecommendedOn(ZonedDateTime.now(ZoneOffset.UTC));
                             return task;
                         })
@@ -378,21 +355,14 @@ public class RecommendationService {
                         .limit(limit)
                         .collect(Collectors.toList());
             } else {
-                logger.debug("Getting user-based recommendations for user: {}", userId);
                 recommendations = getRecommendationsForUser(userId, limit);
             }
 
             response.setRecommendations(recommendations);
             response.setStatus("success");
             response.setMessage("Recommendations fetched successfully.");
-
             logger.info("Successfully generated recommendations response with {} items", recommendations.size());
 
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid request for recommendations: {}", e.getMessage());
-            response.setStatus("error");
-            response.setMessage("Invalid request: " + e.getMessage());
-            response.setRecommendations(Collections.emptyList());
         } catch (Exception e) {
             logger.error("Error generating recommendations: {}", e.getMessage(), e);
             response.setStatus("error");
@@ -414,10 +384,5 @@ public class RecommendationService {
             logger.warn("Failed to compute content similarity: {}", e.getMessage());
             return 0.0;
         }
-    }
-
-    private double normalizeScore(double rawScore) {
-        double maxPossibleScore = 1.0 * MAX_DAY_BOOST * MAX_TIME_BOOST;
-        return Math.min(1.0, Math.max(0.0, rawScore / maxPossibleScore));
     }
 }
