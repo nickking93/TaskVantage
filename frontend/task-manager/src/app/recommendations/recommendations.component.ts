@@ -34,6 +34,10 @@ export class RecommendationsComponent implements OnInit {
     }
   }
 
+  scheduleTask(_t22: TaskRecommendation) {
+    throw new Error('Method not implemented.');
+    }
+
   fetchRecommendations(): void {
     this.http.get<RecommendationResponse>(`${environment.apiUrl}/api/recommendations/user/${this.userId}`)
       .subscribe({

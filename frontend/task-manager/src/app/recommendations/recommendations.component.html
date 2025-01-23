@@ -20,16 +20,19 @@
       <div *ngIf="!loading && !error && recommendations.length > 0" class="recommendations-list">
         <div *ngFor="let task of recommendations" class="recommendation-item">
           <div class="recommendation-content">
-            <mat-icon [class]="'icon-' + getRecommendationIcon(task.recommendedBy)">
-              {{ getRecommendationIcon(task.recommendedBy) }}
-            </mat-icon>
             
             <div class="task-details">
-              <h3>{{ task.title }}</h3>
+              <li><b>{{ task.title }} </b>
+                <button mat-raised-button 
+                (click)="scheduleTask(task)" 
+                style="background-color: #00a4f3; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
+                <b>Schedule</b>
+              </button>
               <p class="recommendation-meta">
                 {{ task.recommendedBy.toLowerCase().replace('_', ' ') }} •
                 Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%
               </p>
+            </li>
             </div>
           </div>
         </div>
