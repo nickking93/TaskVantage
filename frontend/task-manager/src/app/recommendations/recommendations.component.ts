@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router'; // Add this line
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -23,7 +24,7 @@ export class RecommendationsComponent implements OnInit {
   loading = true;
   error: string | null = null;
   
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {} // Updated here
 
   ngOnInit(): void {
     if (this.userId) {
@@ -34,9 +35,10 @@ export class RecommendationsComponent implements OnInit {
     }
   }
 
-  scheduleTask(_t22: TaskRecommendation) {
-    throw new Error('Method not implemented.');
-    }
+  scheduleTask(taskRecommendation: TaskRecommendation): void {
+    // Navigate to the update-task route with the task ID
+    this.router.navigate(['/home', this.userId, 'update-task', taskRecommendation.id.toString()]);
+  }
 
   fetchRecommendations(): void {
     this.http.get<RecommendationResponse>(`${environment.apiUrl}/api/recommendations/user/${this.userId}`)
