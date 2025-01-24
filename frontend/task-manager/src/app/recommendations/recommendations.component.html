@@ -1,41 +1,47 @@
 <!-- recommendations.component.html -->
 <div class="recommendations-card">
-    <div class="card-header">
-      <h2>Recommended Tasks</h2>
+  <div class="card-header">
+    <h2>Recommended Tasks</h2>
+  </div>
+
+  <div class="card-content">
+    <div *ngIf="loading" class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
     </div>
-    
-    <div class="card-content">
-      <div *ngIf="loading" class="loading-state">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-  
-      <div *ngIf="error" class="error-state">
-        {{ error }}
-      </div>
-  
-      <div *ngIf="!loading && !error && recommendations.length === 0" class="empty-state">
-        No recommendations available
-      </div>
-  
-      <div *ngIf="!loading && !error && recommendations.length > 0" class="recommendations-list">
-        <div *ngFor="let task of recommendations" class="recommendation-item">
-          <div class="recommendation-content">
-            
-            <div class="task-details">
-              <li><b>{{ task.title }} </b>
-                <button mat-raised-button 
-                (click)="scheduleTask(task)" 
-                style="background-color: #00a4f3; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
-                <b>Schedule</b>
-              </button>
-              <p class="recommendation-meta">
-                {{ task.recommendedBy.toLowerCase().replace('_', ' ') }} •
-                Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%
-              </p>
-            </li>
-            </div>
+
+    <div *ngIf="error" class="error-state">
+      {{ error }}
+    </div>
+
+    <!-- Message for new users with fewer than 3 completed tasks -->
+    <div *ngIf="!loading && !error && !hasSufficientCompletedTasks" class="new-user-message">
+      <p>You need to complete at least 3 tasks for personalized recommendations to appear.</p>
+    </div>
+
+    <!-- No recommendations available message -->
+    <div *ngIf="!loading && !error && hasSufficientCompletedTasks && recommendations.length === 0" class="empty-state">
+      No recommendations available
+    </div>
+
+    <!-- Display recommendations if available -->
+    <div *ngIf="!loading && !error && hasSufficientCompletedTasks && recommendations.length > 0" class="recommendations-list">
+      <div *ngFor="let task of recommendations" class="recommendation-item">
+        <div class="recommendation-content">
+          <div class="task-details">
+            <li><b>{{ task.title }} </b>
+              <button mat-raised-button 
+              (click)="scheduleTask(task)" 
+              style="background-color: #00a4f3; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
+              <b>Schedule</b>
+            </button>
+            <p class="recommendation-meta">
+              {{ task.recommendedBy.toLowerCase().replace('_', ' ') }} •
+              Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%
+            </p>
+          </li>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
