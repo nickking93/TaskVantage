@@ -21,6 +21,8 @@ import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { getApp } from 'firebase/app';
+import { RecommendationsComponent } from '../recommendations/recommendations.component';
+import { HomeModule } from './home.module';
 
 interface User {
   id: number | string;
@@ -45,6 +47,7 @@ interface User {
     MatButtonModule,
     MatDialogModule,
     TasksComponent,
+    RecommendationsComponent
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy {

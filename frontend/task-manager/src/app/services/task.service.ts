@@ -32,6 +32,16 @@ export class TaskService {
     );
   }
 
+  // Method to fetch completed task count for a user
+  getCompletedTaskCount(userId: string): Observable<number> {
+    const headers = this.authService.getAuthHeaders();
+    const url = `${this.tasksUrl}/user/${userId}/completed-tasks-count`;
+    return this.http.get<{ completedTaskCount: number }>(url, { headers, responseType: 'json' }).pipe(
+      map(response => response.completedTaskCount),
+      catchError(this.handleError)
+    );
+  }
+
   // Method to fetch a single task by ID
   getTaskById(taskId: string): Observable<Task> {
     const headers = this.authService.getAuthHeaders();
