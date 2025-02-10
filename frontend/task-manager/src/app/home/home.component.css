@@ -277,22 +277,48 @@
     padding: 20px;
     margin-left: 0;
     flex: 1;
+    flex-direction: column;
+    overflow-y: visible;
   }
 
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .dashboard-left,
-  .dashboard-middle,
-  .dashboard-right {
+  .main-dashboard, .chart, .activity, .calendar {
     width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .main-dashboard {
+    margin-right: 0;
+  }
+
+  .chart, .activity {
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .calendar {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    box-sizing: border-box;
+  }
+  
+  .calendar * {
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box;
+  }
+
+  .activity {
+    max-height: none;
+    height: auto;
   }
 
   .info-section {
     flex-direction: column;
     padding: 20px;
+    box-sizing: border-box;
   }
 
   .info-item {
@@ -303,12 +329,24 @@
     display: none;
   }
 
-  .chart,
-  .activity {
-    margin-bottom: 20px;
+  .modal-content {
+    padding: 20px;
+  }
+
+  .sidebar .menu-item {
+    padding: 10px;
   }
 
   #calendar-section {
-    margin-bottom: 20px;
+    /* Custom styles for the calendar section, if needed in the future */
+  }
+
+  .sidebar.collapsed {
+    transform: none;
+    width: 250px;
+  }
+
+  .content-area.expanded {
+    margin-left: 0;
   }
 }
