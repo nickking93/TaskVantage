@@ -1,5 +1,6 @@
 package com.taskvantage.backend.config;
 
+import com.taskvantage.backend.Security.JwtUtil;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -9,6 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.util.Base64;
 
 @TestConfiguration
 public class TestSecurityConfig {
@@ -43,5 +46,21 @@ public class TestSecurityConfig {
     @Primary
     public String googleCalendarClientSecret() {
         return "test-client-secret";
+    }
+
+    @Bean
+    @Primary
+    public JwtUtil jwtUtil() {
+        return new JwtUtil() {
+            @Override
+            protected String getEnvVariable(String name) {
+                if ("JWT_SECRET".equals(name)) {
+                    return Base64.getEncoder().encodeToString(
+                            "test-jwt-secret-key-for-testing-purposes-only".getBytes()
+                    );
+                }
+                return super.getEnvVariable(name);
+            }
+        };
     }
 }
