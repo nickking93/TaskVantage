@@ -1,6 +1,7 @@
 # Ignore the Firebase service account JSON file
 backend/src/main/resources/taskvantage-c1425-firebase-adminsdk-yc2y8-9cbc07dcdf.json
 backend/logs/spring-boot-logger.log
+backend/.env
 
 # Compiled class files
 *.class
@@ -53,3 +54,6 @@ Thumbs.db
 /build/
 /dist/
 /out/
+
+# Ignore serena
+.serena/
