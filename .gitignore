@@ -54,3 +54,6 @@ Thumbs.db
 /build/
 /dist/
 /out/
+
+# Ignore serena
+.serena/

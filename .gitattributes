@@ -1,0 +1,23 @@
+# Enforce LF line endings for all text files
+* text=auto eol=lf
+
+# Binary assets should bypass normalization
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.mp4 binary
+*.mp3 binary
+*.mov binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.tgz binary
+*.7z binary
+*.jar binary
+*.war binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
