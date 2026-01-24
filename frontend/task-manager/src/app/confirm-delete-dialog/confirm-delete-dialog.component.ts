@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   template: `
     <h1 mat-dialog-title>Confirm Delete</h1>
     <div mat-dialog-content class="confirm-content">
-      <p>Are you sure you want to delete this task?</p>
+      <p>{{ data?.message || 'Are you sure you want to delete this task?' }}</p>
     </div>
     <div mat-dialog-actions class="confirm-actions">
       <button mat-button color="warn" (click)="onConfirm()">Yes</button>

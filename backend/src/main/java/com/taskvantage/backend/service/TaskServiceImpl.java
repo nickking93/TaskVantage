@@ -251,6 +251,7 @@ public class TaskServiceImpl implements TaskService {
         Optional.ofNullable(updatedTask.getPriority()).ifPresent(existingTask::setPriority);
         Optional.ofNullable(updatedTask.getStatus()).ifPresent(existingTask::setStatus);
         existingTask.setIsAllDay(updatedTask.isAllDay());
+        existingTask.setGroupId(updatedTask.getGroupId());
     }
 
     private void updateDates(Task existingTask, Task updatedTask) {
