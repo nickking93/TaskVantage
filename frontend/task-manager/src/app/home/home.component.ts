@@ -15,6 +15,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 import { Chart, registerables } from 'chart.js';
@@ -45,6 +46,7 @@ interface User {
     MatSelectModule,
     MatCheckboxModule,
     MatButtonModule,
+    MatIconModule,
     MatDialogModule,
     TasksComponent,
     RecommendationsComponent

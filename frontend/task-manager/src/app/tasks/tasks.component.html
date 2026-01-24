@@ -56,33 +56,33 @@
         <!-- Hide all buttons if the 'complete' filter is selected -->
         <ng-container *ngIf="selectedFilter !== 'complete'">
           <!-- "Mark Completed" button for tasks in progress -->
-          <button 
-              mat-raised-button 
-              class="task-action-button mark-completed-button" 
-              *ngIf="task.status === 'In Progress'" 
-              (click)="markTaskAsCompleted(task)">
-            Mark Completed
+          <button
+            mat-raised-button
+            class="task-action-button mark-completed-button"
+            *ngIf="task.status === 'In Progress'"
+            (click)="markTaskAsCompleted(task)">
+            <mat-icon>check_circle</mat-icon> Mark Completed
           </button>
           <!-- "Start Task" button -->
-          <button 
-          mat-raised-button 
-          class="task-action-button start-task-button" 
-          *ngIf="task.status !== 'In Progress' && task.id" 
-          (click)="startTask(task)">
-          Start Task
-          </button>          
-              <!-- Edit and Delete buttons -->
-              <button 
-              mat-raised-button 
-              class="task-action-button edit-button" 
-              (click)="updateTask(task)">
-            Edit
-          </button>      
-          <button 
-              mat-raised-button 
-              class="task-action-button delete-button" 
-              (click)="deleteTask(task)">
-            Delete
+          <button
+            mat-raised-button
+            class="task-action-button start-task-button"
+            *ngIf="task.status !== 'In Progress' && task.id"
+            (click)="startTask(task)">
+            <mat-icon>play_arrow</mat-icon> Start Task
+          </button>
+          <!-- Edit and Delete buttons -->
+          <button
+            mat-raised-button
+            class="task-action-button edit-button"
+            (click)="updateTask(task)">
+            <mat-icon>edit</mat-icon> Edit
+          </button>
+          <button
+            mat-raised-button
+            class="task-action-button delete-button"
+            (click)="deleteTask(task)">
+            <mat-icon>delete</mat-icon> Delete
           </button>
         </ng-container>
   

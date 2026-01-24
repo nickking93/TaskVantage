@@ -9,29 +9,29 @@
     </div>
     <ul class="menu">
       <li class="menu-item" [class.active]="isActive('/home/' + userId)">
-        <a [routerLink]="['/home', userId]" (click)="reloadData()">Home</a>
+        <a [routerLink]="['/home', userId]" (click)="reloadData()"><mat-icon>home</mat-icon> Home</a>
       </li>
       <li class="menu-item" [class.active]="isActive('/home/' + userId + '/add-task')">
-        <a [routerLink]="['/home', userId, 'add-task']">Add Task</a>
+        <a [routerLink]="['/home', userId, 'add-task']"><mat-icon>add_circle</mat-icon> Add Task</a>
       </li>
       <li class="menu-item" [class.active]="isActive('/home/' + userId + '/tasks')">
-        <a [routerLink]="['/home', userId, 'tasks']">Tasks</a>
+        <a [routerLink]="['/home', userId, 'tasks']"><mat-icon>list</mat-icon> Tasks</a>
       </li>
       <li class="menu-item" [class.active]="isActive('/home/' + userId + '/settings')">
-        <a [routerLink]="['/home', userId, 'settings']">Settings</a>
-      </li>      
-      <li class="menu-item">
-        <a [routerLink]="['/home/' + userId + '/help-page']">Help</a>
+        <a [routerLink]="['/home', userId, 'settings']"><mat-icon>settings</mat-icon> Settings</a>
       </li>
       <li class="menu-item">
-        <a href="#" (click)="logout()">Log out</a>
+        <a [routerLink]="['/home/' + userId + '/help-page']"><mat-icon>help</mat-icon> Help</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" (click)="logout()"><mat-icon>logout</mat-icon> Log out</a>
       </li>
       <br>
       <br>
       <br>
       <h3>Get the App</h3>
       <li class="menu-item">
-        <a href="#" class="install-pwa-link" (click)="promptPwaInstall($event)">Install TaskVantage</a>
+        <a href="#" class="install-pwa-link" (click)="promptPwaInstall($event)"><mat-icon>download</mat-icon> Install TaskVantage</a>
       </li>
     </ul>
   </div>
@@ -79,18 +79,18 @@
                 </span> 
                 - Due by {{ task.dueDate | date: 'shortTime' }}
                 
-                <button mat-raised-button 
-                  *ngIf="task.status === 'In Progress'" 
-                  (click)="markTaskAsCompleted(task)" 
+                <button mat-raised-button
+                  *ngIf="task.status === 'In Progress'"
+                  (click)="markTaskAsCompleted(task)"
                   style="background-color: #28a745; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
-                  Mark Completed
+                  <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle; margin-right: 4px;">check_circle</mat-icon>Mark Completed
                 </button>
 
-                <button mat-raised-button 
-                  *ngIf="task.status === 'Pending'" 
-                  (click)="startTask(task)" 
+                <button mat-raised-button
+                  *ngIf="task.status === 'Pending'"
+                  (click)="startTask(task)"
                   style="background-color: #ffc107; color: white; font-size: 10px; padding: 4px 8px; margin-left: 8px;">
-                  Start Task
+                  <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle; margin-right: 4px;">play_arrow</mat-icon>Start Task
                 </button>
               </li>
               <li *ngIf="tasksDueToday.length === 0">

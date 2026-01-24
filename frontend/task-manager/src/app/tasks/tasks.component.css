@@ -8,6 +8,14 @@
     border-radius: 4px;
     min-width: 80px;
   }
+
+.task-action-button mat-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
   
   /* Specific styles for different button types */
   .mark-completed-button {

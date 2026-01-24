@@ -9,6 +9,7 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-delete-dialog.component';
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-tasks',
@@ -17,7 +18,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     CommonModule,
     RouterModule,
     FormsModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatIconModule
   ],
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css']
