@@ -20,6 +20,15 @@ export class TaskService {
     private dialog: MatDialog
   ) {}
 
+  isCompletedStatus(status?: string | null): boolean {
+    if (!status) {
+      return false;
+    }
+
+    const normalized = status.toLowerCase();
+    return normalized === 'completed' || normalized === 'complete';
+  }
+
   // Method to fetch tasks for a specific user and handle filtering
   fetchTasks(userId: string, filterCallback: (tasks: Task[]) => void): void {
     this.getTasks(userId).subscribe(

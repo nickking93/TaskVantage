@@ -21,6 +21,8 @@ import java.util.Objects;
 )
 public class Task {
 
+    public static final String STATUS_COMPLETED = "Completed";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -118,6 +120,9 @@ public class Task {
     @Column(name = "last_recommended_on")
     private ZonedDateTime lastRecommendedOn;
 
+    @Transient
+    private String recommendationReason;
+
     // Getters and Setters
     public ZonedDateTime getLastRecommendedOn() {
         return lastRecommendedOn;
@@ -152,6 +157,14 @@ public class Task {
             throw new IllegalArgumentException("Recommendation score must be between 0.0 and 1.0.");
         }
         this.recommendationScore = recommendationScore;
+    }
+
+    public String getRecommendationReason() {
+        return recommendationReason;
+    }
+
+    public void setRecommendationReason(String recommendationReason) {
+        this.recommendationReason = recommendationReason;
     }
 
     public Boolean isAllDay() {
@@ -216,6 +229,10 @@ public class Task {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public static boolean isCompletedStatus(String status) {
+        return STATUS_COMPLETED.equalsIgnoreCase(status);
     }
 
     public ZonedDateTime getDueDate() {

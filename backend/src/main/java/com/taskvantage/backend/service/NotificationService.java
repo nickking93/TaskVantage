@@ -109,7 +109,7 @@ public class NotificationService {
 
     private boolean shouldSendNotification(Task task, ZonedDateTime now) {
         // Skip if notification was already sent or task is completed
-        if (Boolean.TRUE.equals(task.getNotificationSent()) || "Complete".equals(task.getStatus())) {
+        if (Boolean.TRUE.equals(task.getNotificationSent()) || Task.isCompletedStatus(task.getStatus())) {
             logger.debug("Skipping notification for task '{}' - already sent or completed", task.getTitle());
             return false;
         }

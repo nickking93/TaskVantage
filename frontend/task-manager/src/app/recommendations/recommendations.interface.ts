@@ -5,11 +5,12 @@ export interface TaskRecommendation {
     description: string;
     recommendationScore: number;
     recommendedBy: RecommendationType;
+    recommendationReason: string;
     recommended: boolean;
     lastRecommendedOn: string;
 }
 
-export type RecommendationType = 'SAME_DAY' | 'SIMILAR_CONTENT' | 'POPULAR' | 'WEEKDAY_MATCH';
+export type RecommendationType = 'SIMILAR_CONTENT' | 'POPULAR' | 'WEEKDAY_MATCH';
 
 export interface RecommendationResponse {
     status: string;
