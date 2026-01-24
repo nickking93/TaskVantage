@@ -10,6 +10,11 @@ import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-d
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -20,7 +25,12 @@ import { AuthService } from '../services/auth.service';
     RouterModule,
     FormsModule,
     MatPaginatorModule,
-    MatIconModule
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css']
@@ -35,6 +45,7 @@ export class TasksComponent implements OnInit {
   currentPage: number = 1;
   tasksPerPage: number = 10;
   totalPages: number = 0;
+  priorities: string[] = ['High', 'Medium', 'Low'];
 
   constructor(
     private taskService: TaskService,
@@ -65,7 +76,13 @@ export class TasksComponent implements OnInit {
 
   loadTasks(): void {
     this.taskService.fetchTasks(this.userId, (tasks) => {
-      this.tasks = tasks;
+      this.tasks = tasks.map(task => {
+        // Normalize priority to match dropdown options (High, Medium, Low)
+        if (task.priority) {
+          task.priority = task.priority.charAt(0).toUpperCase() + task.priority.slice(1).toLowerCase();
+        }
+        return task;
+      });
       this.filterTasks(this.selectedFilter);
     });
   }
@@ -182,5 +199,31 @@ export class TasksComponent implements OnInit {
 
   markTaskAsCompleted(task: Task): void {
     this.taskService.handleMarkTaskAsCompleted(task, () => this.loadTasks());
+  }
+
+  saveTaskField(task: Task): void {
+    this.taskService.updateTask(task).subscribe(
+      (updatedTask: Task) => {
+        const index = this.tasks.findIndex(t => t.id === task.id);
+        if (index !== -1) {
+          this.tasks[index] = updatedTask;
+          this.filterTasks(this.selectedFilter);
+        }
+      },
+      (error) => {
+        console.error('Failed to update task:', error);
+      }
+    );
+  }
+
+  onDueDateChange(task: Task, event: any): void {
+    if (event.value) {
+      task.dueDate = event.value.toISOString();
+      this.saveTaskField(task);
+    }
+  }
+
+  getDueDateAsDate(task: Task): Date | null {
+    return task.dueDate ? new Date(task.dueDate) : null;
   }
 }

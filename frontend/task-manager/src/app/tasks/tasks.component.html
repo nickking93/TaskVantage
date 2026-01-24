@@ -41,53 +41,82 @@
   </div>
 
   <!-- Display the list of tasks -->
-  <div *ngIf="paginatedTasks.length > 0; else noTasks">
+  <div *ngIf="paginatedTasks.length > 0; else noTasks" class="task-list-container">
     <ul class="task-list">
-      <li *ngFor="let task of paginatedTasks">
-        <h3>{{ task.title }}</h3>
-        <p>{{ task.description }}</p>
-        <p><strong>Due Date:</strong> {{ task.dueDate | date: 'short' }}</p>
-        <p><strong>Priority:</strong> {{ task.priority }}</p>
-        <p><strong>Status:</strong> {{ task.status }}</p>
+      <li *ngFor="let task of paginatedTasks" class="task-item">
+        <!-- Editable Title -->
+        <mat-form-field class="task-field title-field" appearance="outline">
+          <mat-label>Title</mat-label>
+          <input matInput [(ngModel)]="task.title" (blur)="saveTaskField(task)" placeholder="Task title">
+        </mat-form-field>
+
+        <!-- Editable Description -->
+        <mat-form-field class="task-field description-field" appearance="outline">
+          <mat-label>Description</mat-label>
+          <textarea matInput [(ngModel)]="task.description" (blur)="saveTaskField(task)" placeholder="Task description" rows="2"></textarea>
+        </mat-form-field>
+
+        <!-- Editable Fields Row -->
+        <div class="task-fields-row">
+          <!-- Editable Due Date -->
+          <mat-form-field class="task-field date-field" appearance="outline">
+            <mat-label>Due Date</mat-label>
+            <input matInput [matDatepicker]="picker" [value]="getDueDateAsDate(task)" (dateChange)="onDueDateChange(task, $event)">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Priority Dropdown -->
+          <mat-form-field class="task-field priority-field" appearance="outline">
+            <mat-label>Priority</mat-label>
+            <mat-select [(ngModel)]="task.priority" (selectionChange)="saveTaskField(task)">
+              <mat-option *ngFor="let p of priorities" [value]="p">{{ p }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Status (read-only) -->
+          <div class="status-display">
+            <strong>Status:</strong> {{ task.status }}
+          </div>
+        </div>
 
         <!-- Conditionally display the start date if the task is in progress -->
-        <p *ngIf="task.status === 'In Progress'"><strong>Start Date:</strong> {{ task.startDate | date: 'short' }}</p>
-  
-        <!-- Hide all buttons if the 'complete' filter is selected -->
-        <ng-container *ngIf="selectedFilter !== 'complete'">
-          <!-- "Mark Completed" button for tasks in progress -->
-          <button
-            mat-raised-button
-            class="task-action-button mark-completed-button"
-            *ngIf="task.status === 'In Progress'"
-            (click)="markTaskAsCompleted(task)">
-            <mat-icon>check_circle</mat-icon> Mark Completed
-          </button>
-          <!-- "Start Task" button -->
-          <button
-            mat-raised-button
-            class="task-action-button start-task-button"
-            *ngIf="task.status !== 'In Progress' && task.id"
-            (click)="startTask(task)">
-            <mat-icon>play_arrow</mat-icon> Start Task
-          </button>
-          <!-- Edit and Delete buttons -->
-          <button
-            mat-raised-button
-            class="task-action-button edit-button"
-            (click)="updateTask(task)">
-            <mat-icon>edit</mat-icon> Edit
-          </button>
-          <button
-            mat-raised-button
-            class="task-action-button delete-button"
-            (click)="deleteTask(task)">
-            <mat-icon>delete</mat-icon> Delete
-          </button>
-        </ng-container>
-  
-        <!-- Add horizontal line -->
-        <hr>
+        <p *ngIf="task.status === 'In Progress'" class="start-date"><strong>Start Date:</strong> {{ task.startDate | date: 'short' }}</p>
+
+        <!-- Action Buttons -->
+        <div class="task-actions">
+          <ng-container *ngIf="selectedFilter !== 'complete'">
+            <!-- "Mark Completed" button for tasks in progress -->
+            <button
+              mat-raised-button
+              class="task-action-button mark-completed-button"
+              *ngIf="task.status === 'In Progress'"
+              (click)="markTaskAsCompleted(task)">
+              <mat-icon>check_circle</mat-icon> Mark Completed
+            </button>
+            <!-- "Start Task" button -->
+            <button
+              mat-raised-button
+              class="task-action-button start-task-button"
+              *ngIf="task.status !== 'In Progress' && task.id"
+              (click)="startTask(task)">
+              <mat-icon>play_arrow</mat-icon> Start Task
+            </button>
+            <!-- Edit and Delete buttons -->
+            <button
+              mat-raised-button
+              class="task-action-button edit-button"
+              (click)="updateTask(task)">
+              <mat-icon>edit</mat-icon> Edit
+            </button>
+            <button
+              mat-raised-button
+              class="task-action-button delete-button"
+              (click)="deleteTask(task)">
+              <mat-icon>delete</mat-icon> Delete
+            </button>
+          </ng-container>
+        </div>
       </li>
     </ul>
 
