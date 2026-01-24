@@ -59,7 +59,7 @@ public class DataLoader {
                         task.setTitle(record.get("title"));
                         task.setDescription(record.get("description"));
                         task.setPriority(TaskPriority.valueOf(record.get("priority")));
-                        task.setStatus(record.get("status"));
+                        task.setStatus(normalizeStatus(record.get("status")));
 
                         // Parse LocalDateTime and convert to ZonedDateTime in UTC
                         task.setDueDate(LocalDateTime.parse(record.get("due_date"), formatter).atZone(ZoneOffset.UTC));
@@ -90,5 +90,18 @@ public class DataLoader {
                 System.out.println("Tasks already exist.");
             }
         };
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null) {
+            return null;
+        }
+
+        // Normalize any completed status variations to the standard value
+        if ("Complete".equalsIgnoreCase(status) || "Completed".equalsIgnoreCase(status)) {
+            return Task.STATUS_COMPLETED;
+        }
+
+        return status;
     }
 }

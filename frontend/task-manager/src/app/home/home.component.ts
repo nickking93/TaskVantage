@@ -203,7 +203,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
   
       this.tasksDueToday = tasks.filter(task => {
-        if (!task.dueDate || task.status === 'Complete') return false;
+        if (!task.dueDate || this.taskService.isCompletedStatus(task.status)) return false;
   
         const dueDate = new Date(task.dueDate);
         return dueDate >= startOfToday && dueDate <= endOfToday;
@@ -224,7 +224,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   fetchRecentCompletedTasks(): void {
     this.taskService.fetchTasks(this.userId, (tasks) => {
       const completedTasks = tasks
-        .filter(task => task.status === 'Complete')
+        .filter(task => this.taskService.isCompletedStatus(task.status))
         .sort((a, b) => new Date(b.lastModifiedDate!).getTime() - new Date(a.lastModifiedDate!).getTime())
         .slice(0, 10);
 
@@ -269,7 +269,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const endOfWeek = this.endOfWeek();
 
       const completed = tasks.filter(
-        (task) => task.status === 'Complete' && task.dueDate
+        (task) => this.taskService.isCompletedStatus(task.status) && task.dueDate
           && new Date(task.dueDate).getTime() >= startOfWeek
           && new Date(task.dueDate).getTime() <= endOfWeek
       );
@@ -295,7 +295,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.taskStatusChart = new Chart('taskStatusChart', {
         type: 'bar',
         data: {
-          labels: ['Complete', 'In Progress', 'Pending'],
+          labels: ['Completed', 'In Progress', 'Pending'],
           datasets: [
             {
               data: [completed.length, inProgress.length, pending.length],

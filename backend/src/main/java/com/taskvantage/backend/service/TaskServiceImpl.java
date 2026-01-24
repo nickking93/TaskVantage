@@ -156,7 +156,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskSummary> getNonCompletedTasksByUserId(Long userId) {
         return taskRepository.findTaskSummariesByUserId(userId).stream()
-                .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
+                .filter(task -> !Task.isCompletedStatus(task.getStatus()))
                 .toList();
     }
 
@@ -169,12 +169,12 @@ public class TaskServiceImpl implements TaskService {
         long pastDeadlineTasks = tasks.stream()
                 .filter(task -> task.getDueDate() != null &&
                         task.getDueDate().isBefore(ZonedDateTime.now(ZoneOffset.UTC)) &&
-                        !"Completed".equalsIgnoreCase(task.getStatus()))
+                        !Task.isCompletedStatus(task.getStatus()))
                 .count();
 
         YearMonth currentMonth = YearMonth.now(ZoneOffset.UTC);
         long completedTasksThisMonth = tasks.stream()
-                .filter(task -> "Completed".equalsIgnoreCase(task.getStatus()) &&
+                .filter(task -> Task.isCompletedStatus(task.getStatus()) &&
                         task.getDueDate() != null &&
                         YearMonth.from(task.getDueDate()).equals(currentMonth))
                 .count();
@@ -235,7 +235,7 @@ public class TaskServiceImpl implements TaskService {
         Optional<Task> taskOptional = taskRepository.findById(taskId);
         if (taskOptional.isPresent()) {
             Task task = taskOptional.get();
-            task.setStatus("Complete");
+            task.setStatus(Task.STATUS_COMPLETED);
             task.setCompletionDateTime(ZonedDateTime.now(ZoneOffset.UTC));
             task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
 

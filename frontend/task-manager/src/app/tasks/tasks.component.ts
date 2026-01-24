@@ -112,7 +112,7 @@ export class TasksComponent implements OnInit {
       case 'today':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          if (!dueDate || isNaN(dueDate.getTime()) || task.status === 'Complete') return false;
+          if (!dueDate || isNaN(dueDate.getTime()) || this.taskService.isCompletedStatus(task.status)) return false;
           
           return dueDate >= startOfToday && dueDate <= endOfToday;
         });
@@ -120,7 +120,7 @@ export class TasksComponent implements OnInit {
       case 'overdue':
         this.filteredTasks = this.tasks.filter(task => {
           const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-          return dueDate && !isNaN(dueDate.getTime()) && dueDate < startOfToday && task.status !== 'Complete';
+          return dueDate && !isNaN(dueDate.getTime()) && dueDate < startOfToday && !this.taskService.isCompletedStatus(task.status);
         });
         break;
       case 'inProgress':
@@ -130,10 +130,10 @@ export class TasksComponent implements OnInit {
         this.filteredTasks = this.tasks.filter(task => task.status === 'Pending');
         break;
       case 'complete':
-        this.filteredTasks = this.tasks.filter(task => task.status === 'Complete');
+        this.filteredTasks = this.tasks.filter(task => this.taskService.isCompletedStatus(task.status));
         break;
       default:
-        this.filteredTasks = this.tasks.filter(task => task.status !== 'Complete');
+        this.filteredTasks = this.tasks.filter(task => !this.taskService.isCompletedStatus(task.status));
     }
   
     this.currentPage = 1;
