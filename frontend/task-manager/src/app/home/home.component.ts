@@ -95,45 +95,34 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     console.log('HomeComponent ngOnInit started');
-    
-    this.route.params.subscribe(async params => {
-      this.userId = params['userId'];
 
-      if (typeof this.userId !== 'string' || !this.userId) {
+    try {
+      const userResponse = await this.authService.getUserDetails().toPromise() as User | null;
+
+      if (!userResponse || !this.isValidUser(userResponse)) {
+        console.error('Invalid user data received');
         await this.logout();
         return;
       }
 
+      this.userId = String(userResponse.id);
+      this.username = userResponse.username;
+
+      // Store userId for services that need it (e.g., GoogleAuthService)
       localStorage.setItem('google_auth_user_id', this.userId);
 
+      // Ensure Firebase messaging is initialized
       try {
-        const userResponse = await this.authService.getUserDetails().toPromise() as User | null;
-        
-        if (!userResponse || !this.isValidUser(userResponse)) {
-          console.error('Invalid user data received');
-          await this.logout();
-          return;
-        }
-
-        if (String(userResponse.id) === this.userId) {
-          this.username = userResponse.username;
-          
-          // Ensure Firebase messaging is initialized
-          try {
-            await this.firebaseMessagingService.initialize();
-          } catch (error) {
-            console.error('Error initializing Firebase messaging:', error);
-          }
-          
-          this.reloadData();
-        } else {
-          await this.logout();
-        }
-      } catch (err) {
-        console.error('Error getting user details:', err);
-        await this.router.navigate(['/login']);
+        await this.firebaseMessagingService.initialize();
+      } catch (error) {
+        console.error('Error initializing Firebase messaging:', error);
       }
-    });
+
+      this.reloadData();
+    } catch (err) {
+      console.error('Error getting user details:', err);
+      await this.router.navigate(['/login']);
+    }
 
     this.setupRouteListener();
   }
@@ -148,7 +137,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.routeSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        if (event.urlAfterRedirects === `/home/${this.userId}`) {
+        if (event.urlAfterRedirects === '/home') {
           this.reloadData();
           this.resetPwaPrompt();
         }
@@ -364,7 +353,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   isActive(route: string): boolean {
-    return this.router.url === route;
+    // Exact match for /home, startsWith for child routes
+    if (route === '/home') {
+      return this.router.url === '/home';
+    }
+    return this.router.url === route || this.router.url.startsWith(route + '/');
   }
 
   get currentUrl(): string {

@@ -8,20 +8,20 @@
       <h1>TaskVantage</h1>
     </div>
     <ul class="menu">
-      <li class="menu-item" [class.active]="isActive('/home/' + userId)">
-        <a [routerLink]="['/home', userId]" (click)="reloadData()"><mat-icon>home</mat-icon> Home</a>
+      <li class="menu-item" [class.active]="isActive('/home')">
+        <a routerLink="/home" (click)="reloadData()"><mat-icon>home</mat-icon> Home</a>
       </li>
-      <li class="menu-item" [class.active]="isActive('/home/' + userId + '/add-task')">
-        <a [routerLink]="['/home', userId, 'add-task']"><mat-icon>add_circle</mat-icon> Add Task</a>
+      <li class="menu-item" [class.active]="isActive('/home/add-task')">
+        <a routerLink="/home/add-task"><mat-icon>add_circle</mat-icon> Add Task</a>
       </li>
-      <li class="menu-item" [class.active]="isActive('/home/' + userId + '/tasks')">
-        <a [routerLink]="['/home', userId, 'tasks']"><mat-icon>list</mat-icon> Tasks</a>
+      <li class="menu-item" [class.active]="isActive('/home/tasks')">
+        <a routerLink="/home/tasks"><mat-icon>list</mat-icon> Tasks</a>
       </li>
-      <li class="menu-item" [class.active]="isActive('/home/' + userId + '/settings')">
-        <a [routerLink]="['/home', userId, 'settings']"><mat-icon>settings</mat-icon> Settings</a>
+      <li class="menu-item" [class.active]="isActive('/home/settings')">
+        <a routerLink="/home/settings"><mat-icon>settings</mat-icon> Settings</a>
       </li>
       <li class="menu-item">
-        <a [routerLink]="['/home/' + userId + '/help-page']"><mat-icon>help</mat-icon> Help</a>
+        <a routerLink="/home/help-page"><mat-icon>help</mat-icon> Help</a>
       </li>
       <li class="menu-item">
         <a href="#" (click)="logout()"><mat-icon>logout</mat-icon> Log out</a>
@@ -38,7 +38,7 @@
   
   <!-- Main Content Area -->
   <div class="content-area" [class.expanded]="isSidebarCollapsed">
-    <ng-container *ngIf="router.url === '/home/' + userId; else contentOutlet">
+    <ng-container *ngIf="router.url === '/home'; else contentOutlet">
       <!-- Info Section -->
       <div class="info-section">
         <div class="info-item">
@@ -139,7 +139,7 @@
 
     <!-- Router outlet for child components -->
     <ng-template #contentOutlet>
-      <ng-container *ngIf="router.url === '/home/' + userId + '/tasks'; else defaultOutlet">
+      <ng-container *ngIf="router.url === '/home/tasks'; else defaultOutlet">
         <app-tasks [userId]="userId"></app-tasks>
       </ng-container>
       <ng-template #defaultOutlet>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { GoogleAuthService } from '../services/google-auth.service';
 import { UserService } from '../services/user.service';
+import { AuthService } from '../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -38,10 +39,12 @@ export class SettingsComponent implements OnInit {
   isGoogleConnected: boolean = false;
   isTaskSyncEnabled: boolean = false;
   isLoading: boolean = true;
+  private userId: string = '';
 
   constructor(
     private googleAuthService: GoogleAuthService,
     private userService: UserService,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
@@ -49,9 +52,19 @@ export class SettingsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Load settings immediately
-    this.loadAllSettings();
-    
+    // Get userId from AuthService, then load settings
+    this.authService.getUserDetails().subscribe({
+      next: (user) => {
+        this.userId = String(user.id);
+        this.loadAllSettings();
+      },
+      error: (err) => {
+        console.error('Error getting user details:', err);
+        this.isLoading = false;
+        this.router.navigate(['/login']);
+      }
+    });
+
     // Handle OAuth redirect responses
     this.route.queryParams.subscribe(params => {
       if (params['status'] === 'success') {
@@ -81,47 +94,36 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-private loadAllSettings(): void {
-  const userId = this.route.snapshot.params['userId'] || localStorage.getItem('google_auth_user_id');
-  
-  if (userId) {
-    import('rxjs').then(({ forkJoin }) => {
-      forkJoin({
-        connection: this.googleAuthService.checkGoogleCalendarConnection(userId),
-        settings: this.userService.getUserSettings()
-      }).subscribe({
-        next: (results) => {
-          this.isGoogleConnected = results.connection.connected;
-          // Change this line to match backend response
-          this.isTaskSyncEnabled = results.settings.enabled;  // <-- Changed from taskSyncEnabled to enabled
-          this.isLoading = false;
-        },
-        error: (error) => {
-          if (error.status !== 401) {
-            this.snackBar.open('Failed to load settings', 'Close', {
-              duration: 3000
-            });
+  private loadAllSettings(): void {
+    if (this.userId) {
+      import('rxjs').then(({ forkJoin }) => {
+        forkJoin({
+          connection: this.googleAuthService.checkGoogleCalendarConnection(this.userId),
+          settings: this.userService.getUserSettings()
+        }).subscribe({
+          next: (results) => {
+            this.isGoogleConnected = results.connection.connected;
+            this.isTaskSyncEnabled = results.settings.enabled;
+            this.isLoading = false;
+          },
+          error: (error) => {
+            if (error.status !== 401) {
+              this.snackBar.open('Failed to load settings', 'Close', {
+                duration: 3000
+              });
+            }
+            this.isLoading = false;
           }
-          this.isLoading = false;
-        }
+        });
       });
-    });
-  } else {
-    this.isLoading = false;
+    } else {
+      this.isLoading = false;
+    }
   }
-}
 
   connectGoogleCalendar(): void {
-    let userId = this.route.snapshot.params['userId'];
-  
-    if (!userId) {
-      userId = localStorage.getItem('google_auth_user_id');
-    }
-  
-    console.log('User ID:', userId);
-  
-    if (userId) {
-      this.googleAuthService.connectGoogleCalendar(userId);
+    if (this.userId) {
+      this.googleAuthService.connectGoogleCalendar(this.userId);
     } else {
       console.error('User ID is not available');
       this.snackBar.open('User ID is not available', 'Close', {

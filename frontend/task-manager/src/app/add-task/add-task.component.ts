@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -61,16 +62,22 @@ export class AddTaskComponent implements OnInit {
   );
 
   constructor(
-    private route: ActivatedRoute, 
-    private router: Router, 
+    private router: Router,
     private taskService: TaskService,
-    private dialog: MatDialog  
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.route.parent?.paramMap.subscribe(params => {
-      this.userId = params.get('userId') || '';
-      this.newTask.userId = this.userId;
+    this.authService.getUserDetails().subscribe({
+      next: (user) => {
+        this.userId = String(user.id);
+        this.newTask.userId = this.userId;
+      },
+      error: (err) => {
+        console.error('Error getting user details:', err);
+        this.router.navigate(['/login']);
+      }
     });
   }
 
@@ -169,24 +176,24 @@ export class AddTaskComponent implements OnInit {
     this.taskService.createTask(this.newTask).subscribe({
       next: (response) => {
         console.log('Task created successfully:', response);
-        this.dialog.open(SuccessDialogComponent, { 
-          width: '300px', 
+        this.dialog.open(SuccessDialogComponent, {
+          width: '300px',
           data: { title: 'Success', message: 'Task added successfully!' }
         });
-        this.router.navigate(['/home', this.userId]);
+        this.router.navigate(['/home']);
       },
       error: (error) => {
         console.error('Error adding task:', error);
       }
     });
   }
-  
+
   openSuccessDialog(): void {
     this.dialog.open(SuccessDialogComponent, {
       width: '300px',
       data: { title: 'Success', message: 'Task created successfully!' }
     }).afterClosed().subscribe(() => {
-      this.router.navigate([`/home/${this.userId}`]);
+      this.router.navigate(['/home']);
     });
   }
 }

@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TaskRecommendation, RecommendationResponse } from './recommendations.interface';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-recommendations',
@@ -19,24 +20,38 @@ import { environment } from '../../environments/environment';
   ]
 })
 export class RecommendationsComponent implements OnInit {
-  @Input() userId!: string; 
+  @Input() userId!: string;
   recommendations: TaskRecommendation[] = [];
   loading = true;
   error: string | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    if (this.userId) {
-      this.fetchRecommendations();
+    // If userId not provided via Input, get it from AuthService
+    if (!this.userId) {
+      this.authService.getUserDetails().subscribe({
+        next: (user) => {
+          this.userId = String(user.id);
+          this.fetchRecommendations();
+        },
+        error: (err) => {
+          console.error('Error getting user details:', err);
+          this.error = 'User ID is missing';
+          this.loading = false;
+        }
+      });
     } else {
-      this.error = 'User ID is missing';
-      this.loading = false;
+      this.fetchRecommendations();
     }
   }
 
   scheduleTask(taskRecommendation: TaskRecommendation): void {
-    this.router.navigate(['/home', this.userId, 'update-task', taskRecommendation.id.toString()]);
+    this.router.navigate(['/home/update-task', taskRecommendation.id.toString()]);
   }
 
   fetchRecommendations(): void {

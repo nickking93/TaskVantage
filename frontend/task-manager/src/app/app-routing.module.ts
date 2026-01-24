@@ -13,18 +13,13 @@ const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ForgotPasswordComponent },
   {
-    path: 'home/:userId',
+    path: 'home',
     loadChildren: () => import('./home/home.module').then(m => m.HomeModule),
     canActivate: [AuthGuard],
   },
   { path: 'privacy-policy', loadChildren: () => import('./privacy-policy/privacy-policy.module').then(m => m.PrivacyPolicyModule) },
   { path: 'verify-email', component: VerifyEmailComponent },
-  {
-    path: 'home/:userId/settings',  
-    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
-    canActivate: [AuthGuard]
-  },
-  { path: '**', redirectTo: '/login' }  
+  { path: '**', redirectTo: '/login' }
 ];
 
 @NgModule({

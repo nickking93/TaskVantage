@@ -38,19 +38,13 @@ export class AuthCallbackComponent implements OnInit {
   handleAuthCode(authCode: string, provider: string): void {
     this.authService.verifySocialLogin(authCode, provider).subscribe({
       next: (response) => {
-        // Assuming response contains user information and authentication token
+        // Store user details - userId is retrieved from AuthService when needed
         this.authService.setUserDetails(response);
-        const userId = response.userId;  // Assuming the response contains a userId
-        if (userId) {
-          this.router.navigate(['/home', userId]);  // Navigate to personalized home page
-        } else {
-          console.error('User ID not found in the response.');
-          this.router.navigate(['/home']);  // Navigate to generic home on success
-        }
+        this.router.navigate(['/home']);
       },
       error: (error) => {
         console.error('Authentication failed:', error);
-        this.router.navigate(['/login']);  // Redirect to login on failure
+        this.router.navigate(['/login']);
       }
     });
   }

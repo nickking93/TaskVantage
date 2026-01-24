@@ -1,5 +1,6 @@
 package com.taskvantage.backend.controller;
 
+import com.taskvantage.backend.Security.AuthorizationUtil;
 import com.taskvantage.backend.Security.JwtUtil;
 import com.taskvantage.backend.dto.RecommendationResponse;
 import com.taskvantage.backend.service.RecommendationService;
@@ -10,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recommendations")
@@ -19,17 +20,26 @@ public class RecommendationController {
 
     private final RecommendationService recommendationService;
     private final JwtUtil jwtUtil;
+    private final AuthorizationUtil authorizationUtil;
 
     @Autowired
-    public RecommendationController(RecommendationService recommendationService, JwtUtil jwtUtil) {
+    public RecommendationController(RecommendationService recommendationService, JwtUtil jwtUtil, AuthorizationUtil authorizationUtil) {
         this.recommendationService = recommendationService;
         this.jwtUtil = jwtUtil;
+        this.authorizationUtil = authorizationUtil;
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<RecommendationResponse> getRecommendationsForUser(
+    public ResponseEntity<?> getRecommendationsForUser(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "3") int limit) {
+        // Validate that the authenticated user matches the requested userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
         try {
             RecommendationResponse response = recommendationService.getRecommendedTasks(userId, null, limit);
             return ResponseEntity.ok(response);
@@ -43,10 +53,17 @@ public class RecommendationController {
     }
 
     @GetMapping("/user/{userId}/task/{taskId}")
-    public ResponseEntity<RecommendationResponse> getRecommendationsForTask(
+    public ResponseEntity<?> getRecommendationsForTask(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long userId,
             @PathVariable Long taskId,
             @RequestParam(defaultValue = "3") int limit) {
+        // Validate that the authenticated user matches the requested userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
         try {
             RecommendationResponse response = recommendationService.getRecommendedTasks(userId, taskId, limit);
             return ResponseEntity.ok(response);
@@ -60,9 +77,16 @@ public class RecommendationController {
     }
 
     @GetMapping("/user/{userId}/weekday")
-    public ResponseEntity<RecommendationResponse> getWeekdayRecommendations(
+    public ResponseEntity<?> getWeekdayRecommendations(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "3") int limit) {
+        // Validate that the authenticated user matches the requested userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
         try {
             RecommendationResponse response = recommendationService.getRecommendedTasksByWeekday(userId, limit);
             return ResponseEntity.ok(response);

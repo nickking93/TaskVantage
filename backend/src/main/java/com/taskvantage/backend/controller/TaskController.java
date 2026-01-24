@@ -3,6 +3,7 @@ import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.service.TaskService;
 import com.taskvantage.backend.service.CustomUserDetailsService;
+import com.taskvantage.backend.Security.AuthorizationUtil;
 import com.taskvantage.backend.Security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +31,27 @@ public class TaskController {
     private final TaskService taskService;
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService customUserDetailsService;
+    private final AuthorizationUtil authorizationUtil;
 
     @Autowired
-    public TaskController(TaskService taskService, JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService) {
+    public TaskController(TaskService taskService, JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService, AuthorizationUtil authorizationUtil) {
         this.taskService = taskService;
         this.jwtUtil = jwtUtil;
         this.customUserDetailsService = customUserDetailsService;
+        this.authorizationUtil = authorizationUtil;
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createTask(@RequestBody Task task) {
+    public ResponseEntity<Map<String, Object>> createTask(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody Task task) {
         Map<String, Object> response = new HashMap<>();
+
+        // Validate that the authenticated user matches the task's userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, task.getUserId());
+        if (authError != null) {
+            return authError;
+        }
 
         if (task.getTitle() == null || task.getTitle().isEmpty()) {
             response.put("message", "Title is required");
@@ -74,7 +85,9 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTaskById(@PathVariable Long id) {
+    public ResponseEntity<?> getTaskById(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
         // Logging the received ID for debugging
@@ -86,12 +99,18 @@ public class TaskController {
         // Check if the task exists
         if (taskOptional.isEmpty()) {
             response.put("message", "Task not found with ID: " + id);
-            System.out.println("Task not found with ID: " + id);  // Log if task is not found
-            return ResponseEntity.status(404).body(response);  // Return 404 if task is not found
+            System.out.println("Task not found with ID: " + id);
+            return ResponseEntity.status(404).body(response);
         }
 
-        // Log the task details for debugging
         Task task = taskOptional.get();
+
+        // Validate that the authenticated user owns this task
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateResourceOwnership(authorizationHeader, task.getUserId());
+        if (authError != null) {
+            return authError;
+        }
+
         System.out.println("Fetched Task: " + task);
 
         // Add task to the response
@@ -100,13 +119,29 @@ public class TaskController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TaskSummary>> getTasksByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getTasksByUserId(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long userId) {
+        // Validate that the authenticated user matches the requested userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
         List<TaskSummary> tasks = taskService.getTasksByUserId(userId);
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/summary/{userId}")
-    public ResponseEntity<Map<String, Object>> getTaskSummary(@PathVariable Long userId) {
+    public ResponseEntity<?> getTaskSummary(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long userId) {
+        // Validate that the authenticated user matches the requested userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
         TaskSummary taskSummary = taskService.getTaskSummary(userId);
 
         Map<String, Object> summary = new HashMap<>();
@@ -120,7 +155,10 @@ public class TaskController {
     }
 
     @PutMapping("/{id}/start")
-    public ResponseEntity<Map<String, Object>> startTask(@PathVariable Long id, @RequestBody Task updatedTask) {
+    public ResponseEntity<Map<String, Object>> startTask(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody Task updatedTask) {
         Map<String, Object> response = new HashMap<>();
 
         // Retrieve the existing task
@@ -131,6 +169,12 @@ public class TaskController {
         }
 
         Task task = taskOptional.get();
+
+        // Validate that the authenticated user owns this task
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateResourceOwnership(authorizationHeader, task.getUserId());
+        if (authError != null) {
+            return authError;
+        }
 
         // Update the task with the new start date and status
         task.setStartDate(updatedTask.getStartDate() != null ? updatedTask.getStartDate().withZoneSameInstant(ZoneOffset.UTC) : ZonedDateTime.now(ZoneOffset.UTC));
@@ -145,7 +189,9 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<Map<String, Object>> markTaskAsCompleted(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> markTaskAsCompleted(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
         Optional<Task> taskOptional = taskService.getTaskById(id);
@@ -154,18 +200,48 @@ public class TaskController {
             return ResponseEntity.notFound().build();
         }
 
+        Task task = taskOptional.get();
+
+        // Validate that the authenticated user owns this task
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateResourceOwnership(authorizationHeader, task.getUserId());
+        if (authError != null) {
+            return authError;
+        }
+
         taskService.markTaskAsCompleted(id);
         response.put("message", "Task marked as completed");
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateTask(@PathVariable Long id, @RequestBody Task task) {
+    public ResponseEntity<Map<String, Object>> updateTask(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody Task task) {
         Map<String, Object> response = new HashMap<>();
 
         if (task.getId() == null || !task.getId().equals(id)) {
             response.put("message", "Task ID mismatch");
             return ResponseEntity.badRequest().body(response);
+        }
+
+        // First fetch the existing task to verify ownership
+        Optional<Task> existingTask = taskService.getTaskById(id);
+        if (existingTask.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        // Validate that the authenticated user owns this task
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateResourceOwnership(authorizationHeader, existingTask.get().getUserId());
+        if (authError != null) {
+            return authError;
+        }
+
+        // Also ensure the task's userId isn't being changed to another user
+        if (!existingTask.get().getUserId().equals(task.getUserId())) {
+            response.put("message", "Cannot change task ownership");
+            return ResponseEntity.status(403).body(response);
         }
 
         Task updatedTask = taskService.updateTask(task);
@@ -179,13 +255,21 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteTask(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteTask(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
         Optional<Task> taskOptional = taskService.getTaskById(id);
         if (taskOptional.isEmpty()) {
             response.put("message", "Task not found");
             return ResponseEntity.notFound().build();
+        }
+
+        // Validate that the authenticated user owns this task
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateResourceOwnership(authorizationHeader, taskOptional.get().getUserId());
+        if (authError != null) {
+            return authError;
         }
 
         taskService.deleteTask(id);

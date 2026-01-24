@@ -1,15 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';  // Import Router
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TaskService } from '../services/task.service'; 
-import { Task } from '../models/task.model'; 
+import { TaskService } from '../services/task.service';
+import { Task } from '../models/task.model';
 import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 import { ConfirmDeleteDialogComponent } from '../confirm-delete-dialog/confirm-delete-dialog.component';
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-tasks',
@@ -32,14 +33,34 @@ export class TasksComponent implements OnInit {
   paginatedTasks: Task[] = [];
   selectedFilter: string = 'today';
   currentPage: number = 1;
-  tasksPerPage: number = 10; 
+  tasksPerPage: number = 10;
   totalPages: number = 0;
 
-  constructor(private taskService: TaskService, private dialog: MatDialog, private router: Router) {}  // Inject Router
+  constructor(
+    private taskService: TaskService,
+    private dialog: MatDialog,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    console.log('TasksComponent initialized with userId:', this.userId);
-    this.loadTasks();  
+    // If userId not provided via Input, get it from AuthService
+    if (!this.userId) {
+      this.authService.getUserDetails().subscribe({
+        next: (user) => {
+          this.userId = String(user.id);
+          console.log('TasksComponent initialized with userId:', this.userId);
+          this.loadTasks();
+        },
+        error: (err) => {
+          console.error('Error getting user details:', err);
+          this.router.navigate(['/login']);
+        }
+      });
+    } else {
+      console.log('TasksComponent initialized with userId:', this.userId);
+      this.loadTasks();
+    }
   }
 
   loadTasks(): void {
@@ -56,7 +77,7 @@ export class TasksComponent implements OnInit {
   // Now renamed to updateTask (previously editTask)
   updateTask(task: Task): void {
     // Navigate to the update-task route with the task ID
-    this.router.navigate(['/home', this.userId, 'update-task', task.id]);
+    this.router.navigate(['/home/update-task', task.id]);
   }
 
   // Now renamed to editTask (previously updateTask)

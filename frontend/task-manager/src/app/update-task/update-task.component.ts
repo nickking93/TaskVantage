@@ -320,7 +320,7 @@ export class UpdateTaskComponent implements OnInit {
       width: '300px',
       data: { title: 'Success', message: 'Task updated successfully!' }
     }).afterClosed().subscribe(() => {
-      this.router.navigate(['/home', this.taskData.task.userId, 'tasks']);
+      this.router.navigate(['/home/tasks']);
     });
   }
 }

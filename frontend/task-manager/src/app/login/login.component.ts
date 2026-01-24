@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit {
       if (this.isReturningPwaUser) {
         const userDetails = await this.authService.getUserDetails().toPromise();
         if (userDetails) {
-          this.router.navigate([`/home/${userDetails.id}`]);
+          this.router.navigate(['/home']);
           return;
         }
       }
@@ -187,13 +187,9 @@ export class LoginComponent implements OnInit {
         }
   
         loadingDialogRef.close();
-        
-        // Check if response.id exists before using it
-        if (response.id) {
-          this.router.navigate([`/home/${response.id}`]);
-        } else {
-          throw new Error('User ID not found in response');
-        }
+
+        // Navigate to home - userId is retrieved from AuthService
+        this.router.navigate(['/home']);
       } catch (error: any) {
         loadingDialogRef.close();
         console.error('Login failed', error);
