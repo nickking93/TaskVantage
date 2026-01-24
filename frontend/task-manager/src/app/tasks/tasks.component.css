@@ -1,58 +1,189 @@
-/* General styling for all task action buttons */
-.task-action-button {
-    background-color: #2365B2;
-    color: white;
-    font-size: 12px;
-    padding: 4px 8px;
-    margin-left: 8px;
-    border-radius: 4px;
-    min-width: 80px;
+/* Main container - centered on desktop */
+.tasks-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .tasks-container {
+    padding: 10px;
+    width: calc(100% - 40px);
+    margin: 0 auto;
   }
 
-.task-action-button mat-icon {
-    font-size: 16px;
-    height: 16px;
-    width: 16px;
-    vertical-align: middle;
-    margin-right: 4px;
+  .task-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  
-  /* Specific styles for different button types */
-  .mark-completed-button {
-    background-color: #28a745; /* Green */
-  }
-  
-  .start-task-button {
-    background-color: #ffc107; /* Yellow */
-  }
-  
-  .edit-button {
-    background-color: #007bff; /* Blue */
-  }
-  
-  .delete-button {
-    background-color: #dc3545; /* Red */
-  }
-  
-  /* Task filter button styles */
+
   .task-filter-button {
-    background-color: #2365B2;
-    color: white;
-    font-size: 14px;
-    padding: 6px 12px;
-    margin: 0 5px;
-    border-radius: 4px;
-    min-width: 100px;
+    min-width: auto;
+    flex: 1 1 auto;
+    margin: 0;
   }
-  
-  /* Hover effect for all buttons */
-  .task-action-button:hover,
-  .task-filter-button:hover {
-    opacity: 0.9;
-  }
-  
-  /* Active filter button style */
-  .task-filter-button.active {
-    background-color: #11A3F8; /* Slightly brighter blue for active state */
-  }
-  
+}
+
+/* Task list styling */
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0 0;
+}
+
+.task-item {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.task-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.task-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Task field styling */
+.task-field {
+  width: 100%;
+}
+
+.title-field input {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.description-field textarea {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Row for date, priority, and status */
+.task-fields-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.date-field {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.priority-field {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.status-display {
+  font-size: 14px;
+  color: #666;
+  padding: 8px 0;
+}
+
+.start-date {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0;
+}
+
+/* Action buttons container */
+.task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* General styling for all task action buttons */
+.task-action-button {
+  background-color: #2365B2;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 80px;
+}
+
+.task-action-button mat-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Specific styles for different button types */
+.mark-completed-button {
+  background-color: #28a745; /* Green */
+}
+
+.start-task-button {
+  background-color: #ffc107; /* Yellow */
+}
+
+.edit-button {
+  background-color: #007bff; /* Blue */
+}
+
+.delete-button {
+  background-color: #dc3545; /* Red */
+}
+
+/* Task filter button styles */
+.task-filter-button {
+  background-color: #2365B2;
+  color: white;
+  font-size: 14px;
+  padding: 6px 12px;
+  margin: 0 5px;
+  border-radius: 4px;
+  min-width: 100px;
+}
+
+/* Hover effect for all buttons */
+.task-action-button:hover,
+.task-filter-button:hover {
+  opacity: 0.9;
+}
+
+/* Active filter button style */
+.task-filter-button.active {
+  background-color: #11A3F8; /* Slightly brighter blue for active state */
+}
+
+/* Material form field overrides for compact styling */
+::ng-deep .task-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+::ng-deep .task-field .mat-mdc-text-field-wrapper {
+  padding: 0 12px;
+}
+
+::ng-deep .task-field .mat-mdc-form-field-infix {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: unset;
+}
+
+/* Add spacing between form field rows */
+::ng-deep .title-field.mat-mdc-form-field {
+  margin-bottom: 16px !important;
+  display: block;
+}
+
+::ng-deep .description-field.mat-mdc-form-field {
+  margin-bottom: 16px !important;
+  display: block;
+}
