@@ -16,6 +16,8 @@ public class TaskSummary {
 
     // Task-specific details
     private Long id;
+    private Long userId;
+    private Long groupId;
     private String title;
     private String description;
     private TaskPriority priority;
@@ -37,16 +39,18 @@ public class TaskSummary {
     // Constructor
     public TaskSummary(
             long totalTasks, long pastDeadlineTasks, long completedTasksThisMonth, long totalTasksThisMonth,
-            Long id, String title, String description, TaskPriority priority, String status,
+            Long id, Long userId, Long groupId, String title, String description, TaskPriority priority, String status,
             ZonedDateTime dueDate, ZonedDateTime creationDate, ZonedDateTime lastModifiedDate,
             ZonedDateTime scheduledStart, ZonedDateTime completionDateTime, Duration duration, int totalSubtasks,
-            String recommendationDetails, List<Long> batchableWith // Include these fields
+            String recommendationDetails, List<Long> batchableWith
     ) {
         this.totalTasks = totalTasks;
         this.pastDeadlineTasks = pastDeadlineTasks;
         this.completedTasksThisMonth = completedTasksThisMonth;
         this.totalTasksThisMonth = totalTasksThisMonth;
         this.id = id;
+        this.userId = userId;
+        this.groupId = groupId;
         this.title = title;
         this.description = description;
         this.priority = priority;
@@ -58,8 +62,8 @@ public class TaskSummary {
         this.completionDateTime = completionDateTime;
         this.duration = duration;
         this.totalSubtasks = totalSubtasks;
-        this.recommendationDetails = recommendationDetails; // Initialize
-        this.batchableWith = batchableWith;                 // Initialize
+        this.recommendationDetails = recommendationDetails;
+        this.batchableWith = batchableWith;
     }
 
     // No-argument constructor
@@ -123,6 +127,22 @@ public class TaskSummary {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 
     public String getTitle() {
