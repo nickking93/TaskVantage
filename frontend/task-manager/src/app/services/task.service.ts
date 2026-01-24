@@ -151,6 +151,15 @@ export class TaskService {
     );
   }
 
+  // Method to update only the groupId of a task (for drag-and-drop operations)
+  updateTaskGroup(taskId: string, groupId: number | null): Observable<any> {
+    const headers = this.authService.getAuthHeaders();
+    const url = `${this.tasksUrl}/${taskId}/group`;
+    return this.http.patch(url, { groupId }, { headers, responseType: 'json' }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   // Method to mark a task as completed
   markTaskAsCompleted(taskId: string): Observable<void> {
     const headers = this.authService.getAuthHeaders();

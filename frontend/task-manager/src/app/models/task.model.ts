@@ -1,11 +1,12 @@
 export class Task {
-  id?: string; 
-  title: string; 
-  description: string; 
-  dueDate?: string; 
-  priority: string; 
-  recurring: boolean; 
-  userId?: string; 
+  id?: string;
+  title: string;
+  description: string;
+  dueDate?: string;
+  priority: string;
+  recurring: boolean;
+  userId?: string;
+  groupId?: number | null;
   status?: string; 
   scheduledStart?: string; 
   completionDateTime?: string; 

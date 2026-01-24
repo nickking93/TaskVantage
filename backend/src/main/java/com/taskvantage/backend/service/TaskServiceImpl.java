@@ -5,7 +5,9 @@ import com.taskvantage.backend.exception.TaskNotFoundException;
 import com.taskvantage.backend.model.Comment;
 import com.taskvantage.backend.model.Subtask;
 import com.taskvantage.backend.model.Task;
+import com.taskvantage.backend.model.TaskGroup;
 import com.taskvantage.backend.model.TaskPriority;
+import com.taskvantage.backend.repository.TaskGroupRepository;
 import com.taskvantage.backend.repository.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +27,17 @@ public class TaskServiceImpl implements TaskService {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
     private final TaskRepository taskRepository;
+    private final TaskGroupRepository taskGroupRepository;
     private final GoogleCalendarService googleCalendarService;
     private final CustomUserDetailsService userDetailsService;
     private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, GoogleCalendarService googleCalendarService,
+    public TaskServiceImpl(TaskRepository taskRepository, TaskGroupRepository taskGroupRepository,
+                           GoogleCalendarService googleCalendarService,
                            CustomUserDetailsService userDetailsService, CustomUserDetailsService customUserDetailsService) {
         this.taskRepository = taskRepository;
+        this.taskGroupRepository = taskGroupRepository;
         this.googleCalendarService = googleCalendarService;
         this.userDetailsService = userDetailsService;
         this.customUserDetailsService = customUserDetailsService;
@@ -251,6 +256,7 @@ public class TaskServiceImpl implements TaskService {
         Optional.ofNullable(updatedTask.getPriority()).ifPresent(existingTask::setPriority);
         Optional.ofNullable(updatedTask.getStatus()).ifPresent(existingTask::setStatus);
         existingTask.setIsAllDay(updatedTask.isAllDay());
+        existingTask.setGroupId(updatedTask.getGroupId());
     }
 
     private void updateDates(Task existingTask, Task updatedTask) {
@@ -313,5 +319,31 @@ public class TaskServiceImpl implements TaskService {
         existingTask.setReminders(updatedTask.getReminders());
         existingTask.setRecurring(updatedTask.isRecurring());
         existingTask.setNotificationSent(updatedTask.getNotificationSent());
+    }
+
+    @Override
+    public Task updateTaskGroup(Long taskId, Long groupId) {
+        Optional<Task> taskOptional = taskRepository.findById(taskId);
+        if (taskOptional.isEmpty()) {
+            throw new TaskNotFoundException("Task not found with id " + taskId);
+        }
+
+        Task task = taskOptional.get();
+
+        // Validate that the groupId belongs to the same user as the task
+        if (groupId != null) {
+            Optional<TaskGroup> groupOptional = taskGroupRepository.findById(groupId);
+            if (groupOptional.isEmpty()) {
+                throw new IllegalArgumentException("Group not found with id " + groupId);
+            }
+            TaskGroup group = groupOptional.get();
+            if (!group.getUserId().equals(task.getUserId())) {
+                throw new IllegalArgumentException("Group does not belong to the task owner");
+            }
+        }
+
+        task.setGroupId(groupId);
+        task.setLastModifiedDate(ZonedDateTime.now(ZoneOffset.UTC));
+        return taskRepository.save(task);
     }
 }

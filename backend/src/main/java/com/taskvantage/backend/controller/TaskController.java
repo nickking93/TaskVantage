@@ -213,6 +213,39 @@ public class TaskController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{id}/group")
+    public ResponseEntity<Map<String, Object>> updateTaskGroup(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> groupRequest) {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<Task> taskOptional = taskService.getTaskById(id);
+        if (taskOptional.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskOptional.get();
+
+        // Validate that the authenticated user owns this task
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateResourceOwnership(authorizationHeader, task.getUserId());
+        if (authError != null) {
+            return authError;
+        }
+
+        Long groupId = groupRequest.get("groupId");
+        try {
+            Task updatedTask = taskService.updateTaskGroup(id, groupId);
+            response.put("message", "Task group updated successfully");
+            response.put("task", updatedTask);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateTask(
             @RequestHeader("Authorization") String authorizationHeader,

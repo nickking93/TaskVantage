@@ -18,16 +18,16 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +
-            "t.id, t.title, t.description, t.priority, t.status, " +
+            "t.id, t.userId, t.groupId, t.title, t.description, t.priority, t.status, " +
             "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, SIZE(t.subtasks), " +
-            "null, null) " + // Pass null for recommendationDetails and batchableWith
+            "null, null) " +
             "FROM Task t WHERE t.userId = :userId")
     List<TaskSummary> findTaskSummariesByUserId(@Param("userId") Long userId);
 
     @Query("SELECT new com.taskvantage.backend.dto.TaskSummary(0, 0, 0, 0, " +
-            "t.id, t.title, t.description, t.priority, t.status, " +
+            "t.id, t.userId, t.groupId, t.title, t.description, t.priority, t.status, " +
             "t.dueDate, t.creationDate, t.lastModifiedDate, t.scheduledStart, t.completionDateTime, t.duration, SIZE(t.subtasks), " +
-            "null, null) " + // Pass null for recommendationDetails and batchableWith
+            "null, null) " +
             "FROM Task t WHERE t.userId = :userId AND t.status != 'Completed'")
     List<TaskSummary> findNonCompletedTaskSummariesByUserId(@Param("userId") Long userId);
 
@@ -69,4 +69,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     default List<Task> findPopularTasks(int limit) {
         return findPopularTasks(Pageable.ofSize(limit));
     }
+
+    @Modifying
+    @Query("UPDATE Task t SET t.groupId = null WHERE t.groupId = :groupId")
+    void clearGroupIdByGroupId(@Param("groupId") Long groupId);
 }
