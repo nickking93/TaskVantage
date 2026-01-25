@@ -32,48 +32,58 @@
   <ng-template #customCellTemplate let-day="day" let-locale="locale">
     <div class="cal-cell-top" [class.past-day]="day.isPast">
       <span class="cal-day-number">{{ day.date | date:'d' }}</span>
-      <span class="day-x-overlay" *ngIf="day.isPast">&#10005;</span>
+      @if (day.isPast) {
+        <span class="day-x-overlay">&#10005;</span>
+      }
     </div>
     <div class="cal-events-container">
-      <div
-        *ngFor="let event of day.events"
-        class="cal-event-chip"
-        [class.overdue]="isTaskOverdue($any(event))"
-        [style.backgroundColor]="event.color?.primary"
-        [style.color]="getTextColor(event.color?.primary)"
-        (click)="eventClicked($any(event)); $event.stopPropagation()">
-        <span *ngIf="isTaskOverdue($any(event))">&#10071;</span>{{ event.title }}
+      @for (event of day.events; track event) {
+        <div
+          class="cal-event-chip"
+          [class.overdue]="isTaskOverdue($any(event))"
+          [style.backgroundColor]="event.color?.primary"
+          [style.color]="getTextColor(event.color?.primary)"
+          (click)="eventClicked($any(event)); $event.stopPropagation()">
+          @if (isTaskOverdue($any(event))) {
+            <span>&#10071;</span>
+            }{{ event.title }}
+          </div>
+        }
+      </div>
+    </ng-template>
+
+    <!-- Custom open day events template -->
+    <ng-template #customOpenDayTemplate let-events="events" let-isOpen="isOpen">
+      @if (isOpen) {
+        <div class="open-day-events">
+          @for (event of events; track event) {
+            <div
+              class="open-day-event"
+              [style.backgroundColor]="event.color?.primary"
+              [style.color]="getTextColor(event.color?.primary)"
+              (click)="eventClicked($any(event))">
+              @if (isTaskOverdue($any(event))) {
+                <span>&#10071; </span>
+                }{{ event.title }}
+              </div>
+            }
+          </div>
+        }
+      </ng-template>
+
+      <!-- Legend -->
+      <div class="calendar-legend">
+        <div class="legend-item">
+          <span class="legend-color high"></span>
+          <span class="legend-label">High</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color medium"></span>
+          <span class="legend-label">Medium</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color low"></span>
+          <span class="legend-label">Low</span>
+        </div>
       </div>
     </div>
-  </ng-template>
-
-  <!-- Custom open day events template -->
-  <ng-template #customOpenDayTemplate let-events="events" let-isOpen="isOpen">
-    <div class="open-day-events" *ngIf="isOpen">
-      <div
-        *ngFor="let event of events"
-        class="open-day-event"
-        [style.backgroundColor]="event.color?.primary"
-        [style.color]="getTextColor(event.color?.primary)"
-        (click)="eventClicked($any(event))">
-        <span *ngIf="isTaskOverdue($any(event))">&#10071; </span>{{ event.title }}
-      </div>
-    </div>
-  </ng-template>
-
-  <!-- Legend -->
-  <div class="calendar-legend">
-    <div class="legend-item">
-      <span class="legend-color high"></span>
-      <span class="legend-label">High</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-color medium"></span>
-      <span class="legend-label">Medium</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-color low"></span>
-      <span class="legend-label">Low</span>
-    </div>
-  </div>
-</div>

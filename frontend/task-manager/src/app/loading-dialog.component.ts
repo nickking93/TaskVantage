@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-loading-dialog',
     imports: [
-        MatDialogModule,
-        MatProgressSpinnerModule,
-        CommonModule
-    ],
+    MatDialogModule,
+    MatProgressSpinnerModule
+],
     template: `
     <div style="text-align: center; padding: 20px;">
       <mat-spinner></mat-spinner>

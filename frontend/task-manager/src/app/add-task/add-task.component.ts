@@ -9,7 +9,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+
 import { TaskService } from '../services/task.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Task } from '../models/task.model';
@@ -18,16 +18,15 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 @Component({
     selector: 'app-add-task',
     imports: [
-        CommonModule,
-        FormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatButtonModule
-    ],
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatButtonModule
+],
     templateUrl: './add-task.component.html',
     styleUrls: ['./add-task.component.css']
 })

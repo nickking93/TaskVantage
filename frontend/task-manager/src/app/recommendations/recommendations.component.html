@@ -5,36 +5,46 @@
   </div>
 
   <div class="card-content">
-    <div *ngIf="loading" class="loading-state">
-      <mat-spinner diameter="40"></mat-spinner>
-    </div>
+    @if (loading) {
+      <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
 
-    <div *ngIf="error" class="error-state">
-      {{ error }}
-    </div>
+    @if (error) {
+      <div class="error-state">
+        {{ error }}
+      </div>
+    }
 
-    <div *ngIf="!loading && !error && recommendations.length === 0" class="empty-state">
-      No recommendations available yet. Complete a task or two to personalize your feed.
-    </div>
+    @if (!loading && !error && recommendations.length === 0) {
+      <div class="empty-state">
+        No recommendations available yet. Complete a task or two to personalize your feed.
+      </div>
+    }
 
-    <div *ngIf="!loading && !error && recommendations.length > 0" class="recommendations-list">
-      <div *ngFor="let task of recommendations" class="recommendation-item">
-        <div class="recommendation-content">
-          <div class="task-details">
-            <li><b>{{ task.title }} </b>
-              <button mat-raised-button
-              (click)="scheduleTask(task)"
-              style="background-color: #00a4f3; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
-              <mat-icon style="font-size: 16px; height: 16px; width: 16px; vertical-align: middle; margin-right: 4px;">event</mat-icon><b>Schedule</b>
-            </button>
-            <p class="recommendation-meta">
-              {{ task.recommendationReason || task.recommendedBy.toLowerCase().replace('_', ' ') }} •
-              Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%
-            </p>
-          </li>
+    @if (!loading && !error && recommendations.length > 0) {
+      <div class="recommendations-list">
+        @for (task of recommendations; track task) {
+          <div class="recommendation-item">
+            <div class="recommendation-content">
+              <div class="task-details">
+                <li><b>{{ task.title }} </b>
+                <button mat-raised-button
+                  (click)="scheduleTask(task)"
+                  style="background-color: #00a4f3; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
+                  <mat-icon style="font-size: 16px; height: 16px; width: 16px; vertical-align: middle; margin-right: 4px;">event</mat-icon><b>Schedule</b>
+                </button>
+                <p class="recommendation-meta">
+                  {{ task.recommendationReason || task.recommendedBy.toLowerCase().replace('_', ' ') }} •
+                  Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%
+                </p>
+              </li>
+            </div>
           </div>
         </div>
-      </div>
+      }
     </div>
-  </div>
+  }
+</div>
 </div>

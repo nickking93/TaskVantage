@@ -11,9 +11,11 @@
     <mat-form-field appearance="fill" class="form-field">
       <mat-label>Title</mat-label>
       <input matInput formControlName="title" required>
-      <mat-error *ngIf="taskForm.get('title')?.hasError('required')">
-        Title is required
-      </mat-error>
+      @if (taskForm.get('title')?.hasError('required')) {
+        <mat-error>
+          Title is required
+        </mat-error>
+      }
     </mat-form-field>
 
     <!-- Description Field -->
@@ -28,29 +30,35 @@
       <mat-form-field appearance="fill" class="form-field">
         <mat-label>Scheduled Start Date</mat-label>
         <input matInput
-               [matDatepicker]="scheduledStartDatePicker"
-               formControlName="scheduledStart"
-               required
-               (dateChange)="validateDates()">
+          [matDatepicker]="scheduledStartDatePicker"
+          formControlName="scheduledStart"
+          required
+          (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
-        <mat-error *ngIf="taskForm.get('scheduledStart')?.hasError('required')">
-          Required
-        </mat-error>
-        <mat-error *ngIf="scheduledStartDateInvalid">
-          Must be in the future
-        </mat-error>
+        @if (taskForm.get('scheduledStart')?.hasError('required')) {
+          <mat-error>
+            Required
+          </mat-error>
+        }
+        @if (scheduledStartDateInvalid) {
+          <mat-error>
+            Must be in the future
+          </mat-error>
+        }
       </mat-form-field>
 
       <!-- Scheduled Start Time -->
-      <mat-form-field appearance="fill" class="form-field time-field" *ngIf="!taskForm.get('isAllDay')?.value">
-        <mat-label>Start Time</mat-label>
-        <input matInput
-               formControlName="scheduledStartTime"
-               type="time"
-               required
-               (change)="validateDates()">
-      </mat-form-field>
+      @if (!taskForm.get('isAllDay')?.value) {
+        <mat-form-field appearance="fill" class="form-field time-field">
+          <mat-label>Start Time</mat-label>
+          <input matInput
+            formControlName="scheduledStartTime"
+            type="time"
+            required
+            (change)="validateDates()">
+        </mat-form-field>
+      }
     </div>
 
     <div class="date-time-row">
@@ -58,29 +66,35 @@
       <mat-form-field appearance="fill" class="form-field">
         <mat-label>Due Date</mat-label>
         <input matInput
-               [matDatepicker]="dueDatePicker"
-               formControlName="dueDate"
-               required
-               (dateChange)="validateDates()">
+          [matDatepicker]="dueDatePicker"
+          formControlName="dueDate"
+          required
+          (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #dueDatePicker></mat-datepicker>
-        <mat-error *ngIf="taskForm.get('dueDate')?.hasError('required')">
-          Required
-        </mat-error>
-        <mat-error *ngIf="dueDateInvalid">
-          Must be after start date
-        </mat-error>
+        @if (taskForm.get('dueDate')?.hasError('required')) {
+          <mat-error>
+            Required
+          </mat-error>
+        }
+        @if (dueDateInvalid) {
+          <mat-error>
+            Must be after start date
+          </mat-error>
+        }
       </mat-form-field>
 
       <!-- Due Time -->
-      <mat-form-field appearance="fill" class="form-field time-field" *ngIf="!taskForm.get('isAllDay')?.value">
-        <mat-label>Due Time</mat-label>
-        <input matInput
-               formControlName="dueTime"
-               type="time"
-               required
-               (change)="validateDates()">
-      </mat-form-field>
+      @if (!taskForm.get('isAllDay')?.value) {
+        <mat-form-field appearance="fill" class="form-field time-field">
+          <mat-label>Due Time</mat-label>
+          <input matInput
+            formControlName="dueTime"
+            type="time"
+            required
+            (change)="validateDates()">
+        </mat-form-field>
+      }
     </div>
 
     <!-- Priority Field -->
@@ -101,19 +115,25 @@
     </div>
 
     <!-- Error Message -->
-    <div class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
 
     <!-- Action Buttons -->
     <div class="button-container">
       <button mat-button type="button" (click)="cancel()">Cancel</button>
       <button mat-raised-button
-              color="primary"
-              type="submit"
-              [disabled]="taskForm.invalid || formInvalid || isLoading">
-        <span *ngIf="!isLoading">Update Task</span>
-        <span *ngIf="isLoading">Updating...</span>
+        color="primary"
+        type="submit"
+        [disabled]="taskForm.invalid || formInvalid || isLoading">
+        @if (!isLoading) {
+          <span>Update Task</span>
+        }
+        @if (isLoading) {
+          <span>Updating...</span>
+        }
       </button>
     </div>
   </form>

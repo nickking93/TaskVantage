@@ -20,14 +20,18 @@
         <input matInput [matDatepicker]="dueDatePicker" [(ngModel)]="dueDate" name="dueDate" required (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #dueDatePicker></mat-datepicker>
-        <mat-error *ngIf="dueDateInvalid">Due date must be in the future and after the scheduled start date.</mat-error>
+        @if (dueDateInvalid) {
+          <mat-error>Due date must be in the future and after the scheduled start date.</mat-error>
+        }
       </mat-form-field>
 
       <!-- Due Time -->
-      <mat-form-field appearance="fill" class="form-field" *ngIf="!newTask.isAllDay">
-        <mat-label>Due Time</mat-label>
-        <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
-      </mat-form-field>
+      @if (!newTask.isAllDay) {
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Due Time</mat-label>
+          <input matInput [(ngModel)]="dueTime" name="dueTime" type="time" required>
+        </mat-form-field>
+      }
 
       <!-- Scheduled Start Date -->
       <mat-form-field appearance="fill" class="form-field">
@@ -35,14 +39,18 @@
         <input matInput [matDatepicker]="scheduledStartDatePicker" [(ngModel)]="scheduledStartDate" name="scheduledStartDate" required (dateChange)="validateDates()">
         <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
-        <mat-error *ngIf="scheduledStartDateInvalid">Scheduled start date must be in the future.</mat-error>
+        @if (scheduledStartDateInvalid) {
+          <mat-error>Scheduled start date must be in the future.</mat-error>
+        }
       </mat-form-field>
 
       <!-- Scheduled Start Time -->
-      <mat-form-field appearance="fill" class="form-field" *ngIf="!newTask.isAllDay">
-        <mat-label>Scheduled Start Time</mat-label>
-        <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
-      </mat-form-field>
+      @if (!newTask.isAllDay) {
+        <mat-form-field appearance="fill" class="form-field">
+          <mat-label>Scheduled Start Time</mat-label>
+          <input matInput [(ngModel)]="scheduledStartTime" name="scheduledStartTime" type="time" required>
+        </mat-form-field>
+      }
 
       <!-- Priority Field -->
       <mat-form-field appearance="fill" class="form-field">

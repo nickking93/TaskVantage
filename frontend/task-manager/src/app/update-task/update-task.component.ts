@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,15 +19,14 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
     templateUrl: './update-task.component.html',
     styleUrls: ['./update-task.component.css'],
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatInputModule,
-        MatButtonModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatSelectModule,
-        MatCheckboxModule
-    ]
+    ReactiveFormsModule,
+    MatInputModule,
+    MatButtonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
+    MatCheckboxModule
+]
 })
 export class UpdateTaskComponent implements OnInit {
   taskForm!: FormGroup;

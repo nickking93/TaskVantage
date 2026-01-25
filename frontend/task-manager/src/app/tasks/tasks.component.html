@@ -4,38 +4,38 @@
   <!-- Task Filter Links -->
   <div class="task-filters">
     <button
-        mat-raised-button
-        class="task-filter-button"
-        (click)="filterTasks('today')"
-        [class.active]="selectedFilter === 'today'">
+      mat-raised-button
+      class="task-filter-button"
+      (click)="filterTasks('today')"
+      [class.active]="selectedFilter === 'today'">
       Today
     </button>
     <button
-        mat-raised-button
-        class="task-filter-button"
-        (click)="filterTasks('overdue')"
-        [class.active]="selectedFilter === 'overdue'">
+      mat-raised-button
+      class="task-filter-button"
+      (click)="filterTasks('overdue')"
+      [class.active]="selectedFilter === 'overdue'">
       Overdue
     </button>
     <button
-        mat-raised-button
-        class="task-filter-button"
-        (click)="filterTasks('inProgress')"
-        [class.active]="selectedFilter === 'inProgress'">
+      mat-raised-button
+      class="task-filter-button"
+      (click)="filterTasks('inProgress')"
+      [class.active]="selectedFilter === 'inProgress'">
       In Progress
     </button>
     <button
-        mat-raised-button
-        class="task-filter-button"
-        (click)="filterTasks('pending')"
-        [class.active]="selectedFilter === 'pending'">
+      mat-raised-button
+      class="task-filter-button"
+      (click)="filterTasks('pending')"
+      [class.active]="selectedFilter === 'pending'">
       Pending
     </button>
     <button
-        mat-raised-button
-        class="task-filter-button"
-        (click)="filterTasks('complete')"
-        [class.active]="selectedFilter === 'complete'">
+      mat-raised-button
+      class="task-filter-button"
+      (click)="filterTasks('complete')"
+      [class.active]="selectedFilter === 'complete'">
       Completed
     </button>
   </div>
@@ -68,7 +68,9 @@
       <mat-form-field class="task-field priority-field" appearance="outline">
         <mat-label>Priority</mat-label>
         <mat-select [(ngModel)]="task.priority" (selectionChange)="saveTaskField(task)">
-          <mat-option *ngFor="let p of priorities" [value]="p">{{ p }}</mat-option>
+          @for (p of priorities; track p) {
+            <mat-option [value]="p">{{ p }}</mat-option>
+          }
         </mat-select>
       </mat-form-field>
 
@@ -79,25 +81,29 @@
     </div>
 
     <!-- Conditionally display the start date if the task is in progress -->
-    <p *ngIf="task.status === 'In Progress'" class="start-date"><strong>Start Date:</strong> {{ task.startDate | date: 'short' }}</p>
+    @if (task.status === 'In Progress') {
+      <p class="start-date"><strong>Start Date:</strong> {{ task.startDate | date: 'short' }}</p>
+    }
 
     <!-- Action Buttons -->
     <div class="task-actions">
-      <ng-container *ngIf="selectedFilter !== 'complete'">
-        <button
-          mat-raised-button
-          class="task-action-button mark-completed-button"
-          *ngIf="task.status === 'In Progress'"
-          (click)="markTaskAsCompleted(task)">
-          <mat-icon>check_circle</mat-icon> Mark Completed
-        </button>
-        <button
-          mat-raised-button
-          class="task-action-button start-task-button"
-          *ngIf="task.status !== 'In Progress' && task.id"
-          (click)="startTask(task)">
-          <mat-icon>play_arrow</mat-icon> Start Task
-        </button>
+      @if (selectedFilter !== 'complete') {
+        @if (task.status === 'In Progress') {
+          <button
+            mat-raised-button
+            class="task-action-button mark-completed-button"
+            (click)="markTaskAsCompleted(task)">
+            <mat-icon>check_circle</mat-icon> Mark Completed
+          </button>
+        }
+        @if (task.status !== 'In Progress' && task.id) {
+          <button
+            mat-raised-button
+            class="task-action-button start-task-button"
+            (click)="startTask(task)">
+            <mat-icon>play_arrow</mat-icon> Start Task
+          </button>
+        }
         <button
           mat-raised-button
           class="task-action-button edit-button"
@@ -110,7 +116,7 @@
           (click)="deleteTask(task)">
           <mat-icon>delete</mat-icon> Delete
         </button>
-      </ng-container>
+      }
     </div>
   </ng-template>
 
@@ -129,75 +135,87 @@
         class="task-drop-zone"
         (cdkDropListDropped)="onTaskDrop($event, null)">
 
-        <div *ngFor="let task of uncategorizedTasks" cdkDrag class="task-card">
-          <ng-container *ngTemplateOutlet="taskCardTemplate; context: { $implicit: task }"></ng-container>
-        </div>
+        @for (task of uncategorizedTasks; track task) {
+          <div cdkDrag class="task-card">
+            <ng-container *ngTemplateOutlet="taskCardTemplate; context: { $implicit: task }"></ng-container>
+          </div>
+        }
 
-        <div *ngIf="uncategorizedTasks.length === 0" class="empty-column-message">
-          No tasks
-        </div>
+        @if (uncategorizedTasks.length === 0) {
+          <div class="empty-column-message">
+            No tasks
+          </div>
+        }
       </div>
     </div>
 
     <!-- User-created Group Columns -->
-    <div *ngFor="let group of groups"
-         class="kanban-column"
-         [style.border-top-color]="group.color || '#2365B2'">
-      <div class="column-header">
-        <!-- Inline editable group name -->
-        <input *ngIf="editingGroupId === group.id"
-               [(ngModel)]="editingGroupName"
-               (blur)="saveGroupName(group)"
-               (keyup.enter)="saveGroupName(group)"
-               class="group-name-input"
-               autofocus>
-        <h3 *ngIf="editingGroupId !== group.id" (click)="startEditingGroupName(group)" class="group-name">
-          {{ group.name }}
-        </h3>
-
-        <!-- Ellipsis menu -->
-        <button mat-icon-button [matMenuTriggerFor]="groupMenu" class="group-menu-button">
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #groupMenu="matMenu">
-          <button mat-menu-item (click)="toggleColorPicker(group.id!)">
-            <mat-icon>palette</mat-icon>
-            <span>Change Color</span>
-          </button>
-          <button mat-menu-item (click)="deleteGroup(group)">
-            <mat-icon>delete</mat-icon>
-            <span>Delete Group</span>
-          </button>
-        </mat-menu>
-
-        <!-- Color picker popup -->
-        <div *ngIf="showColorPicker === group.id" class="color-picker-popup">
-          <button
-            *ngFor="let color of availableColors"
-            class="color-option"
-            [style.background-color]="color"
-            (click)="setGroupColor(group, color)">
-          </button>
-        </div>
-      </div>
-
+    @for (group of groups; track group) {
       <div
-        cdkDropList
-        [cdkDropListData]="groupedTasks.get(group.id!) || []"
-        [cdkDropListConnectedTo]="getConnectedLists()"
-        [id]="'group-' + group.id"
-        class="task-drop-zone"
-        (cdkDropListDropped)="onTaskDrop($event, group.id!)">
-
-        <div *ngFor="let task of groupedTasks.get(group.id!)" cdkDrag class="task-card">
-          <ng-container *ngTemplateOutlet="taskCardTemplate; context: { $implicit: task }"></ng-container>
+        class="kanban-column"
+        [style.border-top-color]="group.color || '#2365B2'">
+        <div class="column-header">
+          <!-- Inline editable group name -->
+          @if (editingGroupId === group.id) {
+            <input
+              [(ngModel)]="editingGroupName"
+              (blur)="saveGroupName(group)"
+              (keyup.enter)="saveGroupName(group)"
+              class="group-name-input"
+              autofocus>
+          }
+          @if (editingGroupId !== group.id) {
+            <h3 (click)="startEditingGroupName(group)" class="group-name">
+              {{ group.name }}
+            </h3>
+          }
+          <!-- Ellipsis menu -->
+          <button mat-icon-button [matMenuTriggerFor]="groupMenu" class="group-menu-button">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #groupMenu="matMenu">
+            <button mat-menu-item (click)="toggleColorPicker(group.id!)">
+              <mat-icon>palette</mat-icon>
+              <span>Change Color</span>
+            </button>
+            <button mat-menu-item (click)="deleteGroup(group)">
+              <mat-icon>delete</mat-icon>
+              <span>Delete Group</span>
+            </button>
+          </mat-menu>
+          <!-- Color picker popup -->
+          @if (showColorPicker === group.id) {
+            <div class="color-picker-popup">
+              @for (color of availableColors; track color) {
+                <button
+                  class="color-option"
+                  [style.background-color]="color"
+                  (click)="setGroupColor(group, color)">
+                </button>
+              }
+            </div>
+          }
         </div>
-
-        <div *ngIf="(groupedTasks.get(group.id!) || []).length === 0" class="empty-column-message">
-          No tasks
+        <div
+          cdkDropList
+          [cdkDropListData]="groupedTasks.get(group.id!) || []"
+          [cdkDropListConnectedTo]="getConnectedLists()"
+          [id]="'group-' + group.id"
+          class="task-drop-zone"
+          (cdkDropListDropped)="onTaskDrop($event, group.id!)">
+          @for (task of groupedTasks.get(group.id!); track task) {
+            <div cdkDrag class="task-card">
+              <ng-container *ngTemplateOutlet="taskCardTemplate; context: { $implicit: task }"></ng-container>
+            </div>
+          }
+          @if ((groupedTasks.get(group.id!) || []).length === 0) {
+            <div class="empty-column-message">
+              No tasks
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
 
     <!-- Add Group Button -->
     <div class="add-group-column">
@@ -209,7 +227,9 @@
   </div>
 
   <!-- Fallback when no tasks are available at all -->
-  <div *ngIf="filteredTasks.length === 0 && groups.length === 0" class="no-tasks-message">
-    <p>No tasks available. Create a task or add a group to get started.</p>
-  </div>
+  @if (filteredTasks.length === 0 && groups.length === 0) {
+    <div class="no-tasks-message">
+      <p>No tasks available. Create a task or add a group to get started.</p>
+    </div>
+  }
 </div>

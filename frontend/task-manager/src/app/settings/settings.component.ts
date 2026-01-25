@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { GoogleAuthService } from '../services/google-auth.service';
@@ -22,17 +22,16 @@ import { MatDialogModule } from '@angular/material/dialog';
     templateUrl: './settings.component.html',
     styleUrls: ['./settings.component.css'],
     imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        MatProgressSpinnerModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSlideToggleModule,
-        MatDividerModule,
-        MatSnackBarModule,
-        MatDialogModule
-    ]
+    FormsModule,
+    RouterModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatDividerModule,
+    MatSnackBarModule,
+    MatDialogModule
+]
 })
 export class SettingsComponent implements OnInit {
   isGoogleConnected: boolean = false;
