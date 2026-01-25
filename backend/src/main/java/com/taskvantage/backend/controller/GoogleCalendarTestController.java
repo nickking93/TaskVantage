@@ -1,6 +1,8 @@
 package com.taskvantage.backend.controller;
 
 import com.taskvantage.backend.service.GoogleCalendarService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("dev")  // Only active in the "dev" profile
 public class GoogleCalendarTestController {
 
+    private static final Logger logger = LoggerFactory.getLogger(GoogleCalendarTestController.class);
     private final GoogleCalendarService googleCalendarService;
 
     @Autowired
@@ -25,7 +28,7 @@ public class GoogleCalendarTestController {
             googleCalendarService.testGoogleCalendarIntegration();
             return "Google Calendar event created!";
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to create Google Calendar event", e);
             return "Failed to create Google Calendar event: " + e.getMessage();
         }
     }

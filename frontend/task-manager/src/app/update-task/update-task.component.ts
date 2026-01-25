@@ -51,7 +51,6 @@ export class UpdateTaskComponent implements OnInit {
     const taskId = this.route.snapshot.paramMap.get('taskId');
     if (taskId) {
       this.taskService.getTaskById(taskId).subscribe((response: any) => {
-        console.log('Fetched Task:', response);
         this.taskData = response;
         this.populateForm();
       });
@@ -73,21 +72,11 @@ export class UpdateTaskComponent implements OnInit {
     });
 
     this.taskForm.get('isAllDay')?.valueChanges.subscribe(isAllDay => {
-      console.log('isAllDay changed:', isAllDay);
       this.handleAllDayChange(isAllDay);
-    });
-
-    // Add value change subscriptions for debugging
-    this.taskForm.valueChanges.subscribe(values => {
-      console.log('Form values changed:', values);
-      console.log('Form valid state:', this.taskForm.valid);
-      console.log('Form invalid state:', this.taskForm.invalid);
-      console.log('Custom form invalid state:', this.formInvalid);
     });
   }
 
   handleAllDayChange(isAllDay: boolean): void {
-    console.log('Handling all day change:', isAllDay);
     const dueTimeControl = this.taskForm.get('dueTime');
     const scheduledStartTimeControl = this.taskForm.get('scheduledStartTime');
     
@@ -113,15 +102,11 @@ export class UpdateTaskComponent implements OnInit {
 
   populateForm(): void {
     if (!this.taskData?.task) {
-      console.error('No task data available');
       return;
     }
 
-    console.log('Raw task data:', this.taskData);
-
     const taskDetails = this.taskData.task;
     const isAllDay = taskDetails.allDay || false;
-    console.log('Is all day task:', isAllDay);
 
     const dueDate = taskDetails.dueDate;
     const scheduledStart = taskDetails.scheduledStart;
@@ -139,8 +124,6 @@ export class UpdateTaskComponent implements OnInit {
       isAllDay: isAllDay
     };
 
-    console.log('Setting form values:', formValues);
-
     this.taskForm.patchValue(formValues);
 
     if (!isAllDay) {
@@ -154,26 +137,20 @@ export class UpdateTaskComponent implements OnInit {
     }
 
     this.handleAllDayChange(isAllDay);
-
-    console.log('Form values after population:', this.taskForm.value);
-    console.log('Form status:', this.taskForm.status);
   }
 
   validateDates(): void {
     const now = new Date();
     const isAllDay = this.taskForm.get('isAllDay')?.value;
-    
-    console.log('Validating dates - isAllDay:', isAllDay);
-    
+
     // Reset validation flags
     this.scheduledStartDateInvalid = false;
     this.dueDateInvalid = false;
     
     const scheduledStartDate = this.taskForm.get('scheduledStart')?.value;
     const dueDate = this.taskForm.get('dueDate')?.value;
-    
+
     if (!scheduledStartDate || !dueDate) {
-      console.log('Missing required dates');
       return;
     }
 
@@ -189,20 +166,11 @@ export class UpdateTaskComponent implements OnInit {
       
       this.scheduledStartDateInvalid = startDate < today;
       this.dueDateInvalid = endDate < today || endDate < startDate;
-      
-      console.log('All-day validation:', {
-        scheduledStartInvalid: this.scheduledStartDateInvalid,
-        dueDateInvalid: this.dueDateInvalid,
-        startDate,
-        endDate,
-        today
-      });
     } else {
       const startTime = this.taskForm.get('scheduledStartTime')?.value;
       const dueTime = this.taskForm.get('dueTime')?.value;
-      
+
       if (!startTime || !dueTime) {
-        console.log('Missing required times');
         return;
       }
       
@@ -217,18 +185,9 @@ export class UpdateTaskComponent implements OnInit {
       
       this.scheduledStartDateInvalid = startDateTime < now;
       this.dueDateInvalid = dueDateTime < now || dueDateTime <= startDateTime;
-      
-      console.log('Timed validation:', {
-        scheduledStartInvalid: this.scheduledStartDateInvalid,
-        dueDateInvalid: this.dueDateInvalid,
-        startDateTime,
-        dueDateTime,
-        now
-      });
     }
-    
+
     this.formInvalid = this.dueDateInvalid || this.scheduledStartDateInvalid;
-    console.log('Form validation result:', { formInvalid: this.formInvalid });
   }
 
   convertUTCToLocalDate(date: Date): string {
@@ -242,11 +201,6 @@ export class UpdateTaskComponent implements OnInit {
   }
 
   updateTask(): void {
-    console.log('Attempting to update task');
-    console.log('Form valid:', this.taskForm.valid);
-    console.log('Form invalid:', this.taskForm.invalid);
-    console.log('Custom form invalid:', this.formInvalid);
-    
     if (this.taskForm.valid && !this.formInvalid) {
       const formValues = this.taskForm.getRawValue();
       const isAllDay = formValues.isAllDay;
@@ -285,33 +239,24 @@ export class UpdateTaskComponent implements OnInit {
         priority: formValues.priority.toUpperCase(),
         recurring: formValues.recurring,
         notifyBeforeStart: formValues.notifyBeforeStart,
-        isAllDay: formValues.isAllDay  // Changed from allDay to isAllDay
+        isAllDay: formValues.isAllDay
       };
-  
-      console.log('Sending updated task:', updatedTask); // Added for debugging
-  
+
       if (!updatedTask.id) {
-        console.error('Task ID is undefined!');
         return;
       }
   
       this.taskService.updateTask(updatedTask).subscribe(
         (response) => {
-          console.log('Task updated successfully:', response);
           this.openSuccessDialog();
         },
         (error) => {
-          console.error('Error updating task:', error);
+          this.dialog.open(SuccessDialogComponent, {
+            width: '300px',
+            data: { title: 'Error', message: 'Failed to update task. Please try again.' }
+          });
         }
       );
-    } else {
-      console.log('Form is invalid:', {
-        formValidation: this.taskForm.valid,
-        customValidation: !this.formInvalid,
-        formErrors: this.taskForm.errors,
-        dueDateInvalid: this.dueDateInvalid,
-        scheduledStartDateInvalid: this.scheduledStartDateInvalid
-      });
     }
   }
 

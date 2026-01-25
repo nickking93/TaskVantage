@@ -133,7 +133,6 @@ export class LoginComponent implements OnInit {
         });
       },
       (error) => {
-        console.error('Email verification failed:', error);
         this.dialog.open(SuccessDialogComponent, {
           data: {
             title: 'Verification Failed',
@@ -166,9 +165,7 @@ export class LoginComponent implements OnInit {
         if (!response) {
           throw new Error('Login response was empty');
         }
-  
-        console.log('Login response:', response);
-        
+
         if (this.isPwa || rememberMe) {
           // Store persistent login state
           await this.authService.setPersistentLogin(true);
@@ -183,7 +180,6 @@ export class LoginComponent implements OnInit {
             await this.firebaseMessagingService.requestPermissionAndGetToken();
           }
         } catch (error) {
-          console.error('Error initializing notifications:', error);
         }
   
         loadingDialogRef.close();
@@ -192,8 +188,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/home']);
       } catch (error: any) {
         loadingDialogRef.close();
-        console.error('Login failed', error);
-  
+
         this.dialog.open(SuccessDialogComponent, {
           data: {
             title: 'Error',
@@ -226,7 +221,6 @@ export class LoginComponent implements OnInit {
         const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
         return available;
       } catch (error) {
-        console.error('Error checking biometric availability:', error);
         return false;
       }
     }
@@ -236,7 +230,6 @@ export class LoginComponent implements OnInit {
   // Handle biometric authentication
   async authenticateWithBiometric(): Promise<void> {
     // Implementation would go here - requires additional backend support
-    // This is just a placeholder for future implementation
-    console.log('Biometric authentication not yet implemented');
+    // This is a placeholder for future implementation
   }
 }

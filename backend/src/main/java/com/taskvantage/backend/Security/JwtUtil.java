@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     private final Key SECRET_KEY;
     private static final long ACCESS_TOKEN_VALIDITY = 10 * 60 * 60 * 1000; // 10 hours
     private static final long REFRESH_TOKEN_VALIDITY = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -65,7 +68,7 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            System.out.println("Failed to extract claims: " + e.getMessage());
+            logger.debug("Failed to extract claims: {}", e.getMessage());
             throw new IllegalArgumentException("Invalid JWT token");
         }
     }
@@ -80,15 +83,12 @@ public class JwtUtil {
         boolean isValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 
         if (!isValid) {
-            System.out.println("Token validation failed for user: " + username);
             if (!username.equals(userDetails.getUsername())) {
-                System.out.println("Username in token does not match. Expected: " + userDetails.getUsername() + ", Found: " + username);
+                logger.debug("Token username mismatch");
             }
             if (isTokenExpired(token)) {
-                System.out.println("Token is expired.");
+                logger.debug("Token is expired");
             }
-        } else {
-            System.out.println("Token is valid for user: " + username);
         }
 
         return isValid;

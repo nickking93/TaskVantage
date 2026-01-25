@@ -2,6 +2,8 @@ package com.taskvantage.backend.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     private final JavaMailSender mailSender;
 
     public EmailService(JavaMailSender mailSender) {
@@ -34,10 +37,10 @@ public class EmailService {
 
             // Send the email
             mailSender.send(mimeMessage);
-            System.out.println("Email sent successfully to " + to);
+            logger.debug("Email sent successfully");
 
         } catch (MessagingException e) {
-            e.printStackTrace();
+            logger.error("Failed to send email", e);
             throw new RuntimeException("Failed to send email: " + e.getMessage());
         }
     }

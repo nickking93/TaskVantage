@@ -18,18 +18,15 @@ export class GoogleAuthService {
 
   connectGoogleCalendar(userId: string): void {
     if (!userId) {
-      console.error('User ID is required to connect Google Calendar.');
-      return;
+      throw new Error('User ID is required to connect Google Calendar');
     }
 
     const authUrl = `${this.apiUrl}/oauth2/authorization/google?userId=${userId}`;
-    console.log('Redirecting to:', authUrl);
     window.location.href = authUrl;
   }
 
   checkGoogleCalendarConnection(userId: string): Observable<any> {
     if (!userId) {
-      console.error('User ID is required to check Google Calendar connection.');
       return throwError(() => new Error('User ID is required'));
     }
 
@@ -59,8 +56,7 @@ export class GoogleAuthService {
     const userId = localStorage.getItem('google_auth_user_id');
 
     if (!token || !userId) {
-      console.error('Missing token or user ID');
-      return new Observable();
+      return throwError(() => new Error('Token and user ID are required to disconnect Google Calendar'));
     }
 
     const headers = new HttpHeaders()

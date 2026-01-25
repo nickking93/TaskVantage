@@ -69,7 +69,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             user = userRepository.findByGoogleEmail(username).orElse(null);
         }
         if (user == null) {
-            logger.error("User not found with username or Google email: {}", username);
+            logger.debug("User not found with username or Google email");
             throw new UsernameNotFoundException("User not found");
         }
         return user;
@@ -110,7 +110,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public User findUserByGoogleEmail(String googleEmail) throws UsernameNotFoundException {
         User user = userRepository.findByGoogleEmail(googleEmail).orElse(null);
         if (user == null) {
-            logger.error("User not found with Google email: {}", googleEmail);
+            logger.debug("User not found with Google email");
             throw new UsernameNotFoundException("User not found");
         }
         return user;
@@ -140,10 +140,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             user.setEmailVerified(true);
             user.setVerificationToken(null);
             saveUser(user);
-            logger.info("Email verified for user: {}", user.getUsername());
+            logger.info("Email verified for user ID: {}", user.getId());
             return true;
         } else {
-            logger.warn("Email already verified or invalid token for user: {}", user != null ? user.getUsername() : "unknown");
+            logger.debug("Email already verified or invalid token");
             return false;
         }
     }
@@ -166,7 +166,7 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     public String registerUser(AuthRequest authRequest) {
         if (userRepository.findByUsername(authRequest.getUsername()) != null) {
-            logger.warn("Attempted to register with an already taken username: {}", authRequest.getUsername());
+            logger.debug("Registration attempted with already taken username");
             return "Username is already taken.";
         }
 
@@ -189,10 +189,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         try {
             emailService.sendEmail(user.getUsername(), "Email Verification", emailContent, true);
             saveUser(user);
-            logger.info("User registered successfully with username: {}", authRequest.getUsername());
+            logger.info("User registered successfully");
             return "Registration successful. Please check your email to verify your account.";
         } catch (Exception e) {
-            logger.error("Failed to send verification email to user: {}", authRequest.getUsername(), e);
+            logger.error("Failed to send verification email", e);
             return "Failed to send verification email. Please try again.";
         }
     }
@@ -205,14 +205,14 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     public void updateUserToken(String username, String token) {
         if (token == null || token.isEmpty()) {
-            logger.warn("Invalid FCM token for user: {}", username);
+            logger.debug("Invalid FCM token provided");
             return;
         }
 
         User user = findUserByUsername(username);
         user.setToken(token);
         saveUser(user);
-        logger.info("FCM Token updated successfully for user: {}", username);
+        logger.debug("FCM Token updated successfully for user ID: {}", user.getId());
     }
 
     /**
@@ -223,15 +223,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     public void clearUserToken(String username) {
         try {
             User user = findUserByUsername(username);
-            String oldToken = user.getToken();
             user.setToken(null);
             saveUser(user);
-            logger.info("FCM Token cleared successfully for user: {} (Old token: {})",
-                    username, oldToken != null ? oldToken.substring(0, Math.min(oldToken.length(), 10)) + "..." : "null");
+            logger.debug("FCM Token cleared successfully for user ID: {}", user.getId());
         } catch (UsernameNotFoundException e) {
-            logger.error("Failed to clear FCM token - User not found: {}", username);
+            logger.debug("Failed to clear FCM token - user not found");
         } catch (Exception e) {
-            logger.error("Unexpected error while clearing FCM token for user: {}", username, e);
+            logger.error("Unexpected error while clearing FCM token", e);
         }
     }
 
@@ -244,7 +242,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public boolean sendPasswordResetLink(String email) {
         User user = userRepository.findByUsername(email);
         if (user == null) {
-            logger.warn("User not found with email: {}", email);
+            logger.debug("Password reset requested for non-existent user");
             return false;
         }
 
@@ -263,10 +261,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         try {
             emailService.sendEmail(user.getUsername(), "Password Reset", emailContent, true);
-            logger.info("Password reset email sent to user: {}", user.getUsername());
+            logger.info("Password reset email sent for user ID: {}", user.getId());
             return true;
         } catch (Exception e) {
-            logger.error("Failed to send password reset email to user: {}", user.getUsername(), e);
+            logger.error("Failed to send password reset email", e);
             return false;
         }
     }
@@ -283,7 +281,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = optionalUser.orElseThrow(() -> new UsernameNotFoundException("Invalid password reset token"));
 
         if (user.getPasswordResetTokenExpiry() == null || user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            logger.warn("Password reset token expired for user: {}", user.getUsername());
+            logger.debug("Password reset token expired for user ID: {}", user.getId());
             throw new UsernameNotFoundException("Password reset token expired");
         }
 
@@ -306,7 +304,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         user.setPasswordResetTokenExpiry(null);
         saveUser(user);
 
-        logger.info("Password updated successfully for user: {}", user.getUsername());
+        logger.info("Password updated successfully for user ID: {}", user.getId());
         return true;
     }
 

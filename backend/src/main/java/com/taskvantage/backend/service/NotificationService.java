@@ -79,7 +79,7 @@ public class NotificationService {
             try {
                 processUserTasks(user, now, windowEnd);
             } catch (Exception e) {
-                logger.error("Error processing notifications for user {}: {}", user.getUsername(), e.getMessage(), e);
+                logger.error("Error processing notifications for user ID {}: {}", user.getId(), e.getMessage(), e);
             }
         }
 
@@ -89,7 +89,7 @@ public class NotificationService {
     @Transactional
     private void processUserTasks(User user, ZonedDateTime now, ZonedDateTime windowEnd) {
         if (user.getToken() == null) {
-            logger.debug("Skipping notification check for user {} - no FCM token", user.getUsername());
+            logger.debug("Skipping notification check for user ID {} - no FCM token", user.getId());
             return;
         }
 
@@ -161,8 +161,8 @@ public class NotificationService {
             );
 
             if (success) {
-                logger.info("Successfully sent notification for task '{}' to user '{}'",
-                        task.getTitle(), user.getUsername());
+                logger.debug("Successfully sent notification for task ID {} to user ID {}",
+                        task.getId(), user.getId());
                 attempt.success = true;
             } else {
                 // If notification fails, revert the notification sent flag
@@ -176,8 +176,8 @@ public class NotificationService {
             task.setNotificationSent(false);
             taskRepository.save(task);
 
-            logger.error("Failed to send notification for task '{}' to user '{}': {}",
-                    task.getTitle(), user.getUsername(), e.getMessage(), e);
+            logger.error("Failed to send notification for task ID {} to user ID {}: {}",
+                    task.getId(), user.getId(), e.getMessage(), e);
         }
     }
 

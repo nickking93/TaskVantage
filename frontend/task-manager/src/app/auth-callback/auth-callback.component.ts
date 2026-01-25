@@ -43,7 +43,6 @@ export class AuthCallbackComponent implements OnInit {
         this.router.navigate(['/home']);
       },
       error: (error) => {
-        console.error('Authentication failed:', error);
         this.router.navigate(['/login']);
       }
     });

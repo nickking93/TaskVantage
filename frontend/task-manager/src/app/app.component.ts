@@ -24,11 +24,9 @@ export class AppComponent {
     if (this.deferredPrompt) {
       try {
         await this.deferredPrompt.prompt();
-        const choiceResult = await this.deferredPrompt.userChoice;
-        console.log('Install prompt choice:', choiceResult.outcome);
+        await this.deferredPrompt.userChoice;
         this.deferredPrompt = null;
       } catch (error) {
-        console.error('Error showing install prompt:', error);
       }
     }
   }

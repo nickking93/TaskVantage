@@ -49,7 +49,6 @@ export class TaskGroupService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('TaskGroupService Error:', error.message);
     return throwError(() => new Error('TaskGroupService Error: ' + error.message));
   }
 }

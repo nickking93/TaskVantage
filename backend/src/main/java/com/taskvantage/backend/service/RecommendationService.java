@@ -37,17 +37,17 @@ public class RecommendationService {
     @Autowired
     public RecommendationService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
-        logger.info("RecommendationService initialized with task repository");
+        logger.debug("RecommendationService initialized");
     }
 
     public List<Task> getRecommendationsForUser(Long userId, int limit) {
-        logger.info("Generating recommendations for user: {}, limit: {}", userId, limit);
+        logger.debug("Generating recommendations for user ID: {}, limit: {}", userId, limit);
 
         List<Task> userRecentTasks = taskRepository.findRecentTasksByUserId(userId);
-        logger.debug("Found {} recent tasks for user {}", userRecentTasks.size(), userId);
+        logger.debug("Found {} recent tasks for user ID {}", userRecentTasks.size(), userId);
 
         if (userRecentTasks.isEmpty()) {
-            logger.info("No recent tasks found for user {}. Returning default recommendations.", userId);
+            logger.debug("No recent tasks found for user ID {}. Returning default recommendations.", userId);
             return getDefaultRecommendations(limit);
         }
 
@@ -56,7 +56,7 @@ public class RecommendationService {
             List<Task> candidateTasks = taskRepository.findPotentialTasksForUser(userId);
 
             if (candidateTasks.isEmpty()) {
-                logger.info("No candidate tasks for user {}. Falling back to default recommendations.", userId);
+                logger.debug("No candidate tasks for user ID {}. Falling back to default recommendations.", userId);
                 return getDefaultRecommendations(limit);
             }
 
@@ -73,11 +73,11 @@ public class RecommendationService {
             List<Task> recommendations = prioritizeWeekdayMatch(scoredTasks, limit);
 
             if (recommendations.isEmpty()) {
-                logger.info("No personalized recommendations generated for user {}. Returning default recommendations.", userId);
+                logger.debug("No personalized recommendations generated for user ID {}. Returning default recommendations.", userId);
                 return getDefaultRecommendations(limit);
             }
 
-            logger.info("Successfully generated {} recommendations for user {}", recommendations.size(), userId);
+            logger.debug("Successfully generated {} recommendations for user ID {}", recommendations.size(), userId);
             return recommendations;
 
         } catch (Exception e) {
@@ -143,7 +143,7 @@ public class RecommendationService {
     }
 
     public RecommendationResponse getRecommendedTasksByWeekday(Long userId, int limit) {
-        logger.info("Getting weekday recommendations for user: {}, limit: {}", userId, limit);
+        logger.debug("Getting weekday recommendations for user ID: {}, limit: {}", userId, limit);
 
         RecommendationResponse response = new RecommendationResponse();
         try {
@@ -154,7 +154,7 @@ public class RecommendationService {
             response.setRecommendations(recommendations);
             response.setStatus("success");
             response.setMessage("Recommendations for the current weekday fetched successfully.");
-            logger.info("Weekday recommendations generated successfully for user: {}", userId);
+            logger.debug("Weekday recommendations generated successfully for user ID: {}", userId);
         } catch (Exception e) {
             logger.error("Error generating weekday recommendations: {}", e.getMessage(), e);
             response.setStatus("error");
@@ -169,7 +169,7 @@ public class RecommendationService {
         logger.debug("Fetching default recommendations with limit {}", limit);
         try {
             List<Task> popularTasks = taskRepository.findPopularTasks(limit);
-            logger.info("Retrieved {} default recommendations", popularTasks.size());
+            logger.debug("Retrieved {} default recommendations", popularTasks.size());
             return applyDefaultRecommendationMetadata(
                     popularTasks,
                     new RecommendationReason(REASON_POPULAR, "Popular with other TaskVantage users")
@@ -181,7 +181,7 @@ public class RecommendationService {
     }
 
     public RecommendationResponse getRecommendedTasks(Long userId, Long taskId, int limit) {
-        logger.info("Getting recommended tasks for user: {}, taskId: {}, limit: {}", userId, taskId, limit);
+        logger.debug("Getting recommended tasks for user ID: {}, taskId: {}, limit: {}", userId, taskId, limit);
 
         RecommendationResponse response = new RecommendationResponse();
 
@@ -211,14 +211,14 @@ public class RecommendationService {
             }
 
             if (recommendations.isEmpty()) {
-                logger.info("No recommendations generated for request. Returning default recommendations instead.");
+                logger.debug("No recommendations generated for request. Returning default recommendations instead.");
                 recommendations = getDefaultRecommendations(limit);
             }
 
             response.setRecommendations(recommendations);
             response.setStatus("success");
             response.setMessage("Recommendations fetched successfully.");
-            logger.info("Successfully generated recommendations response with {} items", recommendations.size());
+            logger.debug("Successfully generated recommendations response with {} items", recommendations.size());
 
         } catch (Exception e) {
             logger.error("Error generating recommendations: {}", e.getMessage(), e);

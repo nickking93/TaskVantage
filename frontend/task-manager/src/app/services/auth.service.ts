@@ -241,7 +241,6 @@ async setPersistentLogin(enabled: boolean): Promise<void> {
       }),
       map(response => response.token),
       catchError(error => {
-        console.error('Error refreshing token:', error);
         return throwError(() => error);
       })
     );
@@ -358,15 +357,9 @@ async setPersistentLogin(enabled: boolean): Promise<void> {
    */
   sendResetPasswordLink(email: string): Observable<any> {
     const url = `${this.apiUrl}/api/forgot-password`;
-    console.log('Sending reset password link request to:', url);
-    console.log('Email:', email);
     return this.http.post(url, { email }).pipe(
-      map(response => {
-        console.log('Reset link sent successfully:', response);
-        return response;
-      }),
+      map(response => response),
       catchError((error) => {
-        console.error('Error sending reset link:', error);
         return this.handleError(error);
       })
     );
@@ -377,14 +370,9 @@ async setPersistentLogin(enabled: boolean): Promise<void> {
    */
   updatePassword(token: string, password: string): Observable<any> {
     const url = `${this.apiUrl}/api/reset-password`;
-    console.log('Sending password update request to:', url);
     return this.http.post(url, { token, newPassword: password }).pipe(
-      map(response => {
-        console.log('Password updated successfully:', response);
-        return response;
-      }),
+      map(response => response),
       catchError((error) => {
-        console.error('Error updating password:', error);
         return this.handleError(error);
       })
     );
@@ -394,8 +382,6 @@ async setPersistentLogin(enabled: boolean): Promise<void> {
    * Handles HTTP errors
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('Error:', error.message);
-
     if (error.status === 401 && error.error.message === "Your email is not verified. Please verify your email before logging in.") {
       return throwError(() => new Error('Email not verified. Please check your inbox and verify your email.'));
     } else if (error.status === 401) {

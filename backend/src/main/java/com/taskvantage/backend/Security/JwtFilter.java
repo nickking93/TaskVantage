@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,6 +19,8 @@ import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
@@ -36,18 +40,18 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String requestPath = request.getRequestURI();
-        System.out.println("JwtFilter is being executed for request: " + requestPath);
+        logger.debug("JwtFilter processing request: {}", requestPath);
 
         // Skip JWT validation for public endpoints or static resources
         if (EXCLUDED_PATHS.contains(requestPath)) {
-            System.out.println("Skipping JWT validation for path: " + requestPath);
+            logger.debug("Skipping JWT validation for excluded path: {}", requestPath);
             chain.doFilter(request, response); // Skip JWT validation for excluded paths
             return;
         }
 
         // Retrieve the Authorization header
         final String authorizationHeader = request.getHeader("Authorization");
-        System.out.println("Authorization Header: " + authorizationHeader);
+        logger.debug("Authorization header present: {}", authorizationHeader != null);
 
         String username = null;
         String jwt = null;
@@ -57,23 +61,22 @@ public class JwtFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7); // Extract the token
             try {
                 username = jwtUtil.getUsernameFromToken(jwt);  // Extract username from token
-                System.out.println("Username extracted from token: " + username);
-                System.out.println("Token expiration: " + jwtUtil.getExpirationDateFromToken(jwt));
+                logger.debug("Token validated successfully");
             } catch (Exception e) {
-                System.out.println("Error while extracting data from token: " + e.getMessage());
+                logger.debug("Error extracting data from token: {}", e.getMessage());
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: Invalid JWT token");
                 return;
             }
         } else {
             // Allow access to public resources if no token is provided (e.g., static files)
             if (authorizationHeader == null) {
-                System.out.println("Authorization header missing, but the path may be public.");
+                logger.debug("No authorization header for path: {}", requestPath);
                 chain.doFilter(request, response); // Proceed without authentication
                 return;
             }
 
             // For non-public paths, respond with an unauthorized error
-            System.out.println("Authorization header missing or does not start with Bearer ");
+            logger.debug("Invalid authorization header format");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized: Missing Authorization header");
             return;
         }
@@ -87,9 +90,9 @@ public class JwtFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                System.out.println("JWT token validated and user authenticated: " + username);
+                logger.debug("User authenticated successfully");
             } else {
-                System.out.println("JWT token validation failed for user: " + username);
+                logger.debug("JWT token validation failed");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: Invalid JWT token");
                 return;
             }

@@ -79,7 +79,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             }
           } else if (error.status === 0 && error.error instanceof ProgressEvent) {
             // Network error occurred
-            console.error('Network error occurred');
             return throwError(() => new Error('Network error occurred'));
           }
           

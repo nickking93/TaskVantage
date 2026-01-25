@@ -15,10 +15,7 @@ export class AuthGuard implements CanActivate {
     // Convert the Promise from isAuthenticated to an Observable
     return from(this.authService.isAuthenticated()).pipe(
       tap(isAuthenticated => {
-        console.log('AuthGuard: isAuthenticated =', isAuthenticated);
-        
         if (!isAuthenticated) {
-          console.log('AuthGuard: User not authenticated, redirecting to login');
           this.router.navigate(['/login']);
         } else {
           // Store last successful authentication timestamp for PWA

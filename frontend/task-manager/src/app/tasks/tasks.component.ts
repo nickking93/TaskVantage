@@ -18,6 +18,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -35,7 +36,8 @@ import { AuthService } from '../services/auth.service';
     MatDatepickerModule,
     MatNativeDateModule,
     MatMenuModule,
-    MatButtonModule
+    MatButtonModule,
+    MatSnackBarModule
   ],
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css']
@@ -69,7 +71,8 @@ export class TasksComponent implements OnInit {
     private taskGroupService: TaskGroupService,
     private dialog: MatDialog,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -77,16 +80,13 @@ export class TasksComponent implements OnInit {
       this.authService.getUserDetails().subscribe({
         next: (user) => {
           this.userId = String(user.id);
-          console.log('TasksComponent initialized with userId:', this.userId);
           this.loadData();
         },
         error: (err) => {
-          console.error('Error getting user details:', err);
           this.router.navigate(['/login']);
         }
       });
     } else {
-      console.log('TasksComponent initialized with userId:', this.userId);
       this.loadData();
     }
   }
@@ -114,8 +114,8 @@ export class TasksComponent implements OnInit {
         this.groups = groups;
         this.organizeTasks();
       },
-      error: (err) => {
-        console.error('Error loading groups:', err);
+      error: () => {
+        this.snackBar.open('Failed to load groups', 'Close', { duration: 3000 });
       }
     });
   }
@@ -185,10 +185,9 @@ export class TasksComponent implements OnInit {
 
       this.taskService.updateTaskGroup(task.id!, targetGroupId).subscribe({
         next: () => {
-          console.log('Task group updated successfully');
+          // Task group updated successfully
         },
-        error: (err) => {
-          console.error('Failed to update task group:', err);
+        error: () => {
           // Revert the optimistic update
           task.groupId = previousGroupId;
           transferArrayItem(
@@ -197,6 +196,7 @@ export class TasksComponent implements OnInit {
             event.container.data.indexOf(task),
             event.previousIndex
           );
+          this.snackBar.open('Failed to move task', 'Close', { duration: 3000 });
         }
       });
     }
@@ -215,8 +215,8 @@ export class TasksComponent implements OnInit {
         this.editingGroupId = response.group.id!;
         this.editingGroupName = response.group.name;
       },
-      error: (err) => {
-        console.error('Failed to create group:', err);
+      error: () => {
+        this.snackBar.open('Failed to create group', 'Close', { duration: 3000 });
       }
     });
   }
@@ -231,10 +231,10 @@ export class TasksComponent implements OnInit {
       group.name = this.editingGroupName.trim();
       this.taskGroupService.updateGroup(group).subscribe({
         next: () => {
-          console.log('Group name updated');
+          // Group name saved successfully
         },
-        error: (err) => {
-          console.error('Failed to update group name:', err);
+        error: () => {
+          this.snackBar.open('Failed to save group name', 'Close', { duration: 3000 });
         }
       });
     }
@@ -253,10 +253,10 @@ export class TasksComponent implements OnInit {
     group.color = color;
     this.taskGroupService.updateGroup(group).subscribe({
       next: () => {
-        console.log('Group color updated');
+        // Group color updated successfully
       },
-      error: (err) => {
-        console.error('Failed to update group color:', err);
+      error: () => {
+        this.snackBar.open('Failed to update group color', 'Close', { duration: 3000 });
       }
     });
     this.showColorPicker = null;
@@ -271,11 +271,10 @@ export class TasksComponent implements OnInit {
       if (result) {
         this.taskGroupService.deleteGroup(group.id!).subscribe({
           next: () => {
-            console.log('Group deleted');
             this.loadData();
           },
-          error: (err) => {
-            console.error('Failed to delete group:', err);
+          error: () => {
+            this.snackBar.open('Failed to delete group', 'Close', { duration: 3000 });
           }
         });
       }
@@ -301,11 +300,10 @@ export class TasksComponent implements OnInit {
         if (index !== -1) {
           this.tasks[index] = updatedTask;
           this.filterTasks(this.selectedFilter);
-          console.log('Task updated:', updatedTask);
         }
       },
-      (error) => {
-        console.error('Failed to update task:', error);
+      () => {
+        this.snackBar.open('Failed to update task', 'Close', { duration: 3000 });
       }
     );
   }
@@ -319,10 +317,9 @@ export class TasksComponent implements OnInit {
           () => {
             this.tasks = this.tasks.filter(t => t.id !== task.id);
             this.filterTasks(this.selectedFilter);
-            console.log('Task deleted:', task);
           },
-          (error) => {
-            console.error('Failed to delete task:', error);
+          () => {
+            this.snackBar.open('Failed to delete task', 'Close', { duration: 3000 });
           }
         );
       }
@@ -342,8 +339,8 @@ export class TasksComponent implements OnInit {
           this.filterTasks(this.selectedFilter);
         }
       },
-      (error) => {
-        console.error('Failed to update task:', error);
+      () => {
+        this.snackBar.open('Failed to save changes', 'Close', { duration: 3000 });
       }
     );
   }
