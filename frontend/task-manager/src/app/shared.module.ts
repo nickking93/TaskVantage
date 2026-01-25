@@ -8,18 +8,18 @@ import { MatButtonModule } from '@angular/material/button';
 @NgModule({
   declarations: [
     SuccessDialogComponent,
-    WelcomeDialogComponent, 
   ],
   imports: [
     CommonModule,
     MatDialogModule,
-    MatButtonModule,  
+    MatButtonModule,
+    WelcomeDialogComponent,
   ],
   exports: [
     SuccessDialogComponent,
-    WelcomeDialogComponent, 
+    WelcomeDialogComponent,
     MatDialogModule,
-    MatButtonModule,  
+    MatButtonModule,
   ]
 })
 export class SharedModule {}

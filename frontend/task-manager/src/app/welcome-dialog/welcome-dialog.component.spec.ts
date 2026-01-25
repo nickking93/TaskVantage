@@ -10,8 +10,7 @@ describe('WelcomeDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [WelcomeDialogComponent],
-      imports: [NoopAnimationsModule],
+      imports: [WelcomeDialogComponent, NoopAnimationsModule],
       providers: [
         { provide: MatDialogRef, useValue: { close: jasmine.createSpy('close'), disableClose: false } }
       ]
