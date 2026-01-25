@@ -16,21 +16,20 @@ import { Task } from '../models/task.model';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 @Component({
-  selector: 'app-add-task',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatButtonModule
-  ],
-  templateUrl: './add-task.component.html',
-  styleUrls: ['./add-task.component.css']
+    selector: 'app-add-task',
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule
+    ],
+    templateUrl: './add-task.component.html',
+    styleUrls: ['./add-task.component.css']
 })
 export class AddTaskComponent implements OnInit {
   userId: string = ''; 

@@ -18,22 +18,21 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-settings',
-  templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.css'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    MatProgressSpinnerModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSlideToggleModule,
-    MatDividerModule,
-    MatSnackBarModule,
-    MatDialogModule
-  ]
+    selector: 'app-settings',
+    templateUrl: './settings.component.html',
+    styleUrls: ['./settings.component.css'],
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        MatProgressSpinnerModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSlideToggleModule,
+        MatDividerModule,
+        MatSnackBarModule,
+        MatDialogModule
+    ]
 })
 export class SettingsComponent implements OnInit {
   isGoogleConnected: boolean = false;

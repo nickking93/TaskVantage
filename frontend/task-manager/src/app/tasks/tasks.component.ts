@@ -22,25 +22,24 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-tasks',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule,
-    DragDropModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatMenuModule,
-    MatButtonModule,
-    MatSnackBarModule
-  ],
-  templateUrl: './tasks.component.html',
-  styleUrls: ['./tasks.component.css']
+    selector: 'app-tasks',
+    imports: [
+        CommonModule,
+        RouterModule,
+        FormsModule,
+        DragDropModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatMenuModule,
+        MatButtonModule,
+        MatSnackBarModule
+    ],
+    templateUrl: './tasks.component.html',
+    styleUrls: ['./tasks.component.css']
 })
 export class TasksComponent implements OnInit {
 

@@ -59,19 +59,18 @@ export function passwordMatchValidator(group: FormGroup): ValidationErrors | nul
 }
 
 @Component({
-  selector: 'app-forgot-password',
-  standalone: true,
-  templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.css'],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    RouterModule,
-    MatIconModule
-  ]
+    selector: 'app-forgot-password',
+    templateUrl: './forgot-password.component.html',
+    styleUrls: ['./forgot-password.component.css'],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        RouterModule,
+        MatIconModule
+    ]
 })
 export class ForgotPasswordComponent implements OnInit {
 

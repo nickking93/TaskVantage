@@ -9,9 +9,10 @@ import { WelcomeDialogComponent } from '../../app/welcome-dialog/welcome-dialog.
 import { FirebaseMessagingService } from '../../app/services/firebase-messaging.service';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css'],
+    standalone: false
 })
 export class LoginComponent implements OnInit {
   currentSlide = 0;

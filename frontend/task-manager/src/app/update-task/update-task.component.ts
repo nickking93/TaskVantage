@@ -15,20 +15,19 @@ import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 @Component({
-  selector: 'app-update-task',
-  standalone: true,
-  templateUrl: './update-task.component.html',
-  styleUrls: ['./update-task.component.css'],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSelectModule,
-    MatCheckboxModule
-  ]
+    selector: 'app-update-task',
+    templateUrl: './update-task.component.html',
+    styleUrls: ['./update-task.component.css'],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatInputModule,
+        MatButtonModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatSelectModule,
+        MatCheckboxModule
+    ]
 })
 export class UpdateTaskComponent implements OnInit {
   taskForm!: FormGroup;

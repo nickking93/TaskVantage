@@ -4,14 +4,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-loading-dialog',
-  standalone: true,
-  imports: [
-    MatDialogModule,
-    MatProgressSpinnerModule,
-    CommonModule
-  ],
-  template: `
+    selector: 'app-loading-dialog',
+    imports: [
+        MatDialogModule,
+        MatProgressSpinnerModule,
+        CommonModule
+    ],
+    template: `
     <div style="text-align: center; padding: 20px;">
       <mat-spinner></mat-spinner>
       <p>{{ data.message }}</p> <!-- Dynamically display the passed message -->

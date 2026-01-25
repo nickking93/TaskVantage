@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-welcome-dialog',
-  templateUrl: './welcome-dialog.component.html',
-  styleUrls: ['./welcome-dialog.component.css']
+    selector: 'app-welcome-dialog',
+    templateUrl: './welcome-dialog.component.html',
+    styleUrls: ['./welcome-dialog.component.css'],
+    standalone: false
 })
 export class WelcomeDialogComponent {
   constructor(

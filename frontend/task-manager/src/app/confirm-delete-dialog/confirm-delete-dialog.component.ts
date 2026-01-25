@@ -2,8 +2,8 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-confirm-delete-dialog',
-  template: `
+    selector: 'app-confirm-delete-dialog',
+    template: `
     <h1 mat-dialog-title>Confirm Delete</h1>
     <div mat-dialog-content class="confirm-content">
       <p>{{ data?.message || 'Are you sure you want to delete this task?' }}</p>
@@ -13,8 +13,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       <button mat-button (click)="onCancel()">No</button>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       .confirm-content {
         padding: 16px; /* Adds padding on all sides */
       }
@@ -28,7 +28,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
         margin-right: 8px; /* Adds spacing between the buttons */
       }
     `
-  ]
+    ],
+    standalone: false
 })
 export class ConfirmDeleteDialogComponent {
   constructor(

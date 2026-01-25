@@ -9,15 +9,14 @@ import { environment } from '../../environments/environment';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-recommendations',
-  templateUrl: './recommendations.component.html',
-  styleUrls: ['./recommendations.component.css'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    MatProgressSpinnerModule
-  ]
+    selector: 'app-recommendations',
+    templateUrl: './recommendations.component.html',
+    styleUrls: ['./recommendations.component.css'],
+    imports: [
+        CommonModule,
+        MatIconModule,
+        MatProgressSpinnerModule
+    ]
 })
 export class RecommendationsComponent implements OnInit {
   @Input() userId!: string;

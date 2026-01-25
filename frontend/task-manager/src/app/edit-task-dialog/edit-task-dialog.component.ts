@@ -13,22 +13,21 @@ import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
 
 @Component({
-  selector: 'app-edit-task-dialog',
-  standalone: true,
-  templateUrl: './edit-task-dialog.component.html',
-  styleUrls: ['./edit-task-dialog.component.css'],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatInputModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatIconModule
-  ]
+    selector: 'app-edit-task-dialog',
+    templateUrl: './edit-task-dialog.component.html',
+    styleUrls: ['./edit-task-dialog.component.css'],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatDialogModule,
+        MatInputModule,
+        MatButtonModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatIconModule
+    ]
 })
 export class EditTaskDialogComponent implements OnInit {
   taskForm!: FormGroup;
