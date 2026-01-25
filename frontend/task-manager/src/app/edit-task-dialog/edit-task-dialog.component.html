@@ -1,0 +1,120 @@
+<div class="edit-task-dialog">
+  <div class="dialog-header">
+    <h2>Edit Task</h2>
+    <button mat-icon-button (click)="cancel()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="taskForm" (ngSubmit)="updateTask()" class="task-form">
+    <!-- Title Field -->
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" required>
+      <mat-error *ngIf="taskForm.get('title')?.hasError('required')">
+        Title is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Description Field -->
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+
+    <!-- Date/Time Row -->
+    <div class="date-time-row">
+      <!-- Scheduled Start Date -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Scheduled Start Date</mat-label>
+        <input matInput
+               [matDatepicker]="scheduledStartDatePicker"
+               formControlName="scheduledStart"
+               required
+               (dateChange)="validateDates()">
+        <mat-datepicker-toggle matSuffix [for]="scheduledStartDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #scheduledStartDatePicker></mat-datepicker>
+        <mat-error *ngIf="taskForm.get('scheduledStart')?.hasError('required')">
+          Required
+        </mat-error>
+        <mat-error *ngIf="scheduledStartDateInvalid">
+          Must be in the future
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Scheduled Start Time -->
+      <mat-form-field appearance="fill" class="form-field time-field" *ngIf="!taskForm.get('isAllDay')?.value">
+        <mat-label>Start Time</mat-label>
+        <input matInput
+               formControlName="scheduledStartTime"
+               type="time"
+               required
+               (change)="validateDates()">
+      </mat-form-field>
+    </div>
+
+    <div class="date-time-row">
+      <!-- Due Date -->
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Due Date</mat-label>
+        <input matInput
+               [matDatepicker]="dueDatePicker"
+               formControlName="dueDate"
+               required
+               (dateChange)="validateDates()">
+        <mat-datepicker-toggle matSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #dueDatePicker></mat-datepicker>
+        <mat-error *ngIf="taskForm.get('dueDate')?.hasError('required')">
+          Required
+        </mat-error>
+        <mat-error *ngIf="dueDateInvalid">
+          Must be after start date
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Due Time -->
+      <mat-form-field appearance="fill" class="form-field time-field" *ngIf="!taskForm.get('isAllDay')?.value">
+        <mat-label>Due Time</mat-label>
+        <input matInput
+               formControlName="dueTime"
+               type="time"
+               required
+               (change)="validateDates()">
+      </mat-form-field>
+    </div>
+
+    <!-- Priority Field -->
+    <mat-form-field appearance="fill" class="form-field">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority" required>
+        <mat-option value="High">High</mat-option>
+        <mat-option value="Medium">Medium</mat-option>
+        <mat-option value="Low">Low</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Checkboxes -->
+    <div class="checkbox-group">
+      <mat-checkbox formControlName="recurring">Recurring</mat-checkbox>
+      <mat-checkbox formControlName="notifyBeforeStart">Push Notifications</mat-checkbox>
+      <mat-checkbox formControlName="isAllDay">All Day Task</mat-checkbox>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="button-container">
+      <button mat-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="taskForm.invalid || formInvalid || isLoading">
+        <span *ngIf="!isLoading">Update Task</span>
+        <span *ngIf="isLoading">Updating...</span>
+      </button>
+    </div>
+  </form>
+</div>

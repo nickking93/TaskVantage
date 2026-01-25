@@ -264,7 +264,8 @@
   .dashboard-container {
     flex-direction: column;
     height: auto;
-    overflow-y: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .sidebar {
@@ -282,39 +283,36 @@
   }
 
   .content-area {
-    padding: 20px;
+    padding: 60px 15px 20px 15px;
     margin-left: 0;
-    flex: 1;
-    flex-direction: column;
-    overflow-y: visible;
-  }
-
-  .main-dashboard, .chart, .activity, .calendar {
     width: 100%;
-    margin-bottom: 20px;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
-  .main-dashboard {
-    margin-right: 0;
+  .dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .dashboard-left,
+  .dashboard-middle,
+  .dashboard-right {
+    width: 100%;
+    gap: 15px;
   }
 
   .chart, .activity {
     width: 100%;
     margin: 0;
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
   }
 
-  .calendar {
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 20px !important;
-    box-sizing: border-box;
-  }
-  
-  .calendar * {
-    width: 100% !important;
-    margin: 0 auto !important;
+  #calendar-section {
+    width: 100%;
+    padding: 10px;
     box-sizing: border-box;
   }
 
@@ -325,28 +323,33 @@
 
   .info-section {
     flex-direction: column;
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
+    margin-bottom: 20px;
   }
 
   .info-item {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+  }
+
+  .info-item:last-child {
+    margin-bottom: 0;
   }
 
   .divider-vertical {
     display: none;
   }
 
-  .modal-content {
-    padding: 20px;
+  .info-value {
+    font-size: 20px;
+  }
+
+  .info-label {
+    font-size: 12px;
   }
 
   .sidebar .menu-item {
     padding: 10px;
-  }
-
-  #calendar-section {
-    /* Custom styles for the calendar section, if needed in the future */
   }
 
   .sidebar.collapsed {
@@ -356,5 +359,15 @@
 
   .content-area.expanded {
     margin-left: 0;
+  }
+
+  .today li {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .today li button {
+    margin-left: 0 !important;
+    margin-top: 5px;
   }
 }

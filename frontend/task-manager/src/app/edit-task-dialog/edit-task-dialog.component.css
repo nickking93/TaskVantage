@@ -1,0 +1,91 @@
+.edit-task-dialog {
+  padding: 20px;
+  max-width: 500px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dialog-header h2 {
+  margin: 0;
+  color: #05202E;
+}
+
+.close-button {
+  color: #666;
+}
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field {
+  width: 100%;
+}
+
+.date-time-row {
+  display: flex;
+  gap: 12px;
+}
+
+.date-time-row .form-field {
+  flex: 1;
+}
+
+.date-time-row .time-field {
+  flex: 0 0 120px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+  .edit-task-dialog {
+    padding: 16px;
+  }
+
+  .date-time-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .date-time-row .time-field {
+    flex: 1;
+  }
+
+  .checkbox-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .button-container {
+    flex-direction: column-reverse;
+  }
+
+  .button-container button {
+    width: 100%;
+  }
+}
