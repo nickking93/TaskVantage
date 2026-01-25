@@ -24,6 +24,7 @@ import { filter } from 'rxjs/operators';
 import { getApp } from 'firebase/app';
 import { RecommendationsComponent } from '../recommendations/recommendations.component';
 import { HomeModule } from './home.module';
+import { TaskCalendarComponent } from '../task-calendar/task-calendar.component';
 
 interface User {
   id: number | string;
@@ -49,7 +50,8 @@ interface User {
     MatIconModule,
     MatDialogModule,
     TasksComponent,
-    RecommendationsComponent
+    RecommendationsComponent,
+    TaskCalendarComponent
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
