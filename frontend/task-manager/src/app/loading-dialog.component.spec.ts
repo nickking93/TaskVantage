@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { LoadingDialogComponent } from './loading-dialog.component';
 
@@ -8,7 +10,13 @@ describe('LoadingDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoadingDialogComponent]
+      imports: [
+        LoadingDialogComponent,
+        NoopAnimationsModule
+      ],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: { message: 'Loading...' } }
+      ]
     })
     .compileComponents();
 
