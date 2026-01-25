@@ -22,4 +22,4 @@ jobs:
           claude_oauth_token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           prompt: "/review"
           # Optional: Request a specific model available in your Max plan
-          claude_args: "--model claude-3-7-sonnet" 
+          claude_args: "--model claude-sonnet-4" 
