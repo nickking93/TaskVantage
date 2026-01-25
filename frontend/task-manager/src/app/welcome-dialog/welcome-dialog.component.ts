@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-welcome-dialog',
-  templateUrl: './welcome-dialog.component.html',
-  styleUrls: ['./welcome-dialog.component.css']
+    selector: 'app-welcome-dialog',
+    templateUrl: './welcome-dialog.component.html',
+    styleUrls: ['./welcome-dialog.component.css'],
+    imports: [CommonModule, MatDialogModule, MatButtonModule]
 })
 export class WelcomeDialogComponent {
   constructor(

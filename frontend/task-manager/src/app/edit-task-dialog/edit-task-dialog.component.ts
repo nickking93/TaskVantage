@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
@@ -13,12 +13,10 @@ import { TaskService } from '../services/task.service';
 import { Task } from '../models/task.model';
 
 @Component({
-  selector: 'app-edit-task-dialog',
-  standalone: true,
-  templateUrl: './edit-task-dialog.component.html',
-  styleUrls: ['./edit-task-dialog.component.css'],
-  imports: [
-    CommonModule,
+    selector: 'app-edit-task-dialog',
+    templateUrl: './edit-task-dialog.component.html',
+    styleUrls: ['./edit-task-dialog.component.css'],
+    imports: [
     ReactiveFormsModule,
     MatDialogModule,
     MatInputModule,
@@ -28,7 +26,7 @@ import { Task } from '../models/task.model';
     MatSelectModule,
     MatCheckboxModule,
     MatIconModule
-  ]
+]
 })
 export class EditTaskDialogComponent implements OnInit {
   taskForm!: FormGroup;

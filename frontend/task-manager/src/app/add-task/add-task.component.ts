@@ -9,17 +9,15 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+
 import { TaskService } from '../services/task.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Task } from '../models/task.model';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 
 @Component({
-  selector: 'app-add-task',
-  standalone: true,
-  imports: [
-    CommonModule,
+    selector: 'app-add-task',
+    imports: [
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -28,9 +26,9 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
     MatSelectModule,
     MatCheckboxModule,
     MatButtonModule
-  ],
-  templateUrl: './add-task.component.html',
-  styleUrls: ['./add-task.component.css']
+],
+    templateUrl: './add-task.component.html',
+    styleUrls: ['./add-task.component.css']
 })
 export class AddTaskComponent implements OnInit {
   userId: string = ''; 

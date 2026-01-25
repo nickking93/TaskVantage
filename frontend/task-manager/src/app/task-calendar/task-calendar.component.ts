@@ -16,26 +16,25 @@ interface TaskCalendarEvent extends CalendarEvent {
 }
 
 @Component({
-  selector: 'app-task-calendar',
-  standalone: true,
-  templateUrl: './task-calendar.component.html',
-  styleUrls: ['./task-calendar.component.css'],
-  imports: [
-    CommonModule,
-    CalendarModule,
-    MatButtonModule,
-    MatIconModule
-  ],
-  providers: [
-    {
-      provide: DateAdapter,
-      useFactory: adapterFactory
-    },
-    CalendarUtils,
-    CalendarA11y,
-    CalendarDateFormatter,
-    CalendarEventTitleFormatter
-  ]
+    selector: 'app-task-calendar',
+    templateUrl: './task-calendar.component.html',
+    styleUrls: ['./task-calendar.component.css'],
+    imports: [
+        CommonModule,
+        CalendarModule,
+        MatButtonModule,
+        MatIconModule
+    ],
+    providers: [
+        {
+            provide: DateAdapter,
+            useFactory: adapterFactory
+        },
+        CalendarUtils,
+        CalendarA11y,
+        CalendarDateFormatter,
+        CalendarEventTitleFormatter
+    ]
 })
 export class TaskCalendarComponent implements OnInit, OnDestroy, OnChanges {
   @Input() userId: string = '';

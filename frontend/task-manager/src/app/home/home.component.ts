@@ -32,27 +32,26 @@ interface User {
 }
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'],
-  standalone: true,
-  imports: [
-    FormsModule,
-    RouterModule,
-    CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatButtonModule,
-    MatIconModule,
-    MatDialogModule,
-    TasksComponent,
-    RecommendationsComponent,
-    TaskCalendarComponent
-  ]
+    selector: 'app-home',
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.css'],
+    imports: [
+        FormsModule,
+        RouterModule,
+        CommonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatIconModule,
+        MatDialogModule,
+        TasksComponent,
+        RecommendationsComponent,
+        TaskCalendarComponent
+    ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
   username: string = '';

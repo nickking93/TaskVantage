@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 import { LoadingDialogComponent } from '../loading-dialog.component';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -59,19 +59,17 @@ export function passwordMatchValidator(group: FormGroup): ValidationErrors | nul
 }
 
 @Component({
-  selector: 'app-forgot-password',
-  standalone: true,
-  templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.css'],
-  imports: [
-    CommonModule,
+    selector: 'app-forgot-password',
+    templateUrl: './forgot-password.component.html',
+    styleUrls: ['./forgot-password.component.css'],
+    imports: [
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     RouterModule,
     MatIconModule
-  ]
+]
 })
 export class ForgotPasswordComponent implements OnInit {
 
