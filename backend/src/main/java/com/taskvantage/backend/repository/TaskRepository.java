@@ -65,6 +65,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t FROM Task t WHERE t.status != 'Completed' ORDER BY t.recommendationScore DESC")
     List<Task> findPopularTasks(Pageable pageable);
 
+    boolean existsByUserId(Long userId);
+
     // Helper method to convert limit to Pageable
     default List<Task> findPopularTasks(int limit) {
         return findPopularTasks(Pageable.ofSize(limit));
