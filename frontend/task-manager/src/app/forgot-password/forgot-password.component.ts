@@ -159,7 +159,6 @@ isButtonEnabled(): boolean {
         },
         (error) => {
           loadingDialogRef.close();
-          console.error('Error updating password:', error);
           alert('An error occurred while updating the password. Please try again later.');
         }
       );
@@ -179,7 +178,6 @@ isButtonEnabled(): boolean {
         },
         (error) => {
           loadingDialogRef.close();
-          console.error('Error sending reset password link:', error);
           alert('An error occurred while sending the reset link. Please try again later.');
         }
       );

@@ -128,13 +128,10 @@ export class RegisterComponent implements OnInit {
         loadingDialogRef.close();
         if (response) {
           this.openSuccessDialog();
-        } else {
-          console.log('Registration failed');
         }
       },
       error => {
         loadingDialogRef.close();
-        console.error('Registration error', error);
       }
     );
   }

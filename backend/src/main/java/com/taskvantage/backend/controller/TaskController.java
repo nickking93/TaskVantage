@@ -63,7 +63,7 @@ public class TaskController {
             ZonedDateTime localDueDate = task.getDueDate();
             ZonedDateTime utcDueDate = localDueDate.withZoneSameInstant(ZoneOffset.UTC);  // Convert to UTC
             task.setDueDate(utcDueDate);
-            logger.info("Converted Due Date to UTC: {}", utcDueDate);
+            logger.debug("Converted Due Date to UTC: {}", utcDueDate);
         }
 
         // Convert scheduledStart to UTC if it's provided
@@ -71,7 +71,7 @@ public class TaskController {
             ZonedDateTime localScheduledStart = task.getScheduledStart();
             ZonedDateTime utcScheduledStart = localScheduledStart.withZoneSameInstant(ZoneOffset.UTC);  // Convert to UTC
             task.setScheduledStart(utcScheduledStart);
-            logger.info("Converted Scheduled Start to UTC: {}", utcScheduledStart);
+            logger.debug("Converted Scheduled Start to UTC: {}", utcScheduledStart);
         }
 
         // Create and save the task
@@ -90,8 +90,7 @@ public class TaskController {
             @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
-        // Logging the received ID for debugging
-        System.out.println("Fetching task with ID: " + id);
+        logger.debug("Fetching task with ID: {}", id);
 
         // Fetch the task by ID
         Optional<Task> taskOptional = taskService.getTaskById(id);
@@ -99,7 +98,7 @@ public class TaskController {
         // Check if the task exists
         if (taskOptional.isEmpty()) {
             response.put("message", "Task not found with ID: " + id);
-            System.out.println("Task not found with ID: " + id);
+            logger.debug("Task not found with ID: {}", id);
             return ResponseEntity.status(404).body(response);
         }
 
@@ -111,7 +110,7 @@ public class TaskController {
             return authError;
         }
 
-        System.out.println("Fetched Task: " + task);
+        logger.debug("Task retrieved successfully with ID: {}", id);
 
         // Add task to the response
         response.put("task", task);

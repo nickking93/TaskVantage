@@ -59,7 +59,6 @@ export class SettingsComponent implements OnInit {
         this.loadAllSettings();
       },
       error: (err) => {
-        console.error('Error getting user details:', err);
         this.isLoading = false;
         this.router.navigate(['/login']);
       }
@@ -125,7 +124,6 @@ export class SettingsComponent implements OnInit {
     if (this.userId) {
       this.googleAuthService.connectGoogleCalendar(this.userId);
     } else {
-      console.error('User ID is not available');
       this.snackBar.open('User ID is not available', 'Close', {
         duration: 3000
       });
@@ -145,7 +143,6 @@ export class SettingsComponent implements OnInit {
         );
       },
       error: (error) => {
-        console.error('Error updating task sync:', error);
         this.isTaskSyncEnabled = previousState;  // Revert on error
         this.snackBar.open('Failed to update task sync settings', 'Close', {
           duration: 3000
@@ -173,7 +170,6 @@ export class SettingsComponent implements OnInit {
       },
       error: (error) => {
         dialogRef.close();
-        console.error('Error disconnecting Google Calendar:', error);
         this.snackBar.open('Failed to disconnect Google Calendar', 'Close', {
           duration: 3000
         });

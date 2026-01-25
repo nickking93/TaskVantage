@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';  
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,8 @@ export class TaskService {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   isCompletedStatus(status?: string | null): boolean {
@@ -35,8 +37,8 @@ export class TaskService {
       (tasks: Task[]) => {
         filterCallback(tasks);
       },
-      (error) => {
-        console.error('Failed to fetch tasks:', error);
+      () => {
+        this.snackBar.open('Failed to load tasks', 'Close', { duration: 3000 });
       }
     );
   }
@@ -88,36 +90,28 @@ export class TaskService {
 
   // Handle error response
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('TaskService Error:', error.message);
     return throwError(() => new Error('TaskService Error: ' + error.message));
   }
 
   // Method to start a task by updating its status and start date
   startTask(task: Task): void {
     if (!task || !task.id) {
-      console.error('Task or Task ID is undefined. Cannot start task.');
       return;
     }
-  
+
     const taskId = task.id;
     const headers = this.authService.getAuthHeaders();
     const url = `${this.tasksUrl}/${taskId}/start`;
-  
+
     task.status = 'In Progress';
     task.startDate = new Date().toISOString();
-  
+
     this.http.put<Task>(url, task, { headers, responseType: 'json' }).subscribe(
-      (response) => {
-        console.log('Task started successfully:', response);
+      () => {
+        // Task started successfully
       },
-      (error) => {
-        if (error.status === 400) {
-          console.error('Bad Request:', error.error.message);
-        } else if (error.status === 404) {
-          console.error('Task not found (404):', error.error.message);
-        } else {
-          console.error('An unexpected error occurred:', error);
-        }
+      () => {
+        this.snackBar.open('Failed to start task', 'Close', { duration: 3000 });
       }
     );
   }
@@ -126,18 +120,15 @@ export class TaskService {
   handleStartTask(task: Task, callback: () => void): void {
     task.status = 'In Progress';
     task.startDate = new Date().toISOString();
-  
+
     this.updateTask(task).subscribe(
       (response: Task | null) => {
         if (response) {
-          console.log('Task started successfully:', response);
           callback();
-        } else {
-          console.error('Failed to start task. Response was null.');
         }
       },
-      (error) => {
-        console.error('Error starting task:', error);
+      () => {
+        this.snackBar.open('Failed to start task', 'Close', { duration: 3000 });
       }
     );
   }
@@ -182,8 +173,8 @@ export class TaskService {
           refreshCallback();
         });
       },
-      (error) => {
-        console.error('Failed to mark task as completed:', error);
+      () => {
+        this.snackBar.open('Failed to complete task', 'Close', { duration: 3000 });
       }
     );
   }

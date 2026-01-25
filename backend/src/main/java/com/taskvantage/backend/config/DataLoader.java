@@ -8,6 +8,8 @@ import com.taskvantage.backend.repository.UserRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +29,8 @@ import java.util.UUID;
 @Component
 public class DataLoader {
 
+    private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
+
     @Bean
     public CommandLineRunner loadData(UserRepository userRepository, TaskRepository taskRepository, PasswordEncoder passwordEncoder) {
         return args -> {
@@ -39,9 +43,9 @@ public class DataLoader {
                 user.setEmailVerified(true);  // Set emailVerified to true for test user
                 user.setVerificationToken(UUID.randomUUID().toString());  // Optional: Generate a token
                 userRepository.save(user);
-                System.out.println("Test user created: username=pat@example.com, password=password");
+                logger.info("Test user created");
             } else {
-                System.out.println("Test user already exists.");
+                logger.debug("Test user already exists");
             }
 
             // Load tasks from CSV file
@@ -81,13 +85,12 @@ public class DataLoader {
                     }
 
                     taskRepository.saveAll(tasks);
-                    System.out.println("Tasks imported from CSV and saved to database.");
+                    logger.info("Tasks imported from CSV: {} tasks saved", tasks.size());
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Error loading tasks from CSV file.");
+                    logger.error("Error loading tasks from CSV file", e);
                 }
             } else {
-                System.out.println("Tasks already exist.");
+                logger.debug("Tasks already exist, skipping CSV import");
             }
         };
     }

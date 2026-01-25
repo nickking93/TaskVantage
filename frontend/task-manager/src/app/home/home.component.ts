@@ -84,23 +84,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       event.preventDefault();
       this.deferredPrompt = event;
       this.canPromptPwaInstall = true;
-      console.log('beforeinstallprompt event fired');
     });
 
     window.addEventListener('appinstalled', () => {
-      console.log('App installed');
       this.canPromptPwaInstall = false;
     });
   }
 
   async ngOnInit(): Promise<void> {
-    console.log('HomeComponent ngOnInit started');
-
     try {
       const userResponse = await this.authService.getUserDetails().toPromise() as User | null;
 
       if (!userResponse || !this.isValidUser(userResponse)) {
-        console.error('Invalid user data received');
         await this.logout();
         return;
       }
@@ -115,12 +110,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       try {
         await this.firebaseMessagingService.initialize();
       } catch (error) {
-        console.error('Error initializing Firebase messaging:', error);
       }
 
       this.reloadData();
     } catch (err) {
-      console.error('Error getting user details:', err);
       await this.router.navigate(['/login']);
     }
 
@@ -155,11 +148,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.deferredPrompt) {
       this.deferredPrompt.prompt();
       this.deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
-        } else {
-          console.log('User dismissed the A2HS prompt');
-        }
         this.deferredPrompt = null;
         this.canPromptPwaInstall = false;
       });
@@ -347,7 +335,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       await this.authService.logout().toPromise();
       await this.router.navigate(['/login']);
     } catch (error) {
-      console.error('Error during logout:', error);
       await this.router.navigate(['/login']);
     }
   }

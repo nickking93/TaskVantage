@@ -75,7 +75,6 @@ export class AddTaskComponent implements OnInit {
         this.newTask.userId = this.userId;
       },
       error: (err) => {
-        console.error('Error getting user details:', err);
         this.router.navigate(['/login']);
       }
     });
@@ -171,11 +170,8 @@ export class AddTaskComponent implements OnInit {
       }
     }
   
-    console.log('Task to be created:', this.newTask);
-  
     this.taskService.createTask(this.newTask).subscribe({
       next: (response) => {
-        console.log('Task created successfully:', response);
         this.dialog.open(SuccessDialogComponent, {
           width: '300px',
           data: { title: 'Success', message: 'Task added successfully!' }
@@ -183,7 +179,10 @@ export class AddTaskComponent implements OnInit {
         this.router.navigate(['/home']);
       },
       error: (error) => {
-        console.error('Error adding task:', error);
+        this.dialog.open(SuccessDialogComponent, {
+          width: '300px',
+          data: { title: 'Error', message: 'Failed to create task. Please try again.' }
+        });
       }
     });
   }

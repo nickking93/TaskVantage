@@ -40,7 +40,6 @@ export class RecommendationsComponent implements OnInit {
           this.fetchRecommendations();
         },
         error: (err) => {
-          console.error('Error getting user details:', err);
           this.error = 'User ID is missing';
           this.loading = false;
         }

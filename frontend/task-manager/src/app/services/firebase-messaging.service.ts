@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, from, of } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, retry, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { getMessaging, getToken, deleteToken, onMessage } from 'firebase/messaging';
@@ -18,18 +18,13 @@ export class FirebaseMessagingService {
   constructor(private http: HttpClient) {}
 
   async initialize(): Promise<void> {
-    console.log('Starting FirebaseMessagingService initialize');
-    
     const jwtToken = localStorage.getItem('jwtToken');
-    console.log('JWT Token exists:', !!jwtToken);
-    
+
     if (!jwtToken) {
-      console.log('User not logged in, skipping notification initialization');
       return;
     }
 
     if (this.isInitialized) {
-      console.log('Firebase messaging already initialized');
       return;
     }
 
@@ -40,18 +35,18 @@ export class FirebaseMessagingService {
 
       await this.initializeServiceWorker();
       await this.initializeMessaging();
-      
+
       // Request permission and get token if not already done
       if (Notification.permission === 'granted') {
         await this.getAndUpdateToken();
       }
-      
+
       this.isInitialized = true;
-      console.log('Firebase messaging initialized successfully');
 
     } catch (error) {
-      console.error('Error initializing Firebase Messaging:', error);
-      throw error;
+      // Firebase messaging initialization failed - this is non-fatal
+      // The app can continue without push notifications
+      this.isInitialized = false;
     }
   }
 
@@ -69,7 +64,6 @@ export class FirebaseMessagingService {
     try {
       // Wait for service worker to be ready
       if (!this.serviceWorkerRegistration) {
-        console.error('No service worker registration available');
         return null;
       }
 
@@ -80,68 +74,53 @@ export class FirebaseMessagingService {
 
       const token = await this.getMessagingToken();
       if (token) {
-        console.log('Got FCM token:', token);
         await this.updateTokenInBackend(token);
         return token;
       }
       return null;
     } catch (error) {
-      console.error('Error getting and updating token:', error);
       return null;
     }
   }
 
   private checkBrowserSupport(): boolean {
     if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-      console.warn('Notifications are not supported in this browser');
       return false;
     }
     return true;
   }
 
   private async initializeServiceWorker(): Promise<void> {
-    console.log('Initializing service worker');
-    
-    try {
-      // Unregister existing service workers
-      const existingRegistrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of existingRegistrations) {
-        if (registration.scope.includes('firebase-cloud-messaging-push-scope')) {
-          await registration.unregister();
-        }
+    // Unregister existing service workers
+    const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+    for (const registration of existingRegistrations) {
+      if (registration.scope.includes('firebase-cloud-messaging-push-scope')) {
+        await registration.unregister();
       }
-
-      // Register new service worker
-      this.serviceWorkerRegistration = await this.registerServiceWorker();
-      console.log('Service worker registered successfully');
-
-      // Wait for activation
-      await this.waitForServiceWorkerActivation(this.serviceWorkerRegistration);
-      console.log('Service worker activated successfully');
-    } catch (error) {
-      console.error('Error in service worker initialization:', error);
-      throw error;
     }
+
+    // Register new service worker
+    this.serviceWorkerRegistration = await this.registerServiceWorker();
+
+    // Wait for activation
+    await this.waitForServiceWorkerActivation(this.serviceWorkerRegistration);
   }
 
   private async initializeMessaging(): Promise<void> {
-    console.log('Initializing Firebase messaging');
     const messaging = getMessaging(getApp());
-    
+
     onMessage(messaging, (payload) => {
-      console.log('Foreground message received:', payload);
       this.showNotification(payload);
     });
   }
 
   async requestPermissionAndGetToken(): Promise<string | null> {
     if (this.permissionRequestInProgress) {
-      console.log('Permission request already in progress');
       return null;
     }
 
     this.permissionRequestInProgress = true;
-    
+
     try {
       if (!this.checkBrowserSupport()) {
         return null;
@@ -152,9 +131,7 @@ export class FirebaseMessagingService {
         await this.initialize();
       }
 
-      console.log('Requesting Notification permission from browser');
       const permission = await Notification.requestPermission();
-      console.log('Browser permission request result:', permission);
       
       if (permission === 'granted') {
         return this.getAndUpdateToken();
@@ -166,7 +143,6 @@ export class FirebaseMessagingService {
       
       return null;
     } catch (error) {
-      console.error('Error requesting permission:', error);
       return null;
     } finally {
       this.permissionRequestInProgress = false;
@@ -176,8 +152,7 @@ export class FirebaseMessagingService {
   private async getMessagingToken(): Promise<string | null> {
     try {
       const messaging = getMessaging(getApp());
-      console.log('Getting messaging token...');
-      
+
       let options: { vapidKey: string; serviceWorkerRegistration?: ServiceWorkerRegistration } = {
         vapidKey: environment.firebaseConfig.vapidKey
       };
@@ -189,31 +164,21 @@ export class FirebaseMessagingService {
       const currentToken = await getToken(messaging, options);
 
       if (currentToken) {
-        console.log('Messaging token obtained successfully');
         localStorage.setItem('notificationPermission', 'granted');
         return currentToken;
-      } else {
-        console.warn('No messaging token received');
       }
-      
+
       return null;
     } catch (error) {
-      console.error('Error getting messaging token:', error);
       return null;
     }
   }
 
   private async registerServiceWorker(): Promise<ServiceWorkerRegistration> {
-    try {
-      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-        scope: '/'
-      });
-      console.log('Service Worker registered with scope:', registration.scope);
-      return registration;
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-      throw error;
-    }
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      scope: '/'
+    });
+    return registration;
   }
 
   private async showNotification(payload: any): Promise<void> {
@@ -242,13 +207,11 @@ export class FirebaseMessagingService {
       'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
     });
 
-    console.log('Updating FCM token in backend:', token);
     return this.http.post<void>(`${this.apiUrl}/api/update-fcm-token`, { fcmToken: token }, { headers })
       .pipe(
-        tap(() => console.log('FCM token successfully updated in backend')),
-        catchError((error) => {
-          console.error('Error updating FCM token in backend:', error);
-          throw error;
+        catchError(() => {
+          // Token update failed - non-fatal, notifications may not work
+          return of(undefined);
         })
       ).toPromise();
   }
@@ -265,13 +228,11 @@ export class FirebaseMessagingService {
     
     return this.http.post(`${this.apiUrl}/api/users/${username}/clear-fcm-token`, {}, { headers }).pipe(
       retry(3),
-      tap(() => console.log('FCM token cleared from server')),
       catchError(this.handleError)
     );
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(() => new Error('An error occurred while processing the request'));
   }
 }
