@@ -38,4 +38,7 @@ public interface TaskService {
 
     // Marks a task as completed
     void markTaskAsCompleted(Long taskId);
+
+    // Updates only the groupId of a task (for drag-and-drop operations)
+    Task updateTaskGroup(Long taskId, Long groupId);
 }
