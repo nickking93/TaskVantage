@@ -21,4 +21,5 @@ jobs:
         with:
           # Use your subscription token secret here
           claude_code_oauth_token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
-          prompt: "/review" 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: "Review this pull request and comment on any issues found" 
