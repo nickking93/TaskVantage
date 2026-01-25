@@ -23,4 +23,4 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: "Review this pull request and comment on any issues found"
-          allowed_tools: "Bash(gh *),Read,Glob,Grep,Edit" 
+          additional_permissions: "Bash(gh *)" 
