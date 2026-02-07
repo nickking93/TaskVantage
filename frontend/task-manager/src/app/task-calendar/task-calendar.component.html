@@ -43,6 +43,7 @@
           [class.overdue]="isTaskOverdue($any(event))"
           [style.backgroundColor]="event.color?.primary"
           [style.color]="getTextColor(event.color?.primary)"
+          [title]="event.meta?.tooltip"
           (click)="eventClicked($any(event)); $event.stopPropagation()">
           @if (isTaskOverdue($any(event))) {
             <span>&#10071;</span>
@@ -61,6 +62,7 @@
               class="open-day-event"
               [style.backgroundColor]="event.color?.primary"
               [style.color]="getTextColor(event.color?.primary)"
+              [title]="event.meta?.tooltip"
               (click)="eventClicked($any(event))">
               @if (isTaskOverdue($any(event))) {
                 <span>&#10071; </span>

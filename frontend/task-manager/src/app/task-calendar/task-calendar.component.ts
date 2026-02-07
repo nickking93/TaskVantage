@@ -82,7 +82,8 @@ export class TaskCalendarComponent implements OnInit, OnDestroy, OnChanges {
 
   private taskToEvent(task: Task): TaskCalendarEvent {
     const startDate = new Date(task.scheduledStart!);
-    const endDate = task.dueDate ? new Date(task.dueDate) : startDate;
+    // Use scheduledStart for both start and end to show task only on scheduled start date
+    const endDate = startDate;
 
     return {
       start: startDate,
@@ -90,8 +91,62 @@ export class TaskCalendarComponent implements OnInit, OnDestroy, OnChanges {
       title: task.title,
       color: this.getColorForPriority(task.priority),
       allDay: task.isAllDay,
-      task: task
+      task: task,
+      meta: {
+        tooltip: this.createTooltip(task)
+      }
     };
+  }
+
+  private createTooltip(task: Task): string {
+    let tooltip = '';
+
+    if (task.scheduledStart) {
+      const scheduledDate = new Date(task.scheduledStart);
+      tooltip += `Scheduled Start: ${this.formatDateWithTime(scheduledDate, task.isAllDay)}`;
+    }
+
+    if (task.dueDate) {
+      const dueDate = new Date(task.dueDate);
+      if (tooltip) tooltip += '\n';
+      tooltip += `Due Date: ${this.formatDateWithTime(dueDate, task.isAllDay)}`;
+    }
+
+    return tooltip;
+  }
+
+  private formatDateWithTime(date: Date, isAllDay: boolean): string {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const dayWithSuffix = this.addOrdinalSuffix(day);
+
+    if (isAllDay) {
+      return `${month} ${dayWithSuffix}, ${year}`;
+    }
+
+    // Format time in 12-hour format
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+
+    return `${month} ${dayWithSuffix}, ${year} - ${hours}:${minutesStr} ${ampm}`;
+  }
+
+  private addOrdinalSuffix(day: number): string {
+    if (day > 3 && day < 21) return day + 'th';
+    switch (day % 10) {
+      case 1: return day + 'st';
+      case 2: return day + 'nd';
+      case 3: return day + 'rd';
+      default: return day + 'th';
+    }
   }
 
   private getColorForPriority(priority: string): { primary: string; secondary: string } {
