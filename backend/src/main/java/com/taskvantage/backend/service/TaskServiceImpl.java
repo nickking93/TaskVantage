@@ -426,9 +426,15 @@ public class TaskServiceImpl implements TaskService {
             // Calculate similarity
             double similarity = embeddingService.cosineSimilarity(targetEmbedding, candidateEmbedding);
 
-            // Only include if similarity is in the range [0.7, 0.99)
-            // This excludes both dissimilar tasks (<70%) and identical tasks (>=99%)
-            if (similarity >= 0.7 && similarity < 0.99) {
+            // Log high-similarity candidates for debugging
+            if (similarity >= 0.5) {
+                logger.debug("Candidate '{}' has {:.1f}% similarity to target '{}'",
+                        candidateTask.getTitle(), similarity * 100, targetTask.getTitle());
+            }
+
+            // Only include if similarity is in the range [0.6, 0.99)
+            // This excludes both dissimilar tasks (<60%) and identical tasks (>=99%)
+            if (similarity >= 0.6 && similarity < 0.99) {
                 String reason = String.format("%.0f%% similar", similarity * 100);
                 similarTasks.add(new SimilarTaskDTO(candidateTask, similarity, reason));
                 seenTaskIds.add(summary.getId()); // Mark this task as seen
