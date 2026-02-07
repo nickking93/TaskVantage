@@ -4,9 +4,12 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TaskRecommendation, RecommendationResponse } from './recommendations.interface';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../services/auth.service';
+import { SimilarTasksDialogComponent } from '../similar-tasks-dialog/similar-tasks-dialog.component';
 
 @Component({
     selector: 'app-recommendations',
@@ -15,7 +18,9 @@ import { AuthService } from '../services/auth.service';
     imports: [
         CommonModule,
         MatIconModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        MatButtonModule,
+        MatDialogModule
     ]
 })
 export class RecommendationsComponent implements OnInit {
@@ -27,7 +32,8 @@ export class RecommendationsComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -83,5 +89,17 @@ export class RecommendationsComponent implements OnInit {
       default:
         return 'schedule';
     }
+  }
+
+  showSimilarTasks(task: TaskRecommendation): void {
+    this.dialog.open(SimilarTasksDialogComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      data: {
+        taskId: task.id,
+        taskTitle: task.title,
+        userId: this.userId
+      }
+    });
   }
 }

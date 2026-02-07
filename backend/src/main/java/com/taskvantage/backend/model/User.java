@@ -52,6 +52,9 @@ public class User {
     @Column(nullable = false)
     private boolean taskSyncEnabled = false; // Default value can be set as needed
 
+    @Column(nullable = false)
+    private boolean isAdmin = false; // Admin flag for privileged operations
+
     @Column(nullable = true)
     private String refreshToken;
 
@@ -194,5 +197,14 @@ public class User {
 
     public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
         this.passwordResetTokenExpiry = passwordResetTokenExpiry;
+    }
+
+    // Getter and Setter for isAdmin
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 }

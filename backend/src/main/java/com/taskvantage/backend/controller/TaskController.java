@@ -1,4 +1,5 @@
 package com.taskvantage.backend.controller;
+import com.taskvantage.backend.dto.SimilarTaskDTO;
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 import com.taskvantage.backend.service.TaskService;
@@ -370,5 +371,97 @@ public class TaskController {
         tokenData.put("username", username);
         tokenData.put("userId", userId);
         return tokenData;
+    }
+
+    /**
+     * Find similar tasks based on embedding similarity.
+     * GET /api/tasks/{taskId}/similar?userId={userId}&limit={limit}
+     */
+    @GetMapping("/{taskId}/similar")
+    public ResponseEntity<Map<String, Object>> getSimilarTasks(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long taskId,
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "3") int limit) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate that the authenticated user matches the userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
+        // Verify the task exists and belongs to the user
+        Optional<Task> taskOpt = taskService.getTaskById(taskId);
+        if (taskOpt.isEmpty()) {
+            response.put("message", "Task not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskOpt.get();
+        if (!task.getUserId().equals(userId)) {
+            response.put("message", "Task does not belong to the specified user");
+            return ResponseEntity.status(403).body(response);
+        }
+
+        List<SimilarTaskDTO> similarTasks = taskService.findSimilarTasks(taskId, userId, limit);
+        response.put("similarTasks", similarTasks);
+        response.put("count", similarTasks.size());
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Backfill embeddings for all tasks of a specific user.
+     * POST /api/tasks/user/{userId}/backfill-embeddings?force=true
+     */
+    @PostMapping("/user/{userId}/backfill-embeddings")
+    public ResponseEntity<Map<String, Object>> backfillUserEmbeddings(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "false") boolean force) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate that the authenticated user matches the userId
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateUserAccess(authorizationHeader, userId);
+        if (authError != null) {
+            return authError;
+        }
+
+        logger.info("Starting embedding backfill for user {} (force={})", userId, force);
+        int count = taskService.backfillEmbeddingsForUser(userId, force);
+
+        response.put("message", "Embeddings backfilled successfully");
+        response.put("count", count);
+        response.put("force", force);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Backfill embeddings for all tasks in the system (admin only).
+     * POST /api/tasks/backfill-embeddings?force=true
+     *
+     * SECURITY: This endpoint requires proper JWT validation AND admin privileges.
+     * Only users with isAdmin=true can execute system-wide backfills.
+     */
+    @PostMapping("/backfill-embeddings")
+    public ResponseEntity<Map<String, Object>> backfillAllEmbeddings(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(defaultValue = "false") boolean force) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate JWT and check admin privileges
+        ResponseEntity<Map<String, Object>> authError = authorizationUtil.validateAdminAccess(authorizationHeader);
+        if (authError != null) {
+            return authError;
+        }
+
+        logger.info("Starting embedding backfill for all tasks (force={})", force);
+        int count = taskService.backfillAllEmbeddings(force);
+
+        response.put("message", "Embeddings backfilled successfully for all tasks");
+        response.put("count", count);
+        response.put("force", force);
+        return ResponseEntity.ok(response);
     }
 }

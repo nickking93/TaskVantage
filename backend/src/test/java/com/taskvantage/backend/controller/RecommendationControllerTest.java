@@ -1,5 +1,6 @@
 package com.taskvantage.backend.controller;
 
+import com.taskvantage.backend.Security.AuthorizationUtil;
 import com.taskvantage.backend.Security.JwtFilter;
 import com.taskvantage.backend.Security.JwtUtil;
 import com.taskvantage.backend.dto.RecommendationResponse;
@@ -45,6 +46,9 @@ public class RecommendationControllerTest {
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
 
+    @MockBean
+    private AuthorizationUtil authorizationUtil;
+
     @BeforeEach
     public void setup() {
         // Create mock tasks
@@ -67,6 +71,7 @@ public class RecommendationControllerTest {
     @WithMockUser
     public void testGetRecommendations() throws Exception {
         mockMvc.perform(get("/api/recommendations/user/1/task/1")
+                        .header("Authorization", "Bearer mock-jwt-token")
                         .param("limit", "3")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
