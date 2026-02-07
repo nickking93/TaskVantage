@@ -1,5 +1,7 @@
 package com.taskvantage.backend.Security;
 
+import com.taskvantage.backend.model.User;
+import com.taskvantage.backend.service.CustomUserDetailsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +20,11 @@ import io.jsonwebtoken.security.SignatureException;
 public class AuthorizationUtil {
 
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
-    public AuthorizationUtil(JwtUtil jwtUtil) {
+    public AuthorizationUtil(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
@@ -119,6 +123,47 @@ public class AuthorizationUtil {
 
         if (tokenUserId == null || !tokenUserId.equals(resourceOwnerId)) {
             return createErrorResponse("Forbidden: You do not have access to this resource", 403);
+        }
+
+        return null; // Validation passed
+    }
+
+    /**
+     * Validates that the authenticated user has admin privileges.
+     * Returns an error response if validation fails, or null if validation passes.
+     */
+    public ResponseEntity<Map<String, Object>> validateAdminAccess(String authorizationHeader) {
+        if (!isValidAuthorizationHeader(authorizationHeader)) {
+            return createErrorResponse("Unauthorized: Missing or invalid Authorization header", 401);
+        }
+
+        String token = extractToken(authorizationHeader);
+        Long tokenUserId;
+
+        try {
+            tokenUserId = jwtUtil.getUserIdFromToken(token);
+        } catch (ExpiredJwtException e) {
+            return createErrorResponse("Unauthorized: Token expired", 401);
+        } catch (SignatureException e) {
+            return createErrorResponse("Unauthorized: Invalid token signature", 401);
+        } catch (MalformedJwtException e) {
+            return createErrorResponse("Unauthorized: Malformed token", 401);
+        } catch (Exception e) {
+            return createErrorResponse("Unauthorized: Invalid token", 401);
+        }
+
+        if (tokenUserId == null) {
+            return createErrorResponse("Unauthorized: Invalid token", 401);
+        }
+
+        // Check if user has admin privileges
+        User user = userDetailsService.findUserById(tokenUserId);
+        if (user == null) {
+            return createErrorResponse("Unauthorized: User not found", 401);
+        }
+
+        if (!user.isAdmin()) {
+            return createErrorResponse("Forbidden: Admin privileges required", 403);
         }
 
         return null; // Validation passed

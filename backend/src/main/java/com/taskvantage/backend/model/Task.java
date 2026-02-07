@@ -123,6 +123,10 @@ public class Task {
     @Column(name = "last_recommended_on")
     private ZonedDateTime lastRecommendedOn;
 
+    // Embedding vector for similarity search (stored as JSON array)
+    @Column(name = "embedding", columnDefinition = "TEXT")
+    private String embedding;
+
     @Transient
     private String recommendationReason;
 
@@ -380,6 +384,14 @@ public class Task {
 
     public void setNotificationSent(Boolean notificationSent) {
         this.notificationSent = notificationSent;
+    }
+
+    public String getEmbedding() {
+        return embedding;
+    }
+
+    public void setEmbedding(String embedding) {
+        this.embedding = embedding;
     }
 
     public Task(){}

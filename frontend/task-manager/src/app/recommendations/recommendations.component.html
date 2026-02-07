@@ -35,6 +35,11 @@
                   style="background-color: #00a4f3; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
                   <mat-icon style="font-size: 16px; height: 16px; width: 16px; vertical-align: middle; margin-right: 4px;">event</mat-icon><b>Schedule</b>
                 </button>
+                <button mat-raised-button
+                  (click)="showSimilarTasks(task)"
+                  style="background-color: #6c757d; color: white; font-size: 14px; padding: 4px 8px; margin-left: 8px;">
+                  <mat-icon style="font-size: 16px; height: 16px; width: 16px; vertical-align: middle; margin-right: 4px;">compare_arrows</mat-icon><b>Similar Tasks</b>
+                </button>
                 <p class="recommendation-meta">
                   {{ task.recommendationReason || task.recommendedBy.toLowerCase().replace('_', ' ') }} •
                   Score: {{ (task.recommendationScore * 100) | number:'1.0-0' }}%

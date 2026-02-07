@@ -1,0 +1,75 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Similar Tasks to "{{ data.taskTitle }}"</h2>
+    <button mat-icon-button (click)="close()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    @if (loading) {
+      <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Finding similar tasks...</p>
+      </div>
+    }
+
+    @if (error) {
+      <div class="error-state">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    @if (!loading && !error && similarTasks.length === 0) {
+      <div class="empty-state">
+        <mat-icon>search_off</mat-icon>
+        <p>No similar tasks found in your history.</p>
+        <small>Try completing more tasks to build your task history.</small>
+      </div>
+    }
+
+    @if (!loading && !error && similarTasks.length > 0) {
+      <div class="similar-tasks-list">
+        @for (item of similarTasks; track item.task.id) {
+          <div class="similar-task-item">
+            <div class="task-header">
+              <h3>{{ item.task.title }}</h3>
+              <span class="similarity-badge">{{ item.reason }}</span>
+            </div>
+
+            @if (item.task.description) {
+              <p class="task-description">{{ item.task.description }}</p>
+            }
+
+            <div class="task-meta">
+              <span class="status-badge" [style.backgroundColor]="getStatusColor(item.task.status)">
+                {{ item.task.status }}
+              </span>
+              <span class="priority-badge" [style.backgroundColor]="getPriorityColor(item.task.priority)">
+                {{ item.task.priority }} Priority
+              </span>
+              @if (item.task.completionDateTime) {
+                <span class="completion-info">
+                  <mat-icon>check_circle</mat-icon>
+                  Completed {{ item.task.completionDateTime | date:'short' }}
+                </span>
+              }
+            </div>
+
+            <div class="task-actions">
+              <button mat-raised-button color="primary" (click)="viewTask(item.task.id)">
+                <mat-icon>visibility</mat-icon>
+                View Task
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>

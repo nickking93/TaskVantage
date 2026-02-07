@@ -1,5 +1,6 @@
 package com.taskvantage.backend.service;
 
+import com.taskvantage.backend.dto.SimilarTaskDTO;
 import com.taskvantage.backend.dto.TaskSummary;
 import com.taskvantage.backend.model.Task;
 
@@ -41,4 +42,16 @@ public interface TaskService {
 
     // Updates only the groupId of a task (for drag-and-drop operations)
     Task updateTaskGroup(Long taskId, Long groupId);
+
+    // Finds similar tasks based on embedding similarity
+    List<SimilarTaskDTO> findSimilarTasks(Long taskId, Long userId, int limit);
+
+    // Generates and stores embedding for a task
+    void generateEmbeddingForTask(Long taskId);
+
+    // Backfills embeddings for all tasks of a user
+    int backfillEmbeddingsForUser(Long userId, boolean force);
+
+    // Backfills embeddings for all tasks in the system
+    int backfillAllEmbeddings(boolean force);
 }
