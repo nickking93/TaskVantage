@@ -62,9 +62,10 @@ public class DataLoader {
                 user.setUsername("pat@example.com");
                 user.setPassword(passwordEncoder.encode("password"));
                 user.setEmailVerified(true);
+                user.setAdmin(true); // Test user has admin privileges
                 user.setVerificationToken(UUID.randomUUID().toString());
                 userRepository.save(user);
-                logger.info("Test user created");
+                logger.info("Test user created with admin privileges");
             } else {
                 logger.info("Test user already exists; skipping creation");
             }

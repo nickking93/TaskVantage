@@ -16,6 +16,10 @@
   margin: 0;
   font-size: 20px;
   font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: calc(100% - 50px); /* Leave space for close button */
 }
 
 .close-button {
@@ -89,6 +93,10 @@
   font-size: 18px;
   font-weight: 500;
   flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0; /* Allow flex item to shrink below content size */
 }
 
 .similarity-badge {
