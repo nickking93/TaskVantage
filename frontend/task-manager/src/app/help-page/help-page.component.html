@@ -1,1 +1,263 @@
-<p>help-page works!</p>
+<div class="help-container">
+  <div class="header-section">
+    <h1>Install TaskVantage App</h1>
+    <p class="subtitle">Get the best experience with our Progressive Web App</p>
+  </div>
+
+  <div class="instructions-section">
+    <h2>Installation Instructions</h2>
+    <p class="instruction-subtitle">Choose your platform below:</p>
+
+    <mat-tab-group class="platform-tabs">
+      <!-- Windows Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>computer</mat-icon>
+          <span class="tab-label">Windows</span>
+        </ng-template>
+        <div class="tab-content">
+          <mat-accordion>
+            <!-- Chrome Instructions -->
+            <mat-expansion-panel [expanded]="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>language</mat-icon>
+                  Google Chrome
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <ol class="instruction-list">
+                <li>Open TaskVantage in Google Chrome</li>
+                <li>Look for the install icon (<mat-icon inline>install_desktop</mat-icon>) in the address bar (right side)</li>
+                <li>Click the install icon or the "Install" button</li>
+                <li>Click <strong>"Install"</strong> in the popup dialog</li>
+                <li>The app will open in its own window and appear in your Start Menu</li>
+              </ol>
+              <div class="tip-box">
+                <mat-icon>info</mat-icon>
+                <p><strong>Alternative method:</strong> Click the three dots menu (⋮) → "Save and share" → "Install TaskVantage..."</p>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- Edge Instructions -->
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>explore</mat-icon>
+                  Microsoft Edge
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <ol class="instruction-list">
+                <li>Open TaskVantage in Microsoft Edge</li>
+                <li>Look for the app available icon (<mat-icon inline>add_circle</mat-icon>) in the address bar</li>
+                <li>Click the icon and select <strong>"Install"</strong></li>
+                <li>Or click the three dots menu (...) → <strong>"Apps"</strong> → <strong>"Install this site as an app"</strong></li>
+                <li>Click <strong>"Install"</strong> in the confirmation dialog</li>
+                <li>TaskVantage will open as a standalone app and be pinned to your taskbar</li>
+              </ol>
+            </mat-expansion-panel>
+
+            <!-- Firefox Instructions -->
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>whatshot</mat-icon>
+                  Mozilla Firefox
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <ol class="instruction-list">
+                <li>Open TaskVantage in Firefox</li>
+                <li>Click the three horizontal lines menu (☰) in the top right</li>
+                <li>Select <strong>"Install TaskVantage"</strong> or <strong>"Add to Home Screen"</strong></li>
+                <li>Click <strong>"Install"</strong> in the popup</li>
+                <li>The app will be added to your applications</li>
+              </ol>
+              <div class="tip-box warning">
+                <mat-icon>warning</mat-icon>
+                <p><strong>Note:</strong> Firefox PWA support may be limited. Chrome or Edge recommended for best experience.</p>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+
+          <div class="troubleshooting">
+            <h3><mat-icon>help_outline</mat-icon> Don't see the install option?</h3>
+            <ul>
+              <li>Make sure you're using the latest version of your browser</li>
+              <li>The install prompt may only appear after visiting the site a few times</li>
+              <li>Check if TaskVantage is already installed (look in Start Menu or Apps list)</li>
+              <li>Try refreshing the page</li>
+            </ul>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- iPhone Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>phone_iphone</mat-icon>
+          <span class="tab-label">iPhone</span>
+        </ng-template>
+        <div class="tab-content">
+          <div class="platform-note">
+            <mat-icon>info</mat-icon>
+            <p>On iPhone, you must use <strong>Safari</strong> browser to install the app. Chrome and other browsers don't support PWA installation on iOS.</p>
+          </div>
+
+          <h3>Safari Installation Steps:</h3>
+          <ol class="instruction-list large-steps">
+            <li>
+              <strong>Open TaskVantage in Safari</strong>
+              <p class="step-detail">Navigate to your TaskVantage URL in the Safari browser</p>
+            </li>
+            <li>
+              <strong>Tap the Share button</strong>
+              <p class="step-detail">Look for the <mat-icon inline>ios_share</mat-icon> icon (square with arrow pointing up) at the bottom center or top right of Safari</p>
+            </li>
+            <li>
+              <strong>Scroll down and find "Add to Home Screen"</strong>
+              <p class="step-detail">You may need to scroll down in the share menu to see this option</p>
+            </li>
+            <li>
+              <strong>Tap "Add to Home Screen"</strong>
+              <p class="step-detail">You can customize the app name if desired</p>
+            </li>
+            <li>
+              <strong>Tap "Add" in the top right</strong>
+              <p class="step-detail">The TaskVantage icon will appear on your home screen</p>
+            </li>
+            <li>
+              <strong>Launch the app from your home screen</strong>
+              <p class="step-detail">Tap the TaskVantage icon to open it like a native app</p>
+            </li>
+          </ol>
+
+          <div class="troubleshooting">
+            <h3><mat-icon>help_outline</mat-icon> Troubleshooting</h3>
+            <ul>
+              <li><strong>Share button not visible?</strong> Make sure you're in Safari, not Chrome or another browser</li>
+              <li><strong>Don't see "Add to Home Screen"?</strong> Update iOS to the latest version (iOS 11.3 or later required)</li>
+              <li><strong>App won't open?</strong> Try removing it from home screen and re-adding it</li>
+            </ul>
+          </div>
+
+          <div class="tip-box">
+            <mat-icon>tips_and_updates</mat-icon>
+            <p><strong>Pro tip:</strong> You can organize the TaskVantage icon into folders just like any other app on your iPhone!</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Android Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>phone_android</mat-icon>
+          <span class="tab-label">Android</span>
+        </ng-template>
+        <div class="tab-content">
+          <div class="platform-note">
+            <mat-icon>info</mat-icon>
+            <p><strong>Google Chrome</strong> provides the best PWA experience on Android.</p>
+          </div>
+
+          <h3>Chrome Installation Steps:</h3>
+          <ol class="instruction-list large-steps">
+            <li>
+              <strong>Open TaskVantage in Chrome</strong>
+              <p class="step-detail">Navigate to TaskVantage in the Chrome browser on your Android device</p>
+            </li>
+            <li>
+              <strong>Look for the install prompt</strong>
+              <p class="step-detail">A banner may appear at the bottom saying "Add TaskVantage to Home screen" - tap <strong>"Add"</strong> or <strong>"Install"</strong></p>
+            </li>
+            <li>
+              <strong>If no prompt appears, use the menu</strong>
+              <p class="step-detail">Tap the three dots menu (⋮) in the top right corner</p>
+            </li>
+            <li>
+              <strong>Select "Add to Home screen" or "Install app"</strong>
+              <p class="step-detail">The wording may vary depending on your Android version</p>
+            </li>
+            <li>
+              <strong>Confirm the installation</strong>
+              <p class="step-detail">Tap <strong>"Add"</strong> or <strong>"Install"</strong> in the confirmation dialog</p>
+            </li>
+            <li>
+              <strong>Launch from your home screen</strong>
+              <p class="step-detail">The TaskVantage icon will appear on your home screen and app drawer</p>
+            </li>
+          </ol>
+
+          <mat-accordion class="additional-browsers">
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>phone_android</mat-icon>
+                  Samsung Internet Browser
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <ol class="instruction-list">
+                <li>Open TaskVantage in Samsung Internet</li>
+                <li>Tap the menu icon (three lines) at the bottom</li>
+                <li>Select <strong>"Add page to"</strong> → <strong>"Home screen"</strong></li>
+                <li>Tap <strong>"Add"</strong> to confirm</li>
+              </ol>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>language</mat-icon>
+                  Other Browsers (Firefox, Opera, etc.)
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <ol class="instruction-list">
+                <li>Open TaskVantage in your browser</li>
+                <li>Look for the browser's menu (usually three dots or lines)</li>
+                <li>Look for options like "Add to Home screen" or "Install"</li>
+                <li>Follow the prompts to add the app</li>
+              </ol>
+            </mat-expansion-panel>
+          </mat-accordion>
+
+          <div class="troubleshooting">
+            <h3><mat-icon>help_outline</mat-icon> Troubleshooting</h3>
+            <ul>
+              <li><strong>Install option missing?</strong> Make sure you're using Chrome 40+ or a compatible browser</li>
+              <li><strong>Icon not appearing?</strong> Check your home screen and app drawer - it may take a moment</li>
+              <li><strong>App won't open?</strong> Clear Chrome cache and try reinstalling</li>
+              <li><strong>Banner disappeared?</strong> Use the three dots menu method instead</li>
+            </ul>
+          </div>
+
+          <div class="tip-box">
+            <mat-icon>tips_and_updates</mat-icon>
+            <p><strong>Pro tip:</strong> Once installed, TaskVantage will update automatically in the background. You'll always have the latest version!</p>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="after-installation">
+    <h2>After Installation</h2>
+    <div class="info-cards">
+      <div class="info-card">
+        <mat-icon>check_circle</mat-icon>
+        <h3>Uninstalling</h3>
+        <p><strong>Windows:</strong> Right-click the app → Uninstall</p>
+        <p><strong>iPhone:</strong> Long-press icon → Remove App</p>
+        <p><strong>Android:</strong> Long-press icon → Uninstall</p>
+      </div>
+      <div class="info-card">
+        <mat-icon>update</mat-icon>
+        <h3>Updates</h3>
+        <p>The app updates automatically when you launch it. No manual updates needed!</p>
+      </div>
+      <div class="info-card">
+        <mat-icon>storage</mat-icon>
+        <h3>Storage</h3>
+        <p>The app uses minimal storage and can work offline with cached data.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
