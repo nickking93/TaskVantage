@@ -1,0 +1,297 @@
+.help-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Header Section */
+.header-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header-section h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin-top: 0;
+}
+
+/* Instructions Section */
+.instructions-section {
+  margin-bottom: 3rem;
+}
+
+.instructions-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.instruction-subtitle {
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.platform-tabs {
+  margin-top: 2rem;
+}
+
+.tab-label {
+  margin-left: 0.5rem;
+}
+
+.tab-content {
+  padding: 2rem 1rem;
+  min-height: 400px;
+}
+
+/* Platform Note */
+.platform-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
+.platform-note mat-icon {
+  color: #2196f3;
+  flex-shrink: 0;
+}
+
+.platform-note p {
+  margin: 0;
+  color: #1565c0;
+}
+
+/* Instruction Lists */
+.instruction-list {
+  list-style-position: outside;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+.instruction-list li {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.instruction-list li strong {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.instruction-list mat-icon[inline] {
+  vertical-align: middle;
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  color: #667eea;
+}
+
+.large-steps li {
+  margin-bottom: 1.5rem;
+}
+
+.large-steps strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+}
+
+.step-detail {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0.3rem 0 0 0;
+  line-height: 1.6;
+}
+
+/* Tip Boxes */
+.tip-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f0f4ff;
+  border-left: 4px solid #667eea;
+  border-radius: 4px;
+  margin-top: 1.5rem;
+}
+
+.tip-box.warning {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+}
+
+.tip-box.warning mat-icon {
+  color: #ff9800;
+}
+
+.tip-box mat-icon {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.tip-box p {
+  margin: 0;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+/* Troubleshooting */
+.troubleshooting {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.troubleshooting h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #333;
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.troubleshooting mat-icon {
+  color: #667eea;
+}
+
+.troubleshooting ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.troubleshooting li {
+  margin-bottom: 0.75rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.troubleshooting li strong {
+  color: #333;
+}
+
+/* Expansion Panels */
+.additional-browsers {
+  margin-top: 2rem;
+}
+
+::ng-deep .mat-expansion-panel-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+::ng-deep .mat-expansion-panel-header {
+  font-size: 1.05rem;
+}
+
+/* After Installation Section */
+.after-installation {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+}
+
+.after-installation h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 2rem;
+  margin-top: 0;
+}
+
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.info-card mat-icon {
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.info-card h3 {
+  font-size: 1.3rem;
+  color: #333;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.info-card p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.info-card p strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .help-container {
+    padding: 1rem;
+  }
+
+  .header-section h1 {
+    font-size: 2rem;
+  }
+
+  .instructions-section h2,
+  .after-installation h2 {
+    font-size: 1.5rem;
+  }
+
+  .tab-content {
+    padding: 1rem 0.5rem;
+  }
+
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-section h1 {
+    font-size: 1.75rem;
+  }
+
+  .tab-label {
+    display: none;
+  }
+}
